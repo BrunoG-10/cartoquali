@@ -22,8 +22,8 @@
 - [x] Review-to-occurrence session flow and methodology 1.0
 - [x] Responsive desktop/mobile quality validation
 - [x] Standardize session context imports and remove the missing-provider runtime error
-- [ ] Expand typed occurrence and improvement-plan session operations
-- [ ] Build responsive occurrence list, creation, detail, updates and timeline
-- [ ] Build improvement-plan creation, progress, completion and results
-- [ ] Connect Quality management summaries, alerts, recurrence and continuous cycle
-- [ ] Validate the complete occurrence-to-result flow on desktop and mobile
+- [x] Expand typed occurrence and improvement-plan session operations
+- [x] Build responsive occurrence list, creation, detail, updates and timeline
+- [x] Build improvement-plan creation, progress, completion and results
+- [x] Connect Quality management summaries, alerts, recurrence and continuous cycle
+- [x] Validate the complete occurrence-to-result flow on desktop and mobile
