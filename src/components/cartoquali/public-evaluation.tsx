@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { points } from "@/data/mock-service";
+
 import type { Resolution } from "@/types/cartoquali";
 import { Stars } from "./primitives";
 import { useCartoQualiSession } from "./session-provider";
@@ -14,8 +14,8 @@ const ratingLabels = ["", "Muito ruim", "Ruim", "Regular", "Bom", "Excelente"];
 const improvementOptions = ["Tempo de atendimento", "Atendimento", "Informações recebidas", "Serviço solicitado", "Estrutura", "Outro"];
 
 export function PublicEvaluation({ cartorioSlug = "cartorio-demo", pointSlug = "recepcao" }: { cartorioSlug?: string; pointSlug?: string }) {
+  const { points, registry, submitEvaluation } = useCartoQualiSession();
   const point = points.find((item) => item.slug === pointSlug);
-  const { submitEvaluation } = useCartoQualiSession();
   const [step, setStep] = useState(0);
   const [rating, setRating] = useState(0);
   const [resolution, setResolution] = useState<Resolution | "">("");
@@ -32,7 +32,7 @@ export function PublicEvaluation({ cartorioSlug = "cartorio-demo", pointSlug = "
   const steps = ["Atendimento", "Resolutividade", "Tempo", "Clareza", "Comentário"];
   const valid = [rating > 0 && (rating > 3 || reasons.length > 0), Boolean(resolution), time > 0, clarity > 0, !contactRequested || (name.trim().length > 1 && channel.trim().length > 3)][step];
 
-  if (!point || cartorioSlug !== "cartorio-demo") return <Screen pointName="Ponto não identificado"><h1 className="font-display text-2xl font-bold">Este ponto não está disponível.</h1><p className="mt-3 text-muted-foreground">Confira o acesso no cartaz ou peça ajuda à equipe do cartório.</p></Screen>;
+  if (!point || cartorioSlug !== registry.slug) return <Screen registryName={registry.tradeName} pointName="Ponto não identificado"><h1 className="font-display text-2xl font-bold">Este ponto não está disponível.</h1><p className="mt-3 text-muted-foreground">Confira o acesso no cartaz ou peça ajuda à equipe do cartório.</p></Screen>;
 
   const reset = () => { setStep(0); setRating(0); setResolution(""); setTime(0); setClarity(0); setComment(""); setReasons([]); setContactRequested(false); setName(""); setChannel(""); setDone(false); setError(false); };
   const toggleReason = (reason: string) => setReasons((current) => current.includes(reason) ? current.filter((item) => item !== reason) : [...current, reason]);
@@ -46,9 +46,9 @@ export function PublicEvaluation({ cartorioSlug = "cartorio-demo", pointSlug = "
     finally { setSending(false); }
   };
 
-  if (done) return <Screen pointName={point.name}><div className="mx-auto grid size-16 place-items-center rounded-full bg-success-soft text-success"><Check className="size-8" /></div><h1 className="mt-6 font-display text-3xl font-bold">Avaliação enviada.</h1><p className="mx-auto mt-3 max-w-sm text-muted-foreground">Obrigado por compartilhar sua experiência. Sua opinião contribui para a melhoria contínua dos serviços.</p><p className="mt-6 text-sm font-medium">Avaliação realizada em: <strong>{point.name}</strong></p><div className="mt-8 grid gap-2"><Button asChild><Link to="/">Finalizar</Link></Button><Button onClick={reset} variant="ghost"><RotateCcw />Fazer nova avaliação</Button></div></Screen>;
+  if (done) return <Screen registryName={registry.tradeName} pointName={point.name}><div className="mx-auto grid size-16 place-items-center rounded-full bg-success-soft text-success"><Check className="size-8" /></div><h1 className="mt-6 font-display text-3xl font-bold">Avaliação enviada.</h1><p className="mx-auto mt-3 max-w-sm text-muted-foreground">Obrigado por compartilhar sua experiência. Sua opinião contribui para a melhoria contínua dos serviços.</p><p className="mt-6 text-sm font-medium">Avaliação realizada em: <strong>{point.name}</strong></p><div className="mt-8 grid gap-2"><Button asChild><Link to="/">Finalizar</Link></Button><Button onClick={reset} variant="ghost"><RotateCcw />Fazer nova avaliação</Button></div></Screen>;
 
-  return <Screen pointName={point.name}>
+  return <Screen registryName={registry.tradeName} pointName={point.name}>
     <div className="mb-7 text-left"><div className="flex items-center justify-between text-xs font-semibold"><span className="text-primary">Etapa {step + 1} de {steps.length}</span><span className="text-muted-foreground">{steps[step]}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${((step + 1) / steps.length) * 100}%` }} /></div></div>
     {step === 0 && <Question title="Como foi sua experiência hoje?" description="Sua opinião ajuda o cartório a melhorar continuamente seus serviços."><RatingInput value={rating} onChange={setRating} />{rating > 0 && <p className="mt-5 rounded-lg bg-muted/70 p-3 text-sm">{rating >= 4 ? "Que bom saber disso. Sua avaliação é importante para nós." : "Queremos entender como podemos melhorar."}</p>}{rating > 0 && rating <= 3 && <fieldset className="mt-6 text-left"><legend className="text-sm font-semibold">O que poderia ter sido melhor?</legend><p className="mt-1 text-xs text-muted-foreground">Selecione uma ou mais opções.</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{improvementOptions.map((reason) => <label key={reason} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-input bg-glass-strong px-3 py-2 text-sm"><Checkbox checked={reasons.includes(reason)} onCheckedChange={() => toggleReason(reason)} />{reason}</label>)}</div></fieldset>}</Question>}
     {step === 1 && <Question title="Seu atendimento foi resolvido?"><div className="grid gap-3">{(["Sim", "Parcialmente", "Não"] as Resolution[]).map((value) => <Button key={value} size="lg" variant={resolution === value ? "default" : "outline"} onClick={() => setResolution(value)}>{value}</Button>)}</div></Question>}
@@ -61,4 +61,4 @@ export function PublicEvaluation({ cartorioSlug = "cartorio-demo", pointSlug = "
 
 function RatingInput({ value, onChange }: { value: number; onChange(value: number): void }) { return <div><Stars value={value} onChange={onChange} interactive size="lg" /><p aria-live="polite" className="mt-3 min-h-6 font-display text-lg font-bold text-primary">{value ? ratingLabels[value] : "Toque para avaliar"}</p></div>; }
 function Question({ title, description = "Selecione a opção que melhor representa sua experiência.", children }: { title: string; description?: string; children: ReactNode }) { return <div><h1 className="font-display text-2xl font-bold sm:text-3xl">{title}</h1><p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">{description}</p><div className="mt-7">{children}</div></div>; }
-function Screen({ pointName, children }: { pointName: string; children: ReactNode }) { return <div className="relative grid min-h-screen place-items-center overflow-hidden bg-background p-4"><div aria-hidden className="absolute inset-0 [background:radial-gradient(circle_at_top,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_42%)]" /><main className="relative w-full max-w-lg rounded-xl border border-glass-border bg-glass p-6 text-center shadow-glass backdrop-blur-xl sm:p-9"><div className="mb-7 flex items-center justify-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground">C</span><div className="text-left"><strong className="block font-display">CartoQuali</strong><small className="text-muted-foreground">Cartório Modelo · {pointName}</small></div></div>{children}<p className="mt-7 text-[11px] text-muted-foreground">Avaliação anônima · nenhum cadastro necessário</p></main></div>; }
+function Screen({ registryName, pointName, children }: { registryName: string; pointName: string; children: ReactNode }) { return <div className="relative grid min-h-screen place-items-center overflow-hidden bg-background p-4"><div aria-hidden className="absolute inset-0 [background:radial-gradient(circle_at_top,color-mix(in_oklab,var(--primary)_22%,transparent),transparent_42%)]" /><main className="relative w-full max-w-lg rounded-xl border border-glass-border bg-glass p-6 text-center shadow-glass backdrop-blur-xl sm:p-9"><div className="mb-7 flex items-center justify-center gap-3"><span className="grid size-10 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground">C</span><div className="text-left"><strong className="block font-display">CartoQuali</strong><small className="text-muted-foreground">{registryName} · {pointName}</small></div></div>{children}<p className="mt-7 text-[11px] text-muted-foreground">Avaliação anônima · nenhum cadastro necessário</p></main></div>; }

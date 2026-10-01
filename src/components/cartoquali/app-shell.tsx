@@ -1,11 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { BarChart3, Building2, ClipboardList, FileBarChart, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Users, X, MapPin, ExternalLink } from "lucide-react";
+import { BarChart3, Building2, ClipboardList, FileBarChart, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Users, X, MapPin, ExternalLink, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  ["/", "Dashboard", Gauge], ["/avaliacoes", "Avaliações", MessageSquareText], ["/pesquisas", "Pesquisas", ClipboardList], ["/pontos", "Pontos de avaliação", MapPin], ["/qualidade", "Qualidade", ShieldCheck], ["/relatorios", "Relatórios", FileBarChart], ["/cartorio", "Cartório", Building2], ["/usuarios", "Usuários", Users], ["/configuracoes", "Configurações", Settings],
+  ["/", "Dashboard", Gauge], ["/avaliacoes", "Avaliações", MessageSquareText], ["/pesquisas", "Pesquisas", ClipboardList], ["/pontos", "Pontos de avaliação", MapPin], ["/qualidade", "Qualidade", ShieldCheck], ["/planos-melhoria", "Planos de melhoria", ListChecks], ["/relatorios", "Relatórios", FileBarChart], ["/cartorio", "Cartório", Building2], ["/usuarios", "Usuários", Users], ["/configuracoes", "Configurações", Settings],
 ] as const;
 
 function Brand() { return <Link to="/" className="flex items-center gap-3 rounded-lg px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-10 place-items-center rounded-xl bg-primary font-display text-lg font-bold text-primary-foreground shadow-glass">C</span><span><strong className="block font-display text-base leading-none">CartoQuali</strong><small className="text-[11px] text-muted-foreground">Gestão de qualidade</small></span></Link>; }
