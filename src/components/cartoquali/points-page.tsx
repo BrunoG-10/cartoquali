@@ -4,9 +4,9 @@ import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCartoQualiSession } from "@/components/cartoquali/session-provider";
 import type { EvaluationPoint } from "@/types/cartoquali";
 import { GlassPanel, PageHeader, StatusBadge } from "./primitives";
-import { useCartoQualiSession } from "./session-provider";
 
 export function PointsPage() {
   const { points: sessionPoints, registry, surveys } = useCartoQualiSession();

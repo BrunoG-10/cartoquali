@@ -2,12 +2,12 @@ import { useMemo, useState, type ReactNode } from "react";
 import { AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays, CheckCircle2, ChevronRight, Filter, FilterX, Gauge, ListFilter, MessageSquareText, Minus, ShieldCheck, Sparkles, Star, Target, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useCartoQualiSession } from "@/components/cartoquali/session-provider";
 import { DASHBOARD_PERIODS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
 import type { DashboardPeriod, QualityEvolutionPoint, QualityFilters, Review } from "@/types/cartoquali";
 import { buildQualityEvolution, calculateAverageScore, calculateIndicators, calculateNegativeRate, calculatePreviousPeriod, calculateQualityDimensions, calculateResolutionRate, calculateSatisfactionRate, calculateVariation, filterReviews, getQualityAttentionPoints, getQualityHighlights, groupByPoint, isPotentialAttention } from "@/utils/cartoquali-analytics";
 import { cn } from "@/lib/utils";
 import { GlassPanel, PageHeader, Stars, StatusBadge } from "./primitives";
-import { useCartoQualiSession } from "./session-provider";
 
 const sections = ["Visão Geral", "Indicadores", "Dimensões", "Evolução", "Pontos de Avaliação", "Metodologia"] as const;
 type Section = typeof sections[number];

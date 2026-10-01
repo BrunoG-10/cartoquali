@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useCartoQualiSession } from "@/components/cartoquali/session-provider";
 
 import type { Resolution } from "@/types/cartoquali";
 import { Stars } from "./primitives";
-import { useCartoQualiSession } from "./session-provider";
 
 const ratingLabels = ["", "Muito ruim", "Ruim", "Regular", "Bom", "Excelente"];
 const improvementOptions = ["Tempo de atendimento", "Atendimento", "Informações recebidas", "Serviço solicitado", "Estrutura", "Outro"];
