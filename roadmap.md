@@ -21,3 +21,4 @@
 - [x] Quality dimensions, evolution, distribution and point drill-down
 - [x] Review-to-occurrence session flow and methodology 1.0
 - [x] Responsive desktop/mobile quality validation
+- [x] Standardize session context imports and remove the missing-provider runtime error

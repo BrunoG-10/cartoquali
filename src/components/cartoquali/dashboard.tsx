@@ -2,11 +2,11 @@ import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowUpRight, CheckCircle2, MessageSquareText, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCartoQualiSession } from "@/components/cartoquali/session-provider";
 import { DASHBOARD_PERIODS } from "@/constants/cartoquali";
 import { calculateIndicators, filterReviews, groupByPoint, rankDissatisfaction } from "@/utils/cartoquali-analytics";
 import type { DashboardPeriod } from "@/types/cartoquali";
 import { GlassPanel, PageHeader, Stars, StatusBadge } from "./primitives";
-import { useCartoQualiSession } from "./session-provider";
 export function DashboardPage(){
  const {reviews,points}=useCartoQualiSession(); const [period,setPeriod]=useState<DashboardPeriod>("30 dias"); const [pointId,setPointId]=useState("");
  const visible=useMemo(()=>filterReviews(reviews,pointId?{period,pointId}:{period}),[reviews,period,pointId]); const data=calculateIndicators(visible); const byPoint=groupByPoint(visible,points.map((point)=>point.id)); const reasons=rankDissatisfaction(visible);
