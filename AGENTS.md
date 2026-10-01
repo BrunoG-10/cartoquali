@@ -11,3 +11,5 @@
 
 - Keep CartoQuali presentation components dependent on typed service contracts and mock adapters, so a future external API can replace mock data without rebuilding the UI.
 - Keep demo submissions in a shared in-memory session provider; never persist them in browser storage or a database during the MVP.
+- Keep tenant-scoped entities keyed by `registryId` and filter every presentation read through the active registry, so future API isolation can replace mock selection safely.
+- Keep analytics as pure functions over typed reviews, outside presentation components, so backend-derived metrics can replace them without UI changes.

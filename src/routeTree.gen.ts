@@ -15,6 +15,7 @@ import { Route as AvaliarRouteImport } from './routes/avaliar'
 import { Route as CartorioRouteImport } from './routes/cartorio'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as PesquisasRouteImport } from './routes/pesquisas'
+import { Route as PlanosMelhoriaRouteImport } from './routes/planos-melhoria'
 import { Route as PontosRouteImport } from './routes/pontos'
 import { Route as QualidadeRouteImport } from './routes/qualidade'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
@@ -51,6 +52,11 @@ const PesquisasRoute = PesquisasRouteImport.update({
   path: '/pesquisas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlanosMelhoriaRoute = PlanosMelhoriaRouteImport.update({
+  id: '/planos-melhoria',
+  path: '/planos-melhoria',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PontosRoute = PontosRouteImport.update({
   id: '/pontos',
   path: '/pontos',
@@ -84,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/cartorio': typeof CartorioRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/pesquisas': typeof PesquisasRoute
+  '/planos-melhoria': typeof PlanosMelhoriaRoute
   '/pontos': typeof PontosRoute
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/cartorio': typeof CartorioRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/pesquisas': typeof PesquisasRoute
+  '/planos-melhoria': typeof PlanosMelhoriaRoute
   '/pontos': typeof PontosRoute
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/cartorio': typeof CartorioRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/pesquisas': typeof PesquisasRoute
+  '/planos-melhoria': typeof PlanosMelhoriaRoute
   '/pontos': typeof PontosRoute
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRoute
@@ -126,6 +135,7 @@ export interface FileRouteTypes {
     | '/cartorio'
     | '/configuracoes'
     | '/pesquisas'
+    | '/planos-melhoria'
     | '/pontos'
     | '/qualidade'
     | '/relatorios'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/cartorio'
     | '/configuracoes'
     | '/pesquisas'
+    | '/planos-melhoria'
     | '/pontos'
     | '/qualidade'
     | '/relatorios'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/cartorio'
     | '/configuracoes'
     | '/pesquisas'
+    | '/planos-melhoria'
     | '/pontos'
     | '/qualidade'
     | '/relatorios'
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   CartorioRoute: typeof CartorioRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   PesquisasRoute: typeof PesquisasRoute
+  PlanosMelhoriaRoute: typeof PlanosMelhoriaRoute
   PontosRoute: typeof PontosRoute
   QualidadeRoute: typeof QualidadeRoute
   RelatoriosRoute: typeof RelatoriosRoute
@@ -214,6 +227,13 @@ declare module '@tanstack/react-router' {
       path: '/pesquisas'
       fullPath: '/pesquisas'
       preLoaderRoute: typeof PesquisasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/planos-melhoria': {
+      id: '/planos-melhoria'
+      path: '/planos-melhoria'
+      fullPath: '/planos-melhoria'
+      preLoaderRoute: typeof PlanosMelhoriaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pontos': {
@@ -272,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartorioRoute: CartorioRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   PesquisasRoute: PesquisasRoute,
+  PlanosMelhoriaRoute: PlanosMelhoriaRoute,
   PontosRoute: PontosRoute,
   QualidadeRoute: QualidadeRoute,
   RelatoriosRoute: RelatoriosRoute,

@@ -1,52 +1,47 @@
-import type { EvaluationPoint, EvaluationSubmission, Review } from "@/types/cartoquali";
+import { ACTIVE_REGISTRY_ID } from "@/constants/cartoquali";
+import { calculateIndicators } from "@/utils/cartoquali-analytics";
+import type { CartoQualiService } from "@/services/cartoquali-service";
+import type { AnswerOption, AuditEvent, EvaluationAnswer, EvaluationPoint, EvaluationSubmission, ImprovementPlan, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion } from "@/types/cartoquali";
 
-export interface CartoQualiService {
-  listReviews(): Promise<Review[]>;
-  listPoints(): Promise<EvaluationPoint[]>;
-  submitEvaluation(input: EvaluationSubmission): Promise<Review>;
-}
-
-export const reviews: Review[] = [
-  { id: "0001284", date: "01/10/2026 10:42", rating: 5, point: "Recepção", category: "Atendimento", comment: "Atendimento rápido e muito bem explicado.", status: "Nova", service: 5, time: 4, clarity: 5, resolved: true },
-  { id: "0001283", date: "01/10/2026 09:18", rating: 3, point: "Balcão 01", category: "Tempo", comment: "A fila estava um pouco demorada hoje.", status: "Em análise", service: 4, time: 2, clarity: 4, resolved: true },
-  { id: "0001282", date: "30/09/2026 16:35", rating: 5, point: "Saída", category: "Clareza", comment: "Todas as etapas foram explicadas com clareza.", status: "Respondida", service: 5, time: 5, clarity: 5, resolved: true },
-  { id: "0001281", date: "30/09/2026 14:06", rating: 2, point: "Recepção", category: "Informações", comment: "Não encontrei orientação sobre os documentos necessários.", status: "Em análise", service: 3, time: 3, clarity: 2, resolved: false },
-  { id: "0001280", date: "29/09/2026 11:20", rating: 4, point: "Balcão 01", category: "Atendimento", comment: "Equipe cordial e serviço resolvido.", status: "Respondida", service: 5, time: 3, clarity: 4, resolved: true },
+export const registry: Registry = { id: ACTIVE_REGISTRY_ID, slug: "cartorio-modelo", officialName: "Cartório Modelo de Registro Civil", tradeName: "Cartório Modelo", cnpj: "00.000.000/0001-00", serviceType: "Registro Civil", phone: "(86) 3000-0000", email: "gestao@cartoriomodelo.com.br", address: "Avenida das Palmeiras, 120", city: "Parnaíba", state: "PI", zipCode: "64200-000", manager: "Renata Martins", status: "Ativo", plan: "Profissional", createdAt: "2025-01-15" };
+export const users: RegistryUser[] = [
+  { id: "usr-001", registryId: ACTIVE_REGISTRY_ID, name: "Renata Martins", email: "renata@cartoriomodelo.com.br", role: "registry_admin", status: "Ativo", createdAt: "2025-01-15" },
+  { id: "usr-002", registryId: ACTIVE_REGISTRY_ID, name: "Carlos Oliveira", email: "carlos@cartoriomodelo.com.br", role: "manager", status: "Ativo", createdAt: "2025-02-03" },
+  { id: "usr-003", registryId: ACTIVE_REGISTRY_ID, name: "Marina Costa", email: "marina@cartoriomodelo.com.br", role: "operator", status: "Convite pendente", createdAt: "2026-09-28" },
 ];
-
+export const surveys: Survey[] = [{ id: "survey-service-v1", registryId: ACTIVE_REGISTRY_ID, name: "Pesquisa de Satisfação — Atendimento", description: "Experiência no atendimento presencial", status: "Ativa", version: "1.0", createdAt: "2026-01-10", updatedAt: "2026-09-20" }];
+export const questions: SurveyQuestion[] = [
+  { id: "q-rating", surveyId: "survey-service-v1", text: "Como você avalia seu atendimento?", type: "stars", order: 1, required: true, active: true },
+  { id: "q-resolution", surveyId: "survey-service-v1", text: "Seu atendimento foi resolvido?", type: "single_choice", order: 2, required: true, active: true },
+  { id: "q-time", surveyId: "survey-service-v1", text: "Como você avalia o tempo de atendimento?", type: "stars", order: 3, required: true, active: true },
+  { id: "q-clarity", surveyId: "survey-service-v1", text: "Como você avalia a clareza das informações recebidas?", type: "stars", order: 4, required: true, active: true },
+  { id: "q-comment", surveyId: "survey-service-v1", text: "Deseja deixar um comentário?", type: "text", order: 5, required: false, active: true },
+];
+export const answerOptions: AnswerOption[] = ["Sim", "Parcialmente", "Não"].map((text, index) => ({ id: `option-resolution-${index + 1}`, questionId: "q-resolution", text, value: text, order: index + 1 }));
 export const points: EvaluationPoint[] = [
-  { id: "recepcao", slug: "recepcao", name: "Recepção", location: "Entrada principal", code: "CQ-REC-001", status: "Ativo", method: "NFC + QR Code", reviews: 586, lastReview: "Há 12 min" },
-  { id: "balcao-01", slug: "balcao-01", name: "Balcão 01", location: "Salão de atendimento", code: "CQ-BAL-001", status: "Ativo", method: "NFC + QR Code", reviews: 421, lastReview: "Há 28 min" },
-  { id: "saida", slug: "saida", name: "Saída", location: "Próximo à porta lateral", code: "CQ-SAI-001", status: "Ativo", method: "NFC + QR Code", reviews: 277, lastReview: "Há 1 h" },
+  { id: "point-recepcao", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", slug: "recepcao", name: "Recepção", location: "Entrada principal", code: "CQ-REC-001", status: "Ativo", method: "NFC + QR Code", publicUrl: "/avaliar/cartorio-modelo/recepcao", reviews: 6, lastReview: "Há 12 min", createdAt: "2026-01-10" },
+  { id: "point-balcao-01", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", slug: "balcao-01", name: "Balcão 01", location: "Salão de atendimento", code: "CQ-BAL-001", status: "Ativo", method: "NFC + QR Code", publicUrl: "/avaliar/cartorio-modelo/balcao-01", reviews: 5, lastReview: "Há 28 min", createdAt: "2026-01-10" },
+  { id: "point-saida", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", slug: "saida", name: "Saída", location: "Próximo à porta lateral", code: "CQ-SAI-001", status: "Ativo", method: "NFC + QR Code", publicUrl: "/avaliar/cartorio-modelo/saida", reviews: 4, lastReview: "Há 1 h", createdAt: "2026-02-01" },
 ];
+const reviewSeed: Array<[string,string,number,string,string,string,number,number,number,string]> = [
+ ["0001284","2026-10-01T10:42:00",5,"point-recepcao","Recepção","Atendimento rápido e muito bem explicado.",5,4,5,"Atendimento"], ["0001283","2026-10-01T09:18:00",3,"point-balcao-01","Balcão 01","A fila estava um pouco demorada hoje.",4,2,4,"Tempo"], ["0001282","2026-09-30T16:35:00",5,"point-saida","Saída","Todas as etapas foram explicadas com clareza.",5,5,5,"Informação"], ["0001281","2026-09-30T14:06:00",2,"point-recepcao","Recepção","Não encontrei orientação sobre os documentos necessários.",3,3,2,"Informação"], ["0001280","2026-09-29T11:20:00",4,"point-balcao-01","Balcão 01","Equipe cordial e serviço resolvido.",5,3,4,"Atendimento"], ["0001279","2026-09-21T10:10:00",4,"point-saida","Saída","Bom atendimento.",4,4,4,"Atendimento"], ["0001278","2026-08-18T12:10:00",1,"point-recepcao","Recepção","Esperei muito além do esperado.",2,1,3,"Tempo"], ["0001277","2026-07-15T15:10:00",5,"point-balcao-01","Balcão 01","Serviço excelente.",5,5,5,"Serviço"], ["0001276","2026-04-11T09:00:00",4,"point-saida","Saída","Ambiente organizado.",4,4,5,"Estrutura"],
+];
+export const reviews: Review[] = reviewSeed.map(([id,createdAt,rating,pointId,point,comment,service,time,clarity,category]) => ({ id, registryId: ACTIVE_REGISTRY_ID, pointId, surveyId: "survey-service-v1", date: new Date(createdAt).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }), createdAt, rating, point, category, comment, status: rating <= 3 ? "Em análise" : "Respondida", anonymous: true, ...(rating <= 3 ? { dissatisfactionReason: category } : {}), service, time, clarity, resolved: rating >= 3, resolution: rating >= 3 ? "Sim" : "Não", improvementReasons: rating <= 3 ? [category] : [], evaluationType: "Ponto de avaliação", contact: { requested: false } }));
+export const answers: EvaluationAnswer[] = reviews.flatMap((review) => [{ id: `${review.id}-rating`, reviewId: review.id, questionId: "q-rating", value: review.rating }, { id: `${review.id}-resolution`, reviewId: review.id, questionId: "q-resolution", textAnswer: review.resolution ?? (review.resolved ? "Sim" : "Não") }, { id: `${review.id}-time`, reviewId: review.id, questionId: "q-time", value: review.time }, { id: `${review.id}-clarity`, reviewId: review.id, questionId: "q-clarity", value: review.clarity }, { id: `${review.id}-comment`, reviewId: review.id, questionId: "q-comment", textAnswer: review.comment }]);
+export const occurrences: QualityOccurrence[] = [
+ { id: "occ-001", registryId: ACTIVE_REGISTRY_ID, reviewId: "0001283", category: "Tempo", description: "Fila acima do esperado no Balcão 01", priority: "Alta", owner: "Carlos Oliveira", status: "Em tratamento", openedAt: "2026-10-01", notes: "Revisão da escala em andamento." },
+ { id: "occ-002", registryId: ACTIVE_REGISTRY_ID, reviewId: "0001281", category: "Informação", description: "Orientação documental insuficiente na recepção", priority: "Média", owner: "Renata Martins", status: "Em análise", openedAt: "2026-09-30", notes: "Validar materiais disponíveis." },
+ { id: "occ-003", registryId: ACTIVE_REGISTRY_ID, reviewId: "0001278", category: "Tempo", description: "Demora recorrente no início do expediente", priority: "Crítica", owner: "Carlos Oliveira", status: "Resolvida", openedAt: "2026-08-18", resolvedAt: "2026-08-21", notes: "Escala ajustada." },
+ { id: "occ-004", registryId: ACTIVE_REGISTRY_ID, category: "Estrutura", description: "Sinalização da fila preferencial pouco visível", priority: "Baixa", owner: "Marina Costa", status: "Nova", openedAt: "2026-09-29", notes: "Aguardando vistoria." },
+];
+export const improvementPlans: ImprovementPlan[] = [
+ { id: "plan-001", registryId: ACTIVE_REGISTRY_ID, occurrenceId: "occ-001", title: "Reduzir percepção de demora na recepção", problem: "Picos de espera no início da manhã", objective: "Elevar índice de tempo de 82% para 90%", action: "Reorganizar escala e triagem", owner: "Carlos Oliveira", dueDate: "2026-10-20", status: "Em andamento", createdAt: "2026-09-22" },
+ { id: "plan-002", registryId: ACTIVE_REGISTRY_ID, occurrenceId: "occ-002", title: "Reforçar orientação documental", problem: "Usuários chegam sem documentos necessários", objective: "Reduzir ocorrências de informação", action: "Atualizar cartazes e roteiro da recepção", owner: "Renata Martins", dueDate: "2026-10-12", status: "Em andamento", createdAt: "2026-09-25" },
+ { id: "plan-003", registryId: ACTIVE_REGISTRY_ID, occurrenceId: "occ-004", title: "Atualizar sinalização preferencial", problem: "Baixa visibilidade da fila", objective: "Melhorar orientação na entrada", action: "Instalar novas placas", owner: "Marina Costa", dueDate: "2026-09-28", status: "Planejado", createdAt: "2026-09-10" },
+ { id: "plan-004", registryId: ACTIVE_REGISTRY_ID, title: "Padronizar encerramento do atendimento", problem: "Orientações finais variáveis", objective: "Atingir 95% em clareza", action: "Aplicar roteiro de encerramento", owner: "Carlos Oliveira", dueDate: "2026-09-15", status: "Concluído", result: "Clareza elevada para 95%", createdAt: "2026-08-01" },
+];
+export const auditEvents: AuditEvent[] = [{ id: "audit-001", registryId: ACTIVE_REGISTRY_ID, userId: "usr-001", action: "Pesquisa alterada", entityType: "survey", entityId: "survey-service-v1", createdAt: "2026-09-20T11:00:00" }, { id: "audit-002", registryId: ACTIVE_REGISTRY_ID, userId: "usr-002", action: "Ocorrência atualizada", entityType: "occurrence", entityId: "occ-001", createdAt: "2026-10-01T14:00:00" }];
 
-export const dashboardByPeriod = {
-  "30 dias": { satisfaction: "94,7%", reviews: "1.284", average: "4,7", resolved: "92,4%", negative: "37", bars: [54, 62, 58, 69, 77, 86, 94] },
-  "90 dias": { satisfaction: "93,8%", reviews: "3.742", average: "4,6", resolved: "91,9%", negative: "103", bars: [49, 56, 64, 60, 73, 81, 90] },
-  "12 meses": { satisfaction: "92,9%", reviews: "14.806", average: "4,6", resolved: "90,8%", negative: "412", bars: [45, 51, 57, 66, 71, 79, 88] },
-} as const;
-
-export const mockCartoQualiService: CartoQualiService = {
-  async listReviews() { return reviews; },
-  async listPoints() { return points; },
-  async submitEvaluation(input) {
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    return {
-      id: String(1285 + Math.floor(Math.random() * 7000)).padStart(7, "0"),
-      date: "Agora",
-      rating: input.rating,
-      point: input.point,
-      category: input.rating <= 3 ? input.improvementReasons[0] ?? "Experiência" : "Atendimento",
-      comment: input.comment || "Avaliação enviada sem comentário.",
-      status: "Nova",
-      service: input.service,
-      time: input.time,
-      clarity: input.clarity,
-      resolved: input.resolution === "Sim",
-      resolution: input.resolution,
-      improvementReasons: input.improvementReasons,
-      evaluationType: "Ponto de avaliação",
-      contact: input.contact,
-    };
-  },
-};
+const forTenant = <T extends { registryId: string }>(items: T[], registryId: string) => items.filter((item) => item.registryId === registryId);
+let shouldSimulateSubmissionFailure = true;
+export const mockCartoQualiService: CartoQualiService = { async getRegistry(id) { return registry.id === id ? registry : undefined; }, async getUsers(id) { return forTenant(users,id); }, async getPoints(id) { return forTenant(points,id); }, async getSurveys(id) { return forTenant(surveys,id); }, async getQuestions(id) { return questions.filter((item) => item.surveyId === id); }, async getReviews(id) { return forTenant(reviews,id); }, async getReviewById(id) { return reviews.find((item) => item.id === id); }, async createReview(input) { await new Promise((resolve) => setTimeout(resolve,700)); if (shouldSimulateSubmissionFailure) { shouldSimulateSubmissionFailure = false; throw new Error("Falha simulada de envio"); } const reason=input.improvementReasons[0]; return { id: String(1285 + Math.floor(Math.random()*7000)).padStart(7,"0"), registryId: ACTIVE_REGISTRY_ID, pointId: input.pointId, surveyId: points.find((item) => item.id === input.pointId)?.surveyId ?? "survey-service-v1", date: "Agora", createdAt: "Agora", rating: input.rating, point: input.point, category: input.rating <= 3 ? reason ?? "Experiência" : "Atendimento", comment: input.comment || "Avaliação enviada sem comentário.", status: "Nova", anonymous: !input.contact.requested, ...(input.rating <= 3 && reason ? { dissatisfactionReason: reason } : {}), service: input.service, time: input.time, clarity: input.clarity, resolved: input.resolution === "Sim", resolution: input.resolution, improvementReasons: input.improvementReasons, evaluationType: "Ponto de avaliação", contact: input.contact }; }, async getIndicators(id) { return calculateIndicators(forTenant(reviews,id)); }, async getOccurrences(id) { return forTenant(occurrences,id); }, async getImprovementPlans(id) { return forTenant(improvementPlans,id); } };
