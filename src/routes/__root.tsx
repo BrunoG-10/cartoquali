@@ -13,7 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { CartoQualiSessionProvider } from "../components/cartoquali/session-provider";
+import { CartoQualiSessionProvider } from "@/components/cartoquali/session-provider";
 
 function NotFoundComponent() {
   return (
