@@ -13,7 +13,7 @@ import { useCartoQualiSession } from "./session-provider";
 const ratingLabels = ["", "Muito ruim", "Ruim", "Regular", "Bom", "Excelente"];
 const improvementOptions = ["Tempo de atendimento", "Atendimento", "Informações recebidas", "Serviço solicitado", "Estrutura", "Outro"];
 
-export function PublicEvaluation({ cartorioSlug = "cartorio-demo", pointSlug = "recepcao" }: { cartorioSlug?: string; pointSlug?: string }) {
+export function PublicEvaluation({ cartorioSlug = "cartorio-modelo", pointSlug = "recepcao" }: { cartorioSlug?: string; pointSlug?: string }) {
   const { points, registry, submitEvaluation } = useCartoQualiSession();
   const point = points.find((item) => item.slug === pointSlug);
   const [step, setStep] = useState(0);
