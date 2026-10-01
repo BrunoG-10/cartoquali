@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useCartoQualiSession } from "@/components/cartoquali/session-provider";
 import { DASHBOARD_PERIODS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
 import type { DashboardPeriod, QualityEvolutionPoint, QualityFilters, Review } from "@/types/cartoquali";
-import { buildManagementAlerts, buildQualityEvolution, calculateIndicators, calculateManagementSummary, calculateNegativeRate, calculatePreviousPeriod, calculateQualityDimensions, calculateVariation, filterReviews, getQualityAttentionPoints, getQualityHighlights, groupByPoint, isPotentialAttention, rankRecurringProblems } from "@/utils/cartoquali-analytics";
+import { buildManagementAlerts, buildQualityEvolution, calculateConfiguredDimensions, calculateIndicators, calculateManagementSummary, calculateNegativeRate, calculatePreviousPeriod, calculateQualityDimensions, calculateVariation, filterReviews, getQualityAttentionPoints, getQualityHighlights, groupByPoint, isPotentialAttention, rankRecurringProblems } from "@/utils/cartoquali-analytics";
 import { cn } from "@/lib/utils";
 import { GlassPanel, PageHeader, Stars, StatusBadge } from "./primitives";
 import { QualityNavigation } from "./quality-navigation";
@@ -17,7 +17,7 @@ type Metric = "average" | "satisfaction" | "resolution" | "negative";
 const metricLabels: Record<Metric, string> = { average: "Nota média", satisfaction: "Satisfação", resolution: "Resolutividade", negative: "Negativas" };
 
 export function QualityDashboard() {
-  const { reviews, points, surveys, occurrences, improvementPlans } = useCartoQualiSession();
+  const { reviews, points, surveys, occurrences, improvementPlans, answers, questions, dimensions: configuredDimensions } = useCartoQualiSession();
   const search = useSearch({ strict: false }) as { section?: string };
   const navigate = useNavigate();
   const initialSection = sections.includes(search.section as Section) ? search.section as Section : "Visão Geral";
@@ -35,7 +35,7 @@ export function QualityDashboard() {
   const previous = useMemo(() => calculatePreviousPeriod(reviews, filters), [reviews, filters]);
   const indicators = useMemo(() => calculateIndicators(filtered), [filtered]);
   const previousIndicators = useMemo(() => calculateIndicators(previous), [previous]);
-  const dimensions = useMemo(() => calculateQualityDimensions(filtered, previous), [filtered, previous]);
+  const dimensions = useMemo(() => calculateConfiguredDimensions(filtered, answers, questions, configuredDimensions, previous), [filtered, previous, answers, questions, configuredDimensions]);
   const evolution = useMemo(() => buildQualityEvolution(reviews, filters.pointId), [reviews, filters.pointId]);
   const pointRows = useMemo(() => groupByPoint(filtered, points.map((point) => point.id)), [filtered, points]);
   const listReviews = filtered.filter((review) => (reviewStatus === "Todos" || review.status === reviewStatus) && (!withComment || Boolean(review.comment.trim())) && (!withContact || review.contact?.requested));
