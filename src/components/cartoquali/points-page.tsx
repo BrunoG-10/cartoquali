@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { ExternalLink, MapPin, Nfc, Plus, QrCode, Settings2, Star } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -27,4 +27,4 @@ export function PointsPage() {
   </div>;
 }
 
-function Modal({ children, onClose, wide = false }: { children: React.ReactNode; onClose(): void; wide?: boolean }) { return <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/20 p-4" role="dialog" aria-modal="true" onMouseDown={onClose}><div className={`my-4 w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-xl bg-background p-6 shadow-xl`} onMouseDown={(event) => event.stopPropagation()}>{children}</div></div>; }
+function Modal({ children, onClose, wide = false }: { children: ReactNode; onClose(): void; wide?: boolean }) { return <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/20 p-4" role="dialog" aria-modal="true" onMouseDown={onClose}><div className={`my-4 w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-xl bg-background p-6 shadow-xl`} onMouseDown={(event) => event.stopPropagation()}>{children}</div></div>; }

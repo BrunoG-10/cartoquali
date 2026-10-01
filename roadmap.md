@@ -10,3 +10,8 @@
 - [x] Session-only submission reflected across admin views
 - [x] Evaluation-point actions and visual totem
 - [x] End-to-end mobile and desktop validation
+- [x] Multi-registry typed domain model and relational mock data
+- [x] Replaceable service contract and session-only adapter state
+- [x] Derived indicators and global dashboard filters
+- [x] Functional quality occurrences and improvement-plan views
+- [x] Existing pages connected to the active registry model
