@@ -16,8 +16,10 @@ const improvementOptions = ["Tempo de atendimento", "Atendimento", "Informaçõe
 export function PublicEvaluation({ cartorioSlug = "cartorio-modelo", pointSlug = "recepcao" }: { cartorioSlug?: string; pointSlug?: string }) {
   const { points, registry, submitEvaluation } = useCartoQualiSession();
   const point = points.find((item) => item.slug === pointSlug);
+  const [started, setStarted] = useState(false);
   const [step, setStep] = useState(0);
   const [rating, setRating] = useState(0);
+  const [service, setService] = useState(0);
   const [resolution, setResolution] = useState<Resolution | "">("");
   const [time, setTime] = useState(0);
   const [clarity, setClarity] = useState(0);
@@ -30,17 +32,17 @@ export function PublicEvaluation({ cartorioSlug = "cartorio-modelo", pointSlug =
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(false);
   const steps = ["Atendimento", "Resolutividade", "Tempo", "Clareza", "Comentário"];
-  const valid = [rating > 0 && (rating > 3 || reasons.length > 0), Boolean(resolution), time > 0, clarity > 0, !contactRequested || (name.trim().length > 1 && channel.trim().length > 3)][step];
+  const valid = [service > 0 && (service > 3 || reasons.length > 0), Boolean(resolution), time > 0, clarity > 0, !contactRequested || (name.trim().length > 1 && channel.trim().length > 3)][step];
 
   if (!point || cartorioSlug !== registry.slug) return <Screen registryName={registry.tradeName} pointName="Ponto não identificado"><h1 className="font-display text-2xl font-bold">Este ponto não está disponível.</h1><p className="mt-3 text-muted-foreground">Confira o acesso no cartaz ou peça ajuda à equipe do cartório.</p></Screen>;
 
-  const reset = () => { setStep(0); setRating(0); setResolution(""); setTime(0); setClarity(0); setComment(""); setReasons([]); setContactRequested(false); setName(""); setChannel(""); setDone(false); setError(false); };
+  const reset = () => { setStarted(false); setStep(0); setRating(0); setService(0); setResolution(""); setTime(0); setClarity(0); setComment(""); setReasons([]); setContactRequested(false); setName(""); setChannel(""); setDone(false); setError(false); };
   const toggleReason = (reason: string) => setReasons((current) => current.includes(reason) ? current.filter((item) => item !== reason) : [...current, reason]);
   const send = async () => {
     if (!valid || sending || !resolution) return;
     setSending(true); setError(false);
     try {
-      await submitEvaluation({ rating, pointId: point.id, point: point.name, service: rating, time, clarity, resolution, comment: comment.trim(), improvementReasons: reasons, contact: contactRequested ? { requested: true, name: name.trim(), channel: channel.trim() } : { requested: false } });
+      await submitEvaluation({ rating, pointId: point.id, point: point.name, service, time, clarity, resolution, comment: comment.trim(), improvementReasons: reasons, contact: contactRequested ? { requested: true, name: name.trim(), channel: channel.trim() } : { requested: false } });
       setDone(true);
     } catch { setError(true); }
     finally { setSending(false); }
@@ -48,9 +50,11 @@ export function PublicEvaluation({ cartorioSlug = "cartorio-modelo", pointSlug =
 
   if (done) return <Screen registryName={registry.tradeName} pointName={point.name}><div className="mx-auto grid size-16 place-items-center rounded-full bg-success-soft text-success"><Check className="size-8" /></div><h1 className="mt-6 font-display text-3xl font-bold">Avaliação enviada.</h1><p className="mx-auto mt-3 max-w-sm text-muted-foreground">Obrigado por compartilhar sua experiência. Sua opinião contribui para a melhoria contínua dos serviços.</p><p className="mt-6 text-sm font-medium">Avaliação realizada em: <strong>{point.name}</strong></p><div className="mt-8 grid gap-2"><Button asChild><Link to="/">Finalizar</Link></Button><Button onClick={reset} variant="ghost"><RotateCcw />Fazer nova avaliação</Button></div></Screen>;
 
+  if (!started) return <Screen registryName={registry.tradeName} pointName={point.name}><Question title="Como foi sua experiência hoje?" description="Sua opinião ajuda o cartório a melhorar continuamente seus serviços."><RatingInput value={rating} onChange={setRating} /></Question><Button className="mt-8 w-full" size="lg" disabled={!rating} onClick={() => setStarted(true)}>Continuar<ArrowRight /></Button></Screen>;
+
   return <Screen registryName={registry.tradeName} pointName={point.name}>
     <div className="mb-7 text-left"><div className="flex items-center justify-between text-xs font-semibold"><span className="text-primary">Etapa {step + 1} de {steps.length}</span><span className="text-muted-foreground">{steps[step]}</span></div><div className="mt-2 h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary transition-[width] duration-300" style={{ width: `${((step + 1) / steps.length) * 100}%` }} /></div></div>
-    {step === 0 && <Question title="Como foi sua experiência hoje?" description="Sua opinião ajuda o cartório a melhorar continuamente seus serviços."><RatingInput value={rating} onChange={setRating} />{rating > 0 && <p className="mt-5 rounded-lg bg-muted/70 p-3 text-sm">{rating >= 4 ? "Que bom saber disso. Sua avaliação é importante para nós." : "Queremos entender como podemos melhorar."}</p>}{rating > 0 && rating <= 3 && <fieldset className="mt-6 text-left"><legend className="text-sm font-semibold">O que poderia ter sido melhor?</legend><p className="mt-1 text-xs text-muted-foreground">Selecione uma ou mais opções.</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{improvementOptions.map((reason) => <label key={reason} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-input bg-glass-strong px-3 py-2 text-sm"><Checkbox checked={reasons.includes(reason)} onCheckedChange={() => toggleReason(reason)} />{reason}</label>)}</div></fieldset>}</Question>}
+    {step === 0 && <Question title="Como você avalia seu atendimento?"><RatingInput value={service} onChange={setService} />{service > 0 && <p className="mt-5 rounded-lg bg-muted/70 p-3 text-sm">{service >= 4 ? "Que bom saber disso. Sua avaliação é importante para nós." : "Queremos entender como podemos melhorar."}</p>}{service > 0 && service <= 3 && <fieldset className="mt-6 text-left"><legend className="text-sm font-semibold">O que poderia ter sido melhor?</legend><p className="mt-1 text-xs text-muted-foreground">Selecione uma ou mais opções.</p><div className="mt-3 grid gap-2 sm:grid-cols-2">{improvementOptions.map((reason) => <label key={reason} className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-input bg-glass-strong px-3 py-2 text-sm"><Checkbox checked={reasons.includes(reason)} onCheckedChange={() => toggleReason(reason)} />{reason}</label>)}</div></fieldset>}</Question>}
     {step === 1 && <Question title="Seu atendimento foi resolvido?"><div className="grid gap-3">{(["Sim", "Parcialmente", "Não"] as Resolution[]).map((value) => <Button key={value} size="lg" variant={resolution === value ? "default" : "outline"} onClick={() => setResolution(value)}>{value}</Button>)}</div></Question>}
     {step === 2 && <Question title="Como você avalia o tempo de atendimento?"><RatingInput value={time} onChange={setTime} /></Question>}
     {step === 3 && <Question title="Como você avalia a clareza das informações recebidas?"><RatingInput value={clarity} onChange={setClarity} /></Question>}
