@@ -1,2 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"; import { AppShell } from "@/components/cartoquali/app-shell"; import { ReportsPage } from "@/components/cartoquali/admin-pages";
-export const Route=createFileRoute("/relatorios")({head:()=>({meta:[{title:"Relatórios — CartoQuali"},{name:"description",content:"Visualize indicadores e modelos de relatórios."},{property:"og:title",content:"Relatórios — CartoQuali"},{property:"og:description",content:"Visualize indicadores e modelos de relatórios."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <AppShell><ReportsPage/></AppShell>});
+import { Outlet, createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/cartoquali/app-shell";
+
+export const Route=createFileRoute("/relatorios")({component:()=> <AppShell><Outlet/></AppShell>});
