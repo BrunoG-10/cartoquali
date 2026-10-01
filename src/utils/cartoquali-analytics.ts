@@ -3,7 +3,7 @@ import type { DashboardPeriod, DimensionIndicator, EvaluationAnswer, Improvement
 
 const DAY = 86_400_000;
 const NOW = new Date("2026-10-01T23:59:59");
-const periodDays: Record<Exclude<DashboardPeriod, "Personalizado">, number> = { Hoje: 1, "7 dias": 7, "30 dias": 30, "90 dias": 90, "12 meses": 365 };
+const periodDays: Record<Exclude<DashboardPeriod, "Personalizado">, number> = { Hoje: 1, "7 dias": 7, "30 dias": 30, "90 dias": 90, "Este ano": 365 };
 const round = (value: number, digits = 1) => Number(value.toFixed(digits));
 const reviewDate = (review: Review, now = NOW) => review.createdAt === "Agora" ? now : new Date(review.createdAt);
 

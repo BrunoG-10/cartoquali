@@ -14,7 +14,7 @@ const titles: Record<ReportKind, string> = {
 
 function dateWindow(filters: ReportFilters) {
   if (filters.period === "Personalizado") return { start: filters.startDate ? new Date(`${filters.startDate}T00:00:00`) : undefined, end: filters.endDate ? new Date(`${filters.endDate}T23:59:59`) : undefined };
-  const days = { Hoje: 1, "7 dias": 7, "30 dias": 30, "90 dias": 90, "12 meses": 365 }[filters.period];
+  const days = { Hoje: 1, "7 dias": 7, "30 dias": 30, "90 dias": 90, "Este ano": 365 }[filters.period];
   return { start: new Date(NOW.getTime() - days * DAY), end: NOW };
 }
 

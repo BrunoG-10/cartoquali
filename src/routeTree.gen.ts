@@ -21,6 +21,7 @@ import { Route as PontosRouteImport } from './routes/pontos'
 import { Route as QualidadeRouteImport } from './routes/qualidade'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
+import { Route as RelatoriosIndexRouteImport } from './routes/relatorios.index'
 import { Route as RelatoriosTipoRouteImport } from './routes/relatorios.$tipo'
 import { Route as AvaliarCartorioPontoRouteImport } from './routes/avaliar.$cartorio.$ponto'
 
@@ -84,6 +85,11 @@ const UsuariosRoute = UsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RelatoriosIndexRoute = RelatoriosIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => RelatoriosRoute,
+} as any)
 const RelatoriosTipoRoute = RelatoriosTipoRouteImport.update({
   id: '/$tipo',
   path: '/$tipo',
@@ -109,6 +115,7 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof RelatoriosRouteWithChildren
   '/usuarios': typeof UsuariosRoute
   '/relatorios/$tipo': typeof RelatoriosTipoRoute
+  '/relatorios/': typeof RelatoriosIndexRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
 }
 export interface FileRoutesByTo {
@@ -122,9 +129,9 @@ export interface FileRoutesByTo {
   '/planos-melhoria': typeof PlanosMelhoriaRoute
   '/pontos': typeof PontosRoute
   '/qualidade': typeof QualidadeRoute
-  '/relatorios': typeof RelatoriosRouteWithChildren
   '/usuarios': typeof UsuariosRoute
   '/relatorios/$tipo': typeof RelatoriosTipoRoute
+  '/relatorios': typeof RelatoriosIndexRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
 }
 export interface FileRoutesById {
@@ -142,6 +149,7 @@ export interface FileRoutesById {
   '/relatorios': typeof RelatoriosRouteWithChildren
   '/usuarios': typeof UsuariosRoute
   '/relatorios/$tipo': typeof RelatoriosTipoRoute
+  '/relatorios/': typeof RelatoriosIndexRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
 }
 export interface FileRouteTypes {
@@ -160,6 +168,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/usuarios'
     | '/relatorios/$tipo'
+    | '/relatorios/'
     | '/avaliar/$cartorio/$ponto'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -173,9 +182,9 @@ export interface FileRouteTypes {
     | '/planos-melhoria'
     | '/pontos'
     | '/qualidade'
-    | '/relatorios'
     | '/usuarios'
     | '/relatorios/$tipo'
+    | '/relatorios'
     | '/avaliar/$cartorio/$ponto'
   id:
     | '__root__'
@@ -192,6 +201,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/usuarios'
     | '/relatorios/$tipo'
+    | '/relatorios/'
     | '/avaliar/$cartorio/$ponto'
   fileRoutesById: FileRoutesById
 }
@@ -296,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsuariosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/relatorios/': {
+      id: '/relatorios/'
+      path: '/'
+      fullPath: '/relatorios/'
+      preLoaderRoute: typeof RelatoriosIndexRouteImport
+      parentRoute: typeof RelatoriosRoute
+    }
     '/relatorios/$tipo': {
       id: '/relatorios/$tipo'
       path: '/$tipo'
@@ -326,10 +343,12 @@ const AvaliarRouteWithChildren =
 
 interface RelatoriosRouteChildren {
   RelatoriosTipoRoute: typeof RelatoriosTipoRoute
+  RelatoriosIndexRoute: typeof RelatoriosIndexRoute
 }
 
 const RelatoriosRouteChildren: RelatoriosRouteChildren = {
   RelatoriosTipoRoute: RelatoriosTipoRoute,
+  RelatoriosIndexRoute: RelatoriosIndexRoute,
 }
 
 const RelatoriosRouteWithChildren = RelatoriosRoute._addFileChildren(
