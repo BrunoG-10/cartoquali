@@ -14,3 +14,4 @@
 - Keep tenant-scoped entities keyed by `registryId` and filter every presentation read through the active registry, so future API isolation can replace mock selection safely.
 - Keep analytics as pure functions over typed reviews, outside presentation components, so backend-derived metrics can replace them without UI changes.
 - Keep occurrence and improvement-plan mutations inside the shared session provider behind typed service-shaped operations, so presentation code never edits mock collections directly.
+- Keep all administrative mutations inside the shared session provider and derive quality dimensions through answer-to-question mappings, so mock configuration and future external adapters remain interchangeable.
