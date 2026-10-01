@@ -33,4 +33,4 @@
 - [x] Build evaluation point creation and detail analytics
 - [x] Build general settings, categories and quality dimensions
 - [x] Derive quality dimensions from configured questions and answers
-- [ ] Validate all administration flows on desktop and mobile
+- [x] Validate all administration flows on desktop and mobile
