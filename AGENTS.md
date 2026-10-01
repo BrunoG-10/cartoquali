@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep CartoQuali presentation components dependent on typed service contracts and mock adapters, so a future external API can replace mock data without rebuilding the UI.
