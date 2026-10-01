@@ -15,3 +15,5 @@
 - [x] Derived indicators and global dashboard filters
 - [x] Functional quality occurrences and improvement-plan views
 - [x] Existing pages connected to the active registry model
+- [x] Separate evaluation welcome screen before the five-step survey
+- [x] Controlled mock submission failure with retry and success states
