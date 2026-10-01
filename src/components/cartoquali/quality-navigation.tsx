@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const items = [
+const items: Array<{to:"/qualidade"|"/ocorrencias"|"/planos-melhoria";label:string;search?:{section:string}}> = [
   { to: "/qualidade", label: "Visão Geral" },
   { to: "/qualidade", label: "Indicadores", search: { section: "Indicadores" } },
   { to: "/ocorrencias", label: "Ocorrências" },
