@@ -13,9 +13,9 @@ export function PageHeader({ eyebrow, title, description, action }: { eyebrow?: 
 }
 
 export function Stars({ value, interactive = false, onChange, size = "md" }: { value: number; interactive?: boolean; onChange?: (value: number) => void; size?: "sm" | "md" | "lg" }) {
-  const iconSize = size === "lg" ? "size-9" : size === "sm" ? "size-4" : "size-5";
-  return <div className="flex items-center gap-1" role={interactive ? "radiogroup" : undefined} aria-label={`${value} de 5 estrelas`}>
-    {[1,2,3,4,5].map((star) => interactive ? <button key={star} type="button" role="radio" aria-checked={star === value} aria-label={`${star} estrelas`} onClick={() => onChange?.(star)} className="rounded-md p-1 text-rating transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Star className={cn(iconSize, star <= value && "fill-current")} /></button> : <Star key={star} className={cn(iconSize, "text-rating", star <= value && "fill-current")} />)}
+  const iconSize = size === "lg" ? "size-10 sm:size-11" : size === "sm" ? "size-4" : "size-5";
+  return <div className="flex items-center justify-center gap-1" role={interactive ? "radiogroup" : undefined} aria-label={`${value} de 5 estrelas`}>
+    {[1,2,3,4,5].map((star) => interactive ? <button key={star} type="button" role="radio" aria-checked={star === value} aria-label={`${star} ${star === 1 ? "estrela" : "estrelas"}`} onClick={() => onChange?.(star)} className="rounded-md p-1.5 text-rating transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><Star className={cn(iconSize, star <= value && "fill-current")} /></button> : <Star key={star} className={cn(iconSize, "text-rating", star <= value && "fill-current")} />)}
   </div>;
 }
 

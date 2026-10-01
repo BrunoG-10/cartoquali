@@ -19,6 +19,7 @@ import { Route as PontosRouteImport } from './routes/pontos'
 import { Route as QualidadeRouteImport } from './routes/qualidade'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
+import { Route as AvaliarCartorioPontoRouteImport } from './routes/avaliar.$cartorio.$ponto'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,11 +71,16 @@ const UsuariosRoute = UsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AvaliarCartorioPontoRoute = AvaliarCartorioPontoRouteImport.update({
+  id: '/$cartorio/$ponto',
+  path: '/$cartorio/$ponto',
+  getParentRoute: () => AvaliarRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
-  '/avaliar': typeof AvaliarRoute
+  '/avaliar': typeof AvaliarRouteWithChildren
   '/cartorio': typeof CartorioRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/pesquisas': typeof PesquisasRoute
@@ -82,11 +88,12 @@ export interface FileRoutesByFullPath {
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRoute
   '/usuarios': typeof UsuariosRoute
+  '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
-  '/avaliar': typeof AvaliarRoute
+  '/avaliar': typeof AvaliarRouteWithChildren
   '/cartorio': typeof CartorioRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/pesquisas': typeof PesquisasRoute
@@ -94,12 +101,13 @@ export interface FileRoutesByTo {
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRoute
   '/usuarios': typeof UsuariosRoute
+  '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/avaliacoes': typeof AvaliacoesRoute
-  '/avaliar': typeof AvaliarRoute
+  '/avaliar': typeof AvaliarRouteWithChildren
   '/cartorio': typeof CartorioRoute
   '/configuracoes': typeof ConfiguracoesRoute
   '/pesquisas': typeof PesquisasRoute
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRoute
   '/usuarios': typeof UsuariosRoute
+  '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
+    | '/avaliar/$cartorio/$ponto'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
+    | '/avaliar/$cartorio/$ponto'
   id:
     | '__root__'
     | '/'
@@ -145,12 +156,13 @@ export interface FileRouteTypes {
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
+    | '/avaliar/$cartorio/$ponto'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AvaliacoesRoute: typeof AvaliacoesRoute
-  AvaliarRoute: typeof AvaliarRoute
+  AvaliarRoute: typeof AvaliarRouteWithChildren
   CartorioRoute: typeof CartorioRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
   PesquisasRoute: typeof PesquisasRoute
@@ -232,13 +244,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsuariosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/avaliar/$cartorio/$ponto': {
+      id: '/avaliar/$cartorio/$ponto'
+      path: '/$cartorio/$ponto'
+      fullPath: '/avaliar/$cartorio/$ponto'
+      preLoaderRoute: typeof AvaliarCartorioPontoRouteImport
+      parentRoute: typeof AvaliarRoute
+    }
   }
 }
+
+interface AvaliarRouteChildren {
+  AvaliarCartorioPontoRoute: typeof AvaliarCartorioPontoRoute
+}
+
+const AvaliarRouteChildren: AvaliarRouteChildren = {
+  AvaliarCartorioPontoRoute: AvaliarCartorioPontoRoute,
+}
+
+const AvaliarRouteWithChildren =
+  AvaliarRoute._addFileChildren(AvaliarRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AvaliacoesRoute: AvaliacoesRoute,
-  AvaliarRoute: AvaliarRoute,
+  AvaliarRoute: AvaliarRouteWithChildren,
   CartorioRoute: CartorioRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
   PesquisasRoute: PesquisasRoute,

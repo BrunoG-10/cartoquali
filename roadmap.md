@@ -5,3 +5,8 @@
 - [x] Quality, reports, registry, users and settings pages
 - [x] Public mobile evaluation journey
 - [x] Route metadata and responsive end-to-end validation
+- [x] Dynamic point-based public evaluation route
+- [x] Conditional evaluation, contact, loading and error journeys
+- [x] Session-only submission reflected across admin views
+- [x] Evaluation-point actions and visual totem
+- [x] End-to-end mobile and desktop validation
