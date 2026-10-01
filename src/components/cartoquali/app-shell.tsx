@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { BarChart3, Building2, ClipboardList, FileBarChart, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Users, X, MapPin, ExternalLink, ListChecks } from "lucide-react";
+import { Building2, ClipboardList, FileBarChart, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Users, X, MapPin, ExternalLink, ListChecks } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   return <nav className="mt-6 flex flex-1 flex-col gap-1" aria-label="Navegação principal">
     <p className="px-3 pb-2 text-[10px] font-semibold uppercase text-muted-foreground">Principal</p>
-    {nav.map(([to,label,Icon], index) => <div key={to}>{index === 6 && <p className="px-3 pb-2 pt-4 text-[10px] font-semibold uppercase text-muted-foreground">Administração</p>}<Link to={to} onClick={onNavigate} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-glass-strong hover:text-foreground", pathname === to && "bg-glass-strong font-semibold text-primary shadow-sm")}><Icon className="size-4" />{label}</Link></div>)}
+    {nav.map(([to,label,Icon], index) => <div key={to}>{index === 7 && <p className="px-3 pb-2 pt-4 text-[10px] font-semibold uppercase text-muted-foreground">Administração</p>}<Link to={to} onClick={onNavigate} className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-glass-strong hover:text-foreground", pathname === to && "bg-glass-strong font-semibold text-primary shadow-sm")}><Icon className="size-4" />{label}</Link></div>)}
   </nav>;
 }
 
