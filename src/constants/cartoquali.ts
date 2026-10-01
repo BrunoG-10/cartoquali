@@ -1,11 +1,12 @@
-import type { ImprovementPlanStatus, OccurrencePriority, OccurrenceStatus, QualityMethodology, QuestionType, UserRole } from "@/types/cartoquali";
+import type { ImprovementPlanStatus, OccurrenceOrigin, OccurrencePriority, OccurrenceStatus, QualityMethodology, QuestionType, UserRole } from "@/types/cartoquali";
 export const ACTIVE_REGISTRY_ID = "registry-cartorio-modelo";
 export const USER_ROLE_LABELS: Record<UserRole, string> = { platform_admin: "Administrador da plataforma", registry_admin: "Administrador do cartório", manager: "Gestor", operator: "Operador" };
 export const ROLE_PERMISSIONS: Record<UserRole, readonly string[]> = { platform_admin: ["global"], registry_admin: ["dashboard", "reviews", "quality", "reports", "settings", "users"], manager: ["dashboard", "reviews", "quality", "reports"], operator: ["reviews"] };
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = { stars: "Estrelas", single_choice: "Escolha única", multiple_choice: "Múltipla escolha", text: "Texto", yes_no: "Sim/não" };
-export const OCCURRENCE_CATEGORIES = ["Atendimento", "Tempo", "Informação", "Serviço", "Estrutura", "Sistema", "Outro"] as const;
+export const OCCURRENCE_CATEGORIES = ["Atendimento", "Tempo", "Clareza", "Resolutividade", "Estrutura", "Processo", "Outro"] as const;
 export const OCCURRENCE_STATUSES: readonly OccurrenceStatus[] = ["Nova", "Em análise", "Em tratamento", "Resolvida", "Encerrada"];
 export const OCCURRENCE_PRIORITIES: readonly OccurrencePriority[] = ["Baixa", "Média", "Alta", "Crítica"];
+export const OCCURRENCE_ORIGINS: readonly OccurrenceOrigin[] = ["Avaliação de usuário", "Indicador", "Equipe do cartório", "Auditoria interna", "Outro"];
 export const IMPROVEMENT_PLAN_STATUSES: readonly ImprovementPlanStatus[] = ["Planejado", "Em andamento", "Concluído", "Cancelado"];
 export const DASHBOARD_PERIODS = ["Hoje", "7 dias", "30 dias", "90 dias", "12 meses", "Personalizado"] as const;
 export const QUALITY_METHODOLOGY: QualityMethodology = {
