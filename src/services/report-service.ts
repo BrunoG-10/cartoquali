@@ -14,7 +14,8 @@ const titles: Record<ReportKind, string> = {
 
 function dateWindow(filters: ReportFilters) {
   if (filters.period === "Personalizado") return { start: filters.startDate ? new Date(`${filters.startDate}T00:00:00`) : undefined, end: filters.endDate ? new Date(`${filters.endDate}T23:59:59`) : undefined };
-  const days = { Hoje: 1, "7 dias": 7, "30 dias": 30, "90 dias": 90, "Este ano": 365 }[filters.period];
+  if (filters.period === "Este ano") return { start: new Date(NOW.getFullYear(), 0, 1), end: NOW };
+  const days = { Hoje: 1, "7 dias": 7, "30 dias": 30, "90 dias": 90 }[filters.period];
   return { start: new Date(NOW.getTime() - days * DAY), end: NOW };
 }
 
@@ -75,7 +76,7 @@ function generate(kind: ReportKind, source: ReportSource, filters: ReportFilters
   return {
     kind, title: titles[kind], generatedAt: NOW.toLocaleString("pt-BR"), periodLabel: periodLabel(filters), registry: source.registry, filters,
     reviews, previousReviews, indicators, previousIndicators, dimensions,
-    evolution: buildQualityEvolution(source.reviews, filters.pointId),
+    evolution: buildQualityEvolution(filterReviews(source.reviews, { ...filters, period: "Este ano" }, NOW), filters.pointId),
     pointPerformance: groupByPoint(reviews, source.points.filter((point) => !filters.pointId || point.id === filters.pointId).map((point) => point.id)),
     dissatisfaction: dissatisfactionCounts.map(([label, count]) => ({ label, count, percentage: Number((count / negativeTotal * 100).toFixed(1)) })),
     occurrences,

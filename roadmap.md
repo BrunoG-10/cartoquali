@@ -34,8 +34,8 @@
 - [x] Build general settings, categories and quality dimensions
 - [x] Derive quality dimensions from configured questions and answers
 - [x] Validate all administration flows on desktop and mobile
-- [ ] Add typed report contracts and shared report service
-- [ ] Build reports catalog, shared filters and six report views
-- [ ] Add report evidence, methodology links and print presentation
-- [ ] Expand deterministic mock coverage and align Dashboard calculations
-- [ ] Validate report flows, filtering and responsive printing
+- [x] Add typed report contracts and shared report service
+- [x] Build reports catalog, shared filters and six report views
+- [x] Add report evidence, methodology links and print presentation
+- [x] Expand deterministic mock coverage and align Dashboard calculations
+- [x] Validate report flows, filtering and responsive printing
