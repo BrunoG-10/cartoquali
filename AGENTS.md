@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep CartoQuali presentation components dependent on typed service contracts and mock adapters, so a future external API can replace mock data without rebuilding the UI.
+- Keep demo submissions in a shared in-memory session provider; never persist them in browser storage or a database during the MVP.

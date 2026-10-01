@@ -1,8 +1,9 @@
-import type { EvaluationPoint, Review } from "@/types/cartoquali";
+import type { EvaluationPoint, EvaluationSubmission, Review } from "@/types/cartoquali";
 
 export interface CartoQualiService {
   listReviews(): Promise<Review[]>;
   listPoints(): Promise<EvaluationPoint[]>;
+  submitEvaluation(input: EvaluationSubmission): Promise<Review>;
 }
 
 export const reviews: Review[] = [
@@ -14,9 +15,9 @@ export const reviews: Review[] = [
 ];
 
 export const points: EvaluationPoint[] = [
-  { id: "recepcao", name: "Recepção", location: "Entrada principal", code: "CQ-REC-001", status: "Ativo", method: "NFC + QR Code", reviews: 586, lastReview: "Há 12 min" },
-  { id: "balcao-01", name: "Balcão 01", location: "Salão de atendimento", code: "CQ-BAL-001", status: "Ativo", method: "NFC + QR Code", reviews: 421, lastReview: "Há 28 min" },
-  { id: "saida", name: "Saída", location: "Próximo à porta lateral", code: "CQ-SAI-001", status: "Ativo", method: "NFC + QR Code", reviews: 277, lastReview: "Há 1 h" },
+  { id: "recepcao", slug: "recepcao", name: "Recepção", location: "Entrada principal", code: "CQ-REC-001", status: "Ativo", method: "NFC + QR Code", reviews: 586, lastReview: "Há 12 min" },
+  { id: "balcao-01", slug: "balcao-01", name: "Balcão 01", location: "Salão de atendimento", code: "CQ-BAL-001", status: "Ativo", method: "NFC + QR Code", reviews: 421, lastReview: "Há 28 min" },
+  { id: "saida", slug: "saida", name: "Saída", location: "Próximo à porta lateral", code: "CQ-SAI-001", status: "Ativo", method: "NFC + QR Code", reviews: 277, lastReview: "Há 1 h" },
 ];
 
 export const dashboardByPeriod = {
@@ -28,4 +29,24 @@ export const dashboardByPeriod = {
 export const mockCartoQualiService: CartoQualiService = {
   async listReviews() { return reviews; },
   async listPoints() { return points; },
+  async submitEvaluation(input) {
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    return {
+      id: String(1285 + Math.floor(Math.random() * 7000)).padStart(7, "0"),
+      date: "Agora",
+      rating: input.rating,
+      point: input.point,
+      category: input.rating <= 3 ? input.improvementReasons[0] ?? "Experiência" : "Atendimento",
+      comment: input.comment || "Avaliação enviada sem comentário.",
+      status: "Nova",
+      service: input.service,
+      time: input.time,
+      clarity: input.clarity,
+      resolved: input.resolution === "Sim",
+      resolution: input.resolution,
+      improvementReasons: input.improvementReasons,
+      evaluationType: "Ponto de avaliação",
+      contact: input.contact,
+    };
+  },
 };
