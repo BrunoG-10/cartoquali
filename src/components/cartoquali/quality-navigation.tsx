@@ -13,5 +13,5 @@ const items: Array<{to:"/qualidade"|"/ocorrencias"|"/planos-melhoria";label:stri
 
 export function QualityNavigation() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
-  return <nav className="mb-5 overflow-x-auto border-b border-glass-border" aria-label="Áreas de qualidade"><div className="flex min-w-max gap-1">{items.map((item) => <Button key={`${item.to}-${item.label}`} asChild variant="ghost" className={cn("rounded-b-none border-b-2 border-transparent", pathname === item.to && item.to !== "/qualidade" && "border-primary bg-primary/10 text-primary")}><Link to={item.to} search={item.search}>{item.label}</Link></Button>)}</div></nav>;
+  return <nav className="mb-5 overflow-x-auto border-b border-glass-border" aria-label="Áreas de qualidade"><div className="flex min-w-max gap-1">{items.map((item) => <Button key={`${item.to}-${item.label}`} asChild variant="ghost" className={cn("rounded-b-none border-b-2 border-transparent", pathname === item.to && item.to !== "/qualidade" && "border-primary bg-primary/10 text-primary")}>{item.search?<Link to={item.to} search={item.search}>{item.label}</Link>:<Link to={item.to}>{item.label}</Link>}</Button>)}</div></nav>;
 }
