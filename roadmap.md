@@ -27,10 +27,10 @@
 - [x] Build improvement-plan creation, progress, completion and results
 - [x] Connect Quality management summaries, alerts, recurrence and continuous cycle
 - [x] Validate the complete occurrence-to-result flow on desktop and mobile
-- [ ] Expand relational admin mocks, service contracts and session operations
-- [ ] Build registry, users and permission administration
-- [ ] Build survey creation, question editor, conditions and shared preview
-- [ ] Build evaluation point creation and detail analytics
-- [ ] Build general settings, categories and quality dimensions
-- [ ] Derive quality dimensions from configured questions and answers
+- [x] Expand relational admin mocks, service contracts and session operations
+- [x] Build registry, users and permission administration
+- [x] Build survey creation, question editor, conditions and shared preview
+- [x] Build evaluation point creation and detail analytics
+- [x] Build general settings, categories and quality dimensions
+- [x] Derive quality dimensions from configured questions and answers
 - [ ] Validate all administration flows on desktop and mobile
