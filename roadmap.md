@@ -1,7 +1,7 @@
 # CartoQuali v1
-- [ ] Design system and responsive application shell
-- [ ] Dashboard and analytics interactions
-- [ ] Reviews, surveys, evaluation points and detail flows
-- [ ] Quality, reports, registry, users and settings pages
-- [ ] Public mobile evaluation journey
+- [x] Design system and responsive application shell
+- [x] Dashboard and analytics interactions
+- [x] Reviews, surveys, evaluation points and detail flows
+- [x] Quality, reports, registry, users and settings pages
+- [x] Public mobile evaluation journey
 - [ ] Route metadata and responsive end-to-end validation
