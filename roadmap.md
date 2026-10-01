@@ -17,3 +17,7 @@
 - [x] Existing pages connected to the active registry model
 - [x] Separate evaluation welcome screen before the five-step survey
 - [x] Controlled mock submission failure with retry and success states
+- [x] Quality dashboard, global filters and derived indicators
+- [x] Quality dimensions, evolution, distribution and point drill-down
+- [x] Review-to-occurrence session flow and methodology 1.0
+- [x] Responsive desktop/mobile quality validation
