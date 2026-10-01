@@ -1,13 +1,15 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, CalendarDays, CheckCircle2, ChevronRight, Filter, FilterX, Gauge, ListFilter, MessageSquareText, Minus, ShieldCheck, Sparkles, Star, Target, X } from "lucide-react";
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, BarChart3, CheckCircle2, ChevronRight, CircleDot, Filter, FilterX, Gauge, MessageSquareText, Minus, ShieldCheck, Sparkles, Star, Target, X } from "lucide-react";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCartoQualiSession } from "@/components/cartoquali/session-provider";
 import { DASHBOARD_PERIODS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
 import type { DashboardPeriod, QualityEvolutionPoint, QualityFilters, Review } from "@/types/cartoquali";
-import { buildQualityEvolution, calculateAverageScore, calculateIndicators, calculateNegativeRate, calculatePreviousPeriod, calculateQualityDimensions, calculateResolutionRate, calculateSatisfactionRate, calculateVariation, filterReviews, getQualityAttentionPoints, getQualityHighlights, groupByPoint, isPotentialAttention } from "@/utils/cartoquali-analytics";
+import { buildManagementAlerts, buildQualityEvolution, calculateIndicators, calculateManagementSummary, calculateNegativeRate, calculatePreviousPeriod, calculateQualityDimensions, calculateVariation, filterReviews, getQualityAttentionPoints, getQualityHighlights, groupByPoint, isPotentialAttention, rankRecurringProblems } from "@/utils/cartoquali-analytics";
 import { cn } from "@/lib/utils";
 import { GlassPanel, PageHeader, Stars, StatusBadge } from "./primitives";
+import { QualityNavigation } from "./quality-navigation";
 
 const sections = ["Visão Geral", "Indicadores", "Dimensões", "Evolução", "Pontos de Avaliação", "Metodologia"] as const;
 type Section = typeof sections[number];
@@ -15,8 +17,11 @@ type Metric = "average" | "satisfaction" | "resolution" | "negative";
 const metricLabels: Record<Metric, string> = { average: "Nota média", satisfaction: "Satisfação", resolution: "Resolutividade", negative: "Negativas" };
 
 export function QualityDashboard() {
-  const { reviews, points, surveys, occurrences, addOccurrence } = useCartoQualiSession();
-  const [section, setSection] = useState<Section>("Visão Geral");
+  const { reviews, points, surveys, occurrences, improvementPlans } = useCartoQualiSession();
+  const search = useSearch({ strict: false }) as { section?: string };
+  const navigate = useNavigate();
+  const initialSection = sections.includes(search.section as Section) ? search.section as Section : "Visão Geral";
+  const [section, setSection] = useState<Section>(initialSection);
   const [filters, setFilters] = useState<QualityFilters>({ period: "30 dias" });
   const [mobileFilters, setMobileFilters] = useState(false);
   const [metric, setMetric] = useState<Metric>("average");
@@ -37,7 +42,10 @@ export function QualityDashboard() {
   const highlights = getQualityHighlights(dimensions);
   const attention = getQualityAttentionPoints(dimensions);
   const reset = () => { setFilters({ period: "30 dias" }); setReviewStatus("Todos"); setWithComment(false); setWithContact(false); };
-  const createOccurrence = (review: Review) => { addOccurrence({ reviewId: review.id, category: review.dissatisfactionReason ?? review.category, description: `Avaliação ${review.id}: ${review.comment}`, priority: review.rating <= 2 ? "Alta" : "Média", owner: "Renata Martins", status: "Nova", notes: "Criada a partir de um possível ponto de atenção durante esta sessão." }); setSelectedReview(undefined); };
+  const createOccurrence = (review: Review) => { setSelectedReview(undefined); navigate({to:"/ocorrencias",search:{review:review.id}}); };
+  const management = calculateManagementSummary(occurrences, improvementPlans);
+  const alerts = buildManagementAlerts(occurrences, improvementPlans, dimensions);
+  const recurring = rankRecurringProblems(occurrences);
 
   const kpis = [
     { label: "Satisfação", value: `${indicators.satisfaction.toFixed(1)}%`, delta: calculateVariation(indicators.satisfaction, previousIndicators.satisfaction), icon: Sparkles, unit: "p.p." },
@@ -49,13 +57,17 @@ export function QualityDashboard() {
 
   return <div className="animate-enter">
     <PageHeader eyebrow="Gestão da experiência" title="Qualidade" description="Entenda os resultados, acompanhe tendências e identifique oportunidades de melhoria." action={<Button variant="outline" onClick={() => setMobileFilters(true)} className="lg:hidden"><Filter />Filtros</Button>} />
-    <nav className="mb-5 overflow-x-auto border-b border-glass-border" aria-label="Seções de qualidade"><div className="flex min-w-max gap-1">{sections.map((item) => <Button key={item} variant="ghost" onClick={() => setSection(item)} className={cn("rounded-b-none border-b-2 border-transparent", section === item && "border-primary bg-primary/10 text-primary")}>{item}</Button>)}</div></nav>
+    <QualityNavigation/>
+    <nav className="mb-5 overflow-x-auto" aria-label="Análises de qualidade"><div className="flex min-w-max gap-1">{sections.map((item) => <Button key={item} size="sm" variant={section===item?"default":"ghost"} onClick={() => setSection(item)}>{item}</Button>)}</div></nav>
     <div className="hidden lg:block"><FilterBar filters={filters} setFilters={setFilters} points={points} surveys={surveys} reset={reset} /></div>
     {section === "Visão Geral" && <div className="mt-5 space-y-5">
       <KpiGrid items={kpis} />
       <div className="grid gap-5 xl:grid-cols-[1.45fr_1fr]"><EvolutionChart data={evolution} metric={metric} setMetric={setMetric} /><Distribution reviews={filtered} selected={filters.rating} onSelect={(rating) => setFilters((current) => current.rating === rating ? omitFilter(current, "rating") : { ...current, rating })} /></div>
       <div className="grid gap-5 xl:grid-cols-2"><DimensionMap dimensions={dimensions} /><Highlights strong={highlights} attention={attention} /></div>
       <OccurrenceSummary occurrences={occurrences} reviews={reviews} onOpen={setSelectedReview} />
+      <ManagementActions data={management}/>
+      <div className="grid gap-5 xl:grid-cols-2"><ManagementAlerts alerts={alerts}/><RecurringProblems data={recurring}/></div>
+      <ContinuousCycle/>
     </div>}
     {section === "Indicadores" && <div className="mt-5 space-y-5"><KpiGrid items={kpis} /><GlassPanel><h2 className="font-display text-lg font-bold">Acompanhamento da evolução</h2><p className="mt-1 text-sm text-muted-foreground">Comparação entre o período filtrado e o período imediatamente anterior.</p><div className="mt-5 overflow-x-auto"><table className="w-full min-w-[650px] text-left text-sm"><thead className="border-b border-glass-border text-xs text-muted-foreground"><tr>{["Indicador", "Período atual", "Período anterior", "Variação", "Tendência"].map((item) => <th key={item} className="px-3 py-3">{item}</th>)}</tr></thead><tbody>{[
         ["Nota média", indicators.average, previousIndicators.average, ""], ["Satisfação", indicators.satisfaction, previousIndicators.satisfaction, "p.p."], ["Resolutividade", indicators.resolution, previousIndicators.resolution, "p.p."]
