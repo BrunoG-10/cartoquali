@@ -33,7 +33,7 @@ export type CreateImprovementPlanInput = Omit<ImprovementPlan, "id" | "registryI
 export type UpdateImprovementPlanInput = Partial<Omit<ImprovementPlan, "id" | "registryId" | "createdAt">>;
 export type AuditEvent = { id: string; registryId: TenantId; userId: string; action: string; entityType: string; entityId: string; createdAt: string };
 export type EvaluationSubmission = { rating: number; pointId: string; point: string; service: number; time: number; clarity: number; resolution: Resolution; comment: string; improvementReasons: string[]; contact: ContactRequest };
-export type DashboardPeriod = "Hoje" | "7 dias" | "30 dias" | "90 dias" | "Este ano" | "Personalizado";
+export type DashboardPeriod = "Hoje" | "7 dias" | "Este mês" | "Mês anterior" | "30 dias" | "90 dias" | "Este ano" | "Personalizado";
 export type ReviewFilters = { period: DashboardPeriod; pointId?: string; rating?: number; category?: string; surveyId?: string; status?: ReviewStatus };
 export type Indicators = { average: number; satisfaction: number; resolution: number; time: number; total: number; negative: number; distribution: Record<1 | 2 | 3 | 4 | 5, number> };
 export type QualityFilters = ReviewFilters & { startDate?: string; endDate?: string };
@@ -43,10 +43,13 @@ export type PlatformSettings = { registryId: TenantId; platformName: string; dis
 export type DimensionIndicator = QualityDimension & { index: number; responses: number; variation: number };
 export type QualityMethodology = { version: string; dimensions: QualityDimension[]; indicators: Array<{ key: string; label: string; definition: string }>; formulas: Record<string, string>; questionMappings: Partial<Record<QualityDimensionKey, string>> };
 export type QualityEvolutionPoint = { label: string; average: number; satisfaction: number; resolution: number; negative: number; total: number };
-export type ReportKind = "qualidade" | "satisfacao" | "avaliacoes" | "ocorrencias" | "planos-melhoria" | "executivo";
+export type ReportKind = "qualidade" | "indicadores" | "satisfacao" | "avaliacoes" | "ocorrencias" | "planos-melhoria" | "executivo";
 export type ReportFormat = "pdf" | "csv" | "excel";
-export type ReportFilters = QualityFilters & { dimensionId?: string };
+export type ReportFilters = QualityFilters & { dimensionId?: string; withComment?: boolean; withContact?: boolean };
 export type ReportEvidence = { label: string; value: number };
+export type ReportHistoryItem = { id: string; registryId: TenantId; kind: ReportKind; title: string; periodLabel: string; createdAt: string; createdBy: string; filters: ReportFilters };
+export type ReportHighlight = { label: string; value: string };
+export type ImprovementEvidence = { id: string; indicator: string; before: number; action: string; after: number; completedAt: string; owner: string };
 export type ReportSource = { registry: Registry; reviews: Review[]; answers: EvaluationAnswer[]; questions: SurveyQuestion[]; dimensions: QualityDimension[]; points: EvaluationPoint[]; surveys: Survey[]; occurrences: QualityOccurrence[]; improvementPlans: ImprovementPlan[] };
 export type ReportData = {
   kind: ReportKind;
@@ -61,7 +64,7 @@ export type ReportData = {
   previousIndicators: Indicators;
   dimensions: DimensionIndicator[];
   evolution: QualityEvolutionPoint[];
-  pointPerformance: Array<{ pointId: string; total: number; average: number; satisfaction: number; negative: number }>;
+  pointPerformance: Array<{ pointId: string; total: number; average: number; satisfaction: number; resolution: number; negative: number }>;
   dissatisfaction: Array<{ label: string; count: number; percentage: number }>;
   occurrences: QualityOccurrence[];
   occurrenceByStatus: Array<{ label: string; count: number }>;
@@ -77,4 +80,7 @@ export type ReportData = {
   resultPlans: ImprovementPlan[];
   management: { openOccurrences: number; criticalOccurrences: number; activePlans: number; overduePlans: number; completedPlans: number };
   evidence: ReportEvidence[];
+  highlights: ReportHighlight[];
+  improvementEvidence: ImprovementEvidence[];
+  executiveSummary: string;
 };

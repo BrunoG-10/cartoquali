@@ -42,3 +42,7 @@
 - [x] Complete registry address, evaluation settings and point descriptions
 - [x] Duplicate surveys with independent question copies
 - [x] Share the configured questionnaire between public evaluation and administrative preview
+- [ ] Add the report generator, periods and re-openable report history
+- [ ] Complete quality, indicators and executive report insights
+- [ ] Add specialized report filters and improvement evidence
+- [ ] Validate report consistency, printing and responsive layouts
