@@ -5,6 +5,7 @@ const DAY = 86_400_000;
 export const CARTOQUALI_NOW = new Date("2026-10-01T23:59:59-03:00");
 const periodDays: Partial<Record<DashboardPeriod, number>> = { Hoje: 1, "7 dias": 7, "30 dias": 30, "90 dias": 90 };
 const round = (value: number, digits = 1) => Number(value.toFixed(digits));
+const formatDate = (value: Date, options: Intl.DateTimeFormatOptions) => value.toLocaleDateString("pt-BR", { ...options, timeZone: "America/Fortaleza" });
 const reviewDate = (review: Review, now = CARTOQUALI_NOW) => review.createdAt === "Agora" ? now : new Date(review.createdAt);
 
 export function filterReviews(reviews: Review[], filters: QualityFilters, now = CARTOQUALI_NOW) {
@@ -52,14 +53,14 @@ export function buildQualityEvolution(reviews: Review[], filters: QualityFilters
       const end = new Date(now.getTime() - (bucketCount - index - 1) * bucketSize * DAY);
       const start = new Date(end.getTime() - bucketSize * DAY);
       const items = scoped.filter((review) => { const date=reviewDate(review,now); return date > start && date <= end; });
-      const label = shortDays <= 7 ? end.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : `${start.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}–${end.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`;
+      const label = shortDays <= 7 ? formatDate(end, { day: "2-digit", month: "2-digit" }) : `${formatDate(start,{day:"2-digit",month:"2-digit"})}–${formatDate(end,{day:"2-digit",month:"2-digit"})}`;
       return { label, average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items), total: items.length };
     });
   }
   return Array.from({ length: 6 }, (_, index) => {
     const date = new Date(now.getFullYear(), now.getMonth() - 5 + index, 1);
     const items = scoped.filter((review) => { const value=reviewDate(review,now); return value.getFullYear()===date.getFullYear()&&value.getMonth()===date.getMonth(); });
-    return { label: date.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""), average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items), total: items.length };
+    return { label: formatDate(date,{month:"short"}).replace(".",""), average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items), total: items.length };
   });
 }
 export function groupByPoint(reviews: Review[], pointIds: string[]) { return pointIds.map((pointId) => { const items = reviews.filter((item) => item.pointId === pointId); return { pointId, total: items.length, average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items) }; }); }

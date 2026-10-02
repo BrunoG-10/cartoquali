@@ -52,3 +52,7 @@
 - [x] Harden administrative validation and destructive actions
 - [x] Standardize interface states and session report history
 - [x] Validate the complete MVP flow, accessibility and responsive printing
+- [x] Centralize typed service, provider, permission, error and audit contracts
+- [x] Remove direct mock imports from presentation and session layers
+- [x] Document the future external API and backend boundary
+- [ ] Validate decoupled flows across the required desktop and mobile views

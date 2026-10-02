@@ -72,7 +72,7 @@ if (import.meta.env.DEV) {
 const forTenant = <T extends { registryId: string }>(items: T[], registryId: string) => items.filter((item) => item.registryId === registryId);
 let shouldSimulateSubmissionFailure = true;
 export const mockCartoQualiService: CartoQualiService = {
- readonly kind: "mock",
+ kind: "mock",
  async getRegistries() { return [registry]; },
  async getRegistry(id) { return registry.id === id ? registry : undefined; }, async updateRegistry(id,input) { return registry.id===id?{...registry,...input}:undefined; },
  async getCurrentUser(id) { return users.find((item)=>item.registryId===id&&item.status==="Ativo"); },

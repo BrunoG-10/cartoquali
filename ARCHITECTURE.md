@@ -6,9 +6,16 @@ O MVP é uma aplicação frontend em React e TanStack Start. Não usa banco, aut
 
 ## Camadas
 
+```text
+UI → Rotas → Componentes → Serviços → Data Provider → Mock atual
+                                                   ↘ API futura → Backend → Banco
+```
+
 - `src/types/cartoquali.ts`: contratos do domínio.
 - `src/data/mock-service.ts`: dados relacionais e adaptador mock.
-- `src/services`: contratos de acesso e composição dos relatórios.
+- `src/services/cartoquali-service.ts`: fronteira tipada de leituras e mutações.
+- `src/services/data-provider.ts`: seleciona explicitamente o provedor `mock`; `api` é apenas um ponto de extensão.
+- `src/services/report-service.ts`: compõe modelos de relatório a partir do domínio da sessão.
 - `src/components/cartoquali/session-provider.tsx`: estado único da sessão e operações usadas pela interface.
 - `src/utils/cartoquali-analytics.ts`: filtros e cálculos puros compartilhados.
 - `src/routes`: rotas públicas e administrativas.
@@ -22,7 +29,7 @@ Cartório → Ponto → Pesquisa → Perguntas
                          ↘ Avaliação → Respostas → Ocorrência → Plano
 ```
 
-O contexto expõe `currentRegistry`, `currentUser`, permissões e o provedor `mock`. Listagens e mutações são limitadas ao cartório atual. A rota pública valida os slugs do cartório e do ponto.
+O contexto expõe `currentRegistry`, `currentUser`, permissões, `hasPermission` e o provedor ativo. Listagens e mutações são limitadas ao cartório atual. A rota pública valida os slugs do cartório e do ponto.
 
 ## Indicadores e filtros
 
@@ -30,4 +37,4 @@ Dashboard, Qualidade e Relatórios usam as mesmas funções puras para período,
 
 ## Migração futura
 
-`CartoQualiService` é a fronteira para substituir o mock por uma API. Um adaptador futuro deverá implementar esse contrato, manter o escopo obrigatório por `registryId` e devolver os mesmos tipos. A interface não deve acessar diretamente tabelas, Supabase ou detalhes de transporte.
+`CartoQualiService` é a fronteira para substituir o mock por uma API. Um adaptador futuro deverá implementar esse contrato, manter o escopo obrigatório por `registryId` e devolver os mesmos tipos. A interface não deve acessar diretamente banco ou detalhes de transporte. O snapshot inicial existe apenas para iniciar a demonstração em memória; mudanças continuam centralizadas no provedor da sessão e são descartadas ao recarregar.
