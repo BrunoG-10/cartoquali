@@ -178,7 +178,9 @@
   aside, .print-hidden, body > div > div > div > div > div.sticky { display: none !important; }
   main { padding: 0 !important; }
   .report-page { width: 100%; }
-  .report-page section { break-inside: avoid; box-shadow: none; backdrop-filter: none; background: white; border-color: #d4d4d8; }
+  .report-page section { break-inside: avoid; box-shadow: none; backdrop-filter: none; background: white; border-color: currentColor; }
+  .report-page h1, .report-page h2, .report-page h3 { break-after: avoid; }
+  .report-page table, .report-page blockquote { break-inside: avoid; }
   .report-page table { font-size: 9pt; }
   .report-page .report-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .report-page .report-identification { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }

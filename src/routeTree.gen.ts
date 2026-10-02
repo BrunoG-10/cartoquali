@@ -21,6 +21,7 @@ import { Route as PontosRouteImport } from './routes/pontos'
 import { Route as QualidadeRouteImport } from './routes/qualidade'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
+import { Route as VisaoExecutivaRouteImport } from './routes/visao-executiva'
 import { Route as RelatoriosIndexRouteImport } from './routes/relatorios.index'
 import { Route as RelatoriosTipoRouteImport } from './routes/relatorios.$tipo'
 import { Route as AvaliarCartorioPontoRouteImport } from './routes/avaliar.$cartorio.$ponto'
@@ -85,6 +86,11 @@ const UsuariosRoute = UsuariosRouteImport.update({
   path: '/usuarios',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VisaoExecutivaRoute = VisaoExecutivaRouteImport.update({
+  id: '/visao-executiva',
+  path: '/visao-executiva',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RelatoriosIndexRoute = RelatoriosIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRouteWithChildren
   '/usuarios': typeof UsuariosRoute
+  '/visao-executiva': typeof VisaoExecutivaRoute
   '/relatorios/$tipo': typeof RelatoriosTipoRoute
   '/relatorios/': typeof RelatoriosIndexRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/pontos': typeof PontosRoute
   '/qualidade': typeof QualidadeRoute
   '/usuarios': typeof UsuariosRoute
+  '/visao-executiva': typeof VisaoExecutivaRoute
   '/relatorios/$tipo': typeof RelatoriosTipoRoute
   '/relatorios': typeof RelatoriosIndexRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRouteWithChildren
   '/usuarios': typeof UsuariosRoute
+  '/visao-executiva': typeof VisaoExecutivaRoute
   '/relatorios/$tipo': typeof RelatoriosTipoRoute
   '/relatorios/': typeof RelatoriosIndexRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
+    | '/visao-executiva'
     | '/relatorios/$tipo'
     | '/relatorios/'
     | '/avaliar/$cartorio/$ponto'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/pontos'
     | '/qualidade'
     | '/usuarios'
+    | '/visao-executiva'
     | '/relatorios/$tipo'
     | '/relatorios'
     | '/avaliar/$cartorio/$ponto'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
+    | '/visao-executiva'
     | '/relatorios/$tipo'
     | '/relatorios/'
     | '/avaliar/$cartorio/$ponto'
@@ -218,6 +230,7 @@ export interface RootRouteChildren {
   QualidadeRoute: typeof QualidadeRoute
   RelatoriosRoute: typeof RelatoriosRouteWithChildren
   UsuariosRoute: typeof UsuariosRoute
+  VisaoExecutivaRoute: typeof VisaoExecutivaRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -306,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsuariosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/visao-executiva': {
+      id: '/visao-executiva'
+      path: '/visao-executiva'
+      fullPath: '/visao-executiva'
+      preLoaderRoute: typeof VisaoExecutivaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/relatorios/': {
       id: '/relatorios/'
       path: '/'
@@ -368,6 +388,7 @@ const rootRouteChildren: RootRouteChildren = {
   QualidadeRoute: QualidadeRoute,
   RelatoriosRoute: RelatoriosRouteWithChildren,
   UsuariosRoute: UsuariosRoute,
+  VisaoExecutivaRoute: VisaoExecutivaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
