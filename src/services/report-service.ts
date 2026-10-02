@@ -1,7 +1,7 @@
 import type { ImprovementPlan, QualityOccurrence, ReportData, ReportFilters, ReportHistoryItem, ReportKind, ReportSource } from "@/types/cartoquali";
-import { buildQualityEvolution, calculateConfiguredDimensions, calculateIndicators, calculateManagementSummary, calculatePreviousPeriod, filterReviews, groupByPoint, isPlanOverdue, rankDissatisfaction, rankRecurringProblems } from "@/utils/cartoquali-analytics";
+import { CARTOQUALI_NOW, buildQualityEvolution, calculateConfiguredDimensions, calculateIndicators, calculateManagementSummary, calculatePreviousPeriod, filterReviews, groupByPoint, isPlanOverdue, rankDissatisfaction, rankRecurringProblems } from "@/utils/cartoquali-analytics";
 
-const NOW = new Date("2026-10-01T18:36:00-03:00");
+const NOW = CARTOQUALI_NOW;
 const DAY = 86_400_000;
 const titles: Record<ReportKind, string> = {
   qualidade: "Relatório de Qualidade",
