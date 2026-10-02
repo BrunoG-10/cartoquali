@@ -12,9 +12,11 @@ export interface CartoQualiService {
   getSurveyById(id: string): Promise<Survey | undefined>;
   createSurvey(input: Omit<Survey, "id" | "registryId" | "createdAt" | "updatedAt" | "versionDate">): Promise<Survey>;
   updateSurvey(id: string, input: Partial<Survey>): Promise<Survey | undefined>;
+  duplicateSurvey(id: string): Promise<Survey | undefined>;
   getQuestions(surveyId: string): Promise<SurveyQuestion[]>;
   createQuestion(input: Omit<SurveyQuestion, "id" | "registryId">): Promise<SurveyQuestion>;
   updateQuestion(id: string, input: Partial<SurveyQuestion>): Promise<SurveyQuestion | undefined>;
+  duplicateQuestion(id: string): Promise<SurveyQuestion | undefined>;
   deleteQuestion(id: string): Promise<void>;
   reorderQuestions(surveyId: string, orderedIds: string[]): Promise<SurveyQuestion[]>;
   getEvaluationPointById(id: string): Promise<EvaluationPoint | undefined>;
