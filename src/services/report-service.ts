@@ -50,7 +50,8 @@ function periodLabel(filters: ReportFilters) {
 }
 
 function generate(kind: ReportKind, source: ReportSource, filters: ReportFilters): ReportData {
-  const commonFilters = kind === "avaliacoes" ? filters : { ...filters, rating: undefined, withComment: undefined, withContact: undefined };
+  const { rating: _rating, withComment: _withComment, withContact: _withContact, ...qualityFilters } = filters;
+  const commonFilters = kind === "avaliacoes" ? filters : qualityFilters;
   const baseReviews = filterReviews(source.reviews, commonFilters, NOW);
   const reviews = kind === "avaliacoes" ? baseReviews.filter((review) => (!filters.withComment || Boolean(review.comment.trim())) && (!filters.withContact || Boolean(review.contact?.requested))) : baseReviews;
   const previousReviews = calculatePreviousPeriod(source.reviews, filters, NOW);
