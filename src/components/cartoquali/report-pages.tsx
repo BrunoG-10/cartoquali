@@ -34,7 +34,8 @@ export function ReportsCatalog() {
   const [kind, setKind] = useState<ReportKind>("qualidade");
   const [filters, setFilters] = useState<ReportFilters>({ period: "Este mês" });
   const [preview, setPreview] = useState<ReportData>();
-  const generate = () => { const error=filters.period==="Personalizado"?validatePeriod(filters.startDate,filters.endDate):undefined;if(error){alert(error);return;}const data=reportService.generateReport(kind,source,filters);setPreview(data);session.addGeneratedReport({id:`report-${Date.now()}`,registryId:session.registry.id,kind,title:data.title,periodLabel:data.periodLabel,createdAt:data.generatedAt,createdBy:"Gestão do cartório",filters}); };
+  const [validationError,setValidationError]=useState<string>();
+  const generate = () => { const error=filters.period==="Personalizado"?validatePeriod(filters.startDate,filters.endDate):undefined;if(error){setValidationError(error);return;}setValidationError(undefined);const data=reportService.generateReport(kind,source,filters);setPreview(data);session.addGeneratedReport({id:`report-${Date.now()}`,registryId:session.registry.id,kind,title:data.title,periodLabel:data.periodLabel,createdAt:data.generatedAt,createdBy:"Gestão do cartório",filters}); };
   return <div className="animate-enter space-y-6">
     <PageHeader eyebrow="Análise gerencial" title="Relatórios" description="Transforme avaliações e ações de melhoria em uma leitura objetiva da gestão."/>
     <GlassPanel className="border-primary/25">
@@ -46,6 +47,7 @@ export function ReportsCatalog() {
         <Select label="Pesquisa" value={filters.surveyId??""} onChange={(value)=>setFilters(value?{...filters,surveyId:value}:omit(filters,"surveyId"))} options={["",...session.surveys.map((item)=>item.id)]} labels={{"":"Todas",...Object.fromEntries(session.surveys.map((item)=>[item.id,item.name]))}}/>
       </div>
       {filters.period==="Personalizado"&&<div className="mt-3 grid gap-3 sm:grid-cols-2"><Field label="Data inicial"><Input type="date" value={filters.startDate??""} onChange={(event)=>setFilters({...filters,startDate:event.target.value})}/></Field><Field label="Data final"><Input type="date" value={filters.endDate??""} onChange={(event)=>setFilters({...filters,endDate:event.target.value})}/></Field></div>}
+      {validationError&&<p className="mt-3 rounded-md bg-danger-soft p-3 text-sm text-destructive" role="alert">{validationError}</p>}
       <Button className="mt-5" onClick={generate}><FileBarChart/>Gerar relatório</Button>
     </GlassPanel>
     {preview&&<GlassPanel className="border-primary/30"><div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-xs font-semibold uppercase text-primary">Relatório gerado</p><h2 className="mt-1 font-display text-2xl font-bold">{preview.title}</h2><p className="text-sm text-muted-foreground">{preview.periodLabel} · {preview.indicators.total} avaliações · nota {preview.indicators.average.toFixed(1)}/5</p></div><Button onClick={()=>navigate({to:"/relatorios/$tipo",params:{tipo:preview.kind}})}>Abrir visualização<ChevronRight/></Button></div></GlassPanel>}

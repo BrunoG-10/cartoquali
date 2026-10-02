@@ -30,7 +30,7 @@ export function calculatePreviousPeriod(reviews: Review[], filters: QualityFilte
   const end=filters.period==="Personalizado"&&filters.endDate?new Date(`${filters.endDate}T23:59:59.999`):filters.period==="Mês anterior"?new Date(now.getFullYear(),now.getMonth(),1):now;
   const calendarMonth=["Este mês","Mês anterior"].includes(filters.period);
   const previousStart=calendarMonth?new Date(start.getFullYear(),start.getMonth()-1,1):new Date(start.getTime()-Math.max(DAY,end.getTime()-start.getTime()));
-  return reviews.filter((review)=>{const date=reviewDate(review,now);return date>=previousStart&&date<start&&(!filters.pointId||review.pointId===filters.pointId)&&(!filters.rating||review.rating===filters.rating)&&(!filters.surveyId||review.surveyId===filters.surveyId);});
+  return reviews.filter((review)=>{const date=reviewDate(review,now);return date>=previousStart&&date<start&&(!filters.pointId||review.pointId===filters.pointId)&&(!filters.rating||review.rating===filters.rating)&&(!filters.category||review.category===filters.category)&&(!filters.status||review.status===filters.status)&&(!filters.surveyId||review.surveyId===filters.surveyId);});
 }
 const dimensionValues = (reviews: Review[], key: QualityDimensionKey) => key === "resolution" ? reviews.filter((item) => item.resolution).map((item) => item.resolution === "Sim" ? 5 : item.resolution === "Parcialmente" ? 3 : 1) : reviews.map((item) => key === "structure" ? item.structure ?? item.rating : key === "general" ? item.rating : item[key]);
 export function calculateQualityDimensions(reviews: Review[], previousReviews: Review[] = []): DimensionIndicator[] { return QUALITY_METHODOLOGY.dimensions.map((dimension) => { const values = dimensionValues(reviews, dimension.key); return { ...dimension, index: calculateDimensionIndex(values), responses: values.length, variation: calculateVariation(calculateDimensionIndex(values), calculateDimensionIndex(dimensionValues(previousReviews, dimension.key))) }; }); }
@@ -42,7 +42,7 @@ export function calculateConfiguredDimensions(reviews: Review[], answers: Evalua
 export function getQualityHighlights(dimensions: DimensionIndicator[], count = 2) { return [...dimensions].sort((a, b) => b.index - a.index).slice(0, count); }
 export function getQualityAttentionPoints(dimensions: DimensionIndicator[], count = 2) { return [...dimensions].sort((a, b) => a.index - b.index).slice(0, count); }
 export function buildQualityEvolution(reviews: Review[], filters: QualityFilters = { period: "Este ano" }, now = CARTOQUALI_NOW): QualityEvolutionPoint[] {
-  const scoped = reviews.filter((review) => (!filters.pointId || review.pointId === filters.pointId) && (!filters.surveyId || review.surveyId === filters.surveyId) && (!filters.category || review.category === filters.category) && (!filters.status || review.status === filters.status) && (!filters.rating || review.rating === filters.rating));
+  const scoped = filterReviews(reviews, filters, now);
   const period = filters.period;
   const shortDays = period === "Hoje" ? 1 : period === "7 dias" ? 7 : period === "30 dias" || period === "Este mês" || period === "Mês anterior" ? 30 : undefined;
   if (shortDays) {
