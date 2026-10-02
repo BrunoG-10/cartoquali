@@ -55,4 +55,4 @@
 - [x] Centralize typed service, provider, permission, error and audit contracts
 - [x] Remove direct mock imports from presentation and session layers
 - [x] Document the future external API and backend boundary
-- [ ] Validate decoupled flows across the required desktop and mobile views
+- [x] Validate decoupled flows across the required desktop and mobile views
