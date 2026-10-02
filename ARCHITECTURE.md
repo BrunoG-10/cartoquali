@@ -2,13 +2,13 @@
 
 ## Estado atual
 
-O MVP é uma aplicação frontend em React e TanStack Start. Não usa banco, autenticação real, API externa ou persistência no navegador. Todo dado alterado existe apenas durante a sessão atual.
+O MVP é uma aplicação frontend em React e TanStack Start. A estrutura do PostgreSQL externo está definida separadamente, mas o frontend ainda não usa banco, autenticação real, API externa ou persistência no navegador. Todo dado alterado na interface existe apenas durante a sessão atual.
 
 ## Camadas
 
 ```text
 UI → Rotas → Componentes → Serviços → Data Provider → Mock atual
-                                                   ↘ API futura → Backend → Banco
+                                                   ↘ API futura → Backend → PostgreSQL externo
 ```
 
 - `src/types/cartoquali.ts`: contratos do domínio.
@@ -38,3 +38,8 @@ Dashboard, Qualidade e Relatórios usam as mesmas funções puras para período,
 ## Migração futura
 
 `CartoQualiService` é a fronteira para substituir o mock por uma API. Um adaptador futuro deverá implementar esse contrato, manter o escopo obrigatório por `registryId` e devolver os mesmos tipos. A interface não deve acessar diretamente banco ou detalhes de transporte. O snapshot inicial existe apenas para iniciar a demonstração em memória; mudanças continuam centralizadas no provedor da sessão e são descartadas ao recarregar.
+
+
+## Banco externo — Etapa 1
+
+A migration, o seed DEMO e os testes SQL ficam em `database/`. O modelo usa `cartorio_id` como equivalente persistido de `registryId`. Até a implementação de autenticação e RLS, as tabelas não concedem acesso a `anon` ou `authenticated`; esta etapa não conecta o frontend ao banco.

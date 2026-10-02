@@ -18,3 +18,4 @@
 - Build all report view models through the typed report service from session-scoped domain data and shared analytics, so future exports or external APIs never fork indicator logic.
 - Validate relational mock fixtures with a development-only health check, so broken tenant links fail before they reach presentation flows.
 - Resolve all runtime data through the typed data-provider boundary; only the provider adapter may import mock fixtures.
+- Keep external PostgreSQL migrations, demo seeds, and database validation scripts under `database/`; the frontend stays on mocks until the API stage.
