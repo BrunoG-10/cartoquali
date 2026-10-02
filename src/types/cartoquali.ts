@@ -13,6 +13,9 @@ export type SurveyStatus = "Ativa" | "Rascunho" | "Inativa";
 export type UserStatus = "Ativo" | "Inativo";
 export type ConditionalOperator = "lte" | "equals";
 export type DataProviderKind = "mock" | "api";
+export type ServiceStatus = "loading" | "success" | "validation_error" | "unauthorized" | "forbidden" | "not_found" | "conflict" | "server_error" | "network_error";
+export type ServiceError = { status: Exclude<ServiceStatus, "loading" | "success">; message: string; fieldErrors?: Record<string, string> };
+export type ServiceResult<T> = { status: "success"; data: T } | { status: "loading" } | ({ status: ServiceError["status"] } & Omit<ServiceError, "status">);
 
 export type Registry = { id: TenantId; slug: string; officialName: string; tradeName: string; cnpj: string; serviceType: string; phone: string; email: string; street: string; number: string; complement: string; district: string; city: string; state: string; zipCode: string; manager: string; status: "Ativo" | "Inativo"; plan: string; createdAt: string; renewalDate: string };
 export type RegistryUser = { id: string; registryId: TenantId; name: string; email: string; phone: string; role: UserRole; status: UserStatus; lastAccess: string; createdAt: string; recentActivity: string[] };
@@ -32,12 +35,15 @@ export type CreateOccurrenceInput = Omit<QualityOccurrence, "id" | "registryId" 
 export type UpdateOccurrenceInput = Partial<Omit<QualityOccurrence, "id" | "registryId" | "openedAt" | "history">>;
 export type CreateImprovementPlanInput = Omit<ImprovementPlan, "id" | "registryId" | "createdAt" | "completedAt" | "actualResult" | "resultObservation" | "indicatorLabel" | "indicatorBefore" | "indicatorAfter"> & Partial<Pick<ImprovementPlan, "actualResult" | "resultObservation" | "indicatorLabel" | "indicatorBefore" | "indicatorAfter">>;
 export type UpdateImprovementPlanInput = Partial<Omit<ImprovementPlan, "id" | "registryId" | "createdAt">>;
-export type AuditEvent = { id: string; registryId: TenantId; userId: string; action: string; entityType: string; entityId: string; createdAt: string; metadata?: Record<string, string | number | boolean | null> };
+export type AuditLog = { id: string; registryId: TenantId; userId: string; action: string; entity: string; entityId: string; createdAt: string; metadata?: Record<string, string | number | boolean | null> };
+export type AuditEvent = AuditLog;
 export type SessionContext = { currentUser: RegistryUser; currentRegistry: Registry; permissions: readonly string[]; dataProvider: DataProviderKind };
 export type EvaluationSubmission = { rating: number; pointId: string; point: string; service: number; time: number; clarity: number; resolution: Resolution; comment: string; improvementReasons: string[]; contact: ContactRequest };
 export type DashboardPeriod = "Hoje" | "7 dias" | "Este mês" | "Mês anterior" | "30 dias" | "90 dias" | "Este ano" | "Personalizado";
 export type EvaluationFilters = { period: DashboardPeriod; pointId?: string; rating?: number; category?: string; surveyId?: string; status?: ReviewStatus; startDate?: string; endDate?: string };
 export type ReviewFilters = EvaluationFilters;
+export type OccurrenceFilters = { period: DashboardPeriod; pointId?: string; category?: string; priority?: OccurrencePriority; status?: OccurrenceStatus; startDate?: string; endDate?: string };
+export type ImprovementPlanFilters = { period: DashboardPeriod; pointId?: string; dimensionId?: string; priority?: OccurrencePriority; status?: EffectiveImprovementPlanStatus; startDate?: string; endDate?: string };
 export type Indicators = { average: number; satisfaction: number; resolution: number; time: number; total: number; negativeCount: number; negativeRate: number; distribution: Record<1 | 2 | 3 | 4 | 5, number> };
 export type QualityFilters = EvaluationFilters;
 export type QualityDimension = { id: string; registryId: TenantId; key: QualityDimensionKey; label: string; description: string; status: "Ativa" | "Inativa" };
@@ -86,4 +92,21 @@ export type ReportData = {
   highlights: ReportHighlight[];
   improvementEvidence: ImprovementEvidence[];
   executiveSummary: string;
+};
+
+export type CartoQualiSnapshot = {
+  registry: Registry;
+  users: RegistryUser[];
+  surveys: Survey[];
+  questions: SurveyQuestion[];
+  answers: EvaluationAnswer[];
+  dimensions: QualityDimension[];
+  categories: QualityCategory[];
+  settings: PlatformSettings;
+  reviews: Review[];
+  points: EvaluationPoint[];
+  occurrences: QualityOccurrence[];
+  improvementPlans: ImprovementPlan[];
+  reports: ReportHistoryItem[];
+  auditLogs: AuditLog[];
 };

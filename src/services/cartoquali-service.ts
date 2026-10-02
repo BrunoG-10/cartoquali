@@ -1,6 +1,9 @@
-import type { CreateImprovementPlanInput, CreateOccurrenceInput, EvaluationPoint, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
+import type { AuditLog, CreateImprovementPlanInput, CreateOccurrenceInput, DataProviderKind, EvaluationAnswer, EvaluationPoint, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, ReportHistoryItem, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
 export interface CartoQualiService {
+  readonly kind: DataProviderKind;
+  getRegistries(): Promise<Registry[]>;
   getRegistry(id: string): Promise<Registry | undefined>;
+  getCurrentUser(registryId: string): Promise<RegistryUser | undefined>;
   updateRegistry(id: string, input: Partial<Registry>): Promise<Registry | undefined>;
   getUsers(registryId: string): Promise<RegistryUser[]>;
   getUserById(registryId: string, id: string): Promise<RegistryUser | undefined>;
@@ -13,12 +16,13 @@ export interface CartoQualiService {
   createSurvey(registryId: string, input: Omit<Survey, "id" | "registryId" | "createdAt" | "updatedAt" | "versionDate">): Promise<Survey>;
   updateSurvey(registryId: string, id: string, input: Partial<Survey>): Promise<Survey | undefined>;
   duplicateSurvey(registryId: string, id: string): Promise<Survey | undefined>;
-  getQuestions(surveyId: string): Promise<SurveyQuestion[]>;
-  createQuestion(input: Omit<SurveyQuestion, "id" | "registryId">): Promise<SurveyQuestion>;
-  updateQuestion(id: string, input: Partial<SurveyQuestion>): Promise<SurveyQuestion | undefined>;
-  duplicateQuestion(id: string): Promise<SurveyQuestion | undefined>;
-  deleteQuestion(id: string): Promise<void>;
-  reorderQuestions(surveyId: string, orderedIds: string[]): Promise<SurveyQuestion[]>;
+  getQuestions(registryId: string, surveyId: string): Promise<SurveyQuestion[]>;
+  createQuestion(registryId: string, input: Omit<SurveyQuestion, "id" | "registryId">): Promise<SurveyQuestion>;
+  updateQuestion(registryId: string, id: string, input: Partial<SurveyQuestion>): Promise<SurveyQuestion | undefined>;
+  duplicateQuestion(registryId: string, id: string): Promise<SurveyQuestion | undefined>;
+  deleteQuestion(registryId: string, id: string): Promise<void>;
+  reorderQuestions(registryId: string, surveyId: string, orderedIds: string[]): Promise<SurveyQuestion[]>;
+  getAnswers(registryId: string): Promise<EvaluationAnswer[]>;
   getEvaluationPointById(registryId: string, id: string): Promise<EvaluationPoint | undefined>;
   createEvaluationPoint(registryId: string, input: Omit<EvaluationPoint, "id" | "registryId" | "createdAt" | "reviews" | "lastReview" | "publicUrl" | "slug" | "method">): Promise<EvaluationPoint>;
   updateEvaluationPoint(registryId: string, id: string, input: Partial<EvaluationPoint>): Promise<EvaluationPoint | undefined>;
@@ -29,6 +33,7 @@ export interface CartoQualiService {
   getReviews(registryId: string): Promise<Review[]>;
   getReviewById(registryId: string, id: string): Promise<Review | undefined>;
   createReview(registryId: string, input: EvaluationSubmission): Promise<Review>;
+  updateReview(registryId: string, id: string, input: Partial<Review>): Promise<Review | undefined>;
   getIndicators(registryId: string): Promise<Indicators>;
   getOccurrences(registryId: string): Promise<QualityOccurrence[]>;
   getOccurrenceById(registryId: string, id: string): Promise<QualityOccurrence | undefined>;
@@ -40,4 +45,6 @@ export interface CartoQualiService {
   createImprovementPlan(registryId: string, input: CreateImprovementPlanInput): Promise<ImprovementPlan>;
   updateImprovementPlan(registryId: string, id: string, input: UpdateImprovementPlanInput): Promise<ImprovementPlan | undefined>;
   updateImprovementPlanStatus(registryId: string, id: string, status: ImprovementPlanStatus): Promise<ImprovementPlan | undefined>;
+  getReports(registryId: string): Promise<ReportHistoryItem[]>;
+  getAuditLogs(registryId: string): Promise<AuditLog[]>;
 }

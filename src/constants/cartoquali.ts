@@ -1,8 +1,10 @@
 import type { ImprovementPlanStatus, OccurrenceOrigin, OccurrencePriority, OccurrenceStatus, QualityMethodology, QuestionType, UserRole } from "@/types/cartoquali";
 export const ACTIVE_REGISTRY_ID = "registry-cartorio-modelo";
+export const DATA_PROVIDER = "mock" as const;
 export const USER_ROLE_LABELS: Record<UserRole, string> = { platform_admin: "Administrador da plataforma", registry_admin: "Administrador do cartório", manager: "Gestor", operator: "Operador" };
 export const PERMISSION_MODULES = ["Dashboard", "Avaliações", "Pesquisas", "Pontos", "Qualidade", "Ocorrências", "Planos de melhoria", "Relatórios", "Usuários", "Configurações"] as const;
 export const ROLE_PERMISSIONS: Record<UserRole, readonly string[]> = { platform_admin: ["global"], registry_admin: [...PERMISSION_MODULES], manager: ["Dashboard", "Avaliações", "Pesquisas", "Pontos", "Qualidade", "Ocorrências", "Planos de melhoria", "Relatórios"], operator: ["Dashboard", "Avaliações", "Qualidade", "Ocorrências"] };
+export function hasPermission(permissions: readonly string[], permission: string) { return permissions.includes("global") || permissions.includes(permission); }
 export const QUESTION_TYPE_LABELS: Record<QuestionType, string> = { stars: "Estrelas 1–5", yes_no: "Sim/Não", scale: "Escala 1–5", text: "Texto", single_choice: "Seleção única", multiple_choice: "Seleção múltipla" };
 export const OCCURRENCE_CATEGORIES = ["Atendimento", "Tempo", "Clareza", "Resolutividade", "Estrutura", "Processo", "Outro"] as const;
 export const OCCURRENCE_STATUSES: readonly OccurrenceStatus[] = ["Nova", "Em análise", "Em tratamento", "Resolvida", "Encerrada"];
