@@ -58,8 +58,8 @@
 - [x] Validate decoupled flows across the required desktop and mobile views
 
 # Backend — Etapa 1
-- [ ] Create the external PostgreSQL schema migration
-- [ ] Add reproducible DEMO seed data
-- [ ] Add structural, relational, and negative constraint validation SQL
-- [ ] Document the database model and frontend boundary
+- [x] Create the external PostgreSQL schema migration
+- [x] Add reproducible DEMO seed data
+- [x] Add structural, relational, and negative constraint validation SQL
+- [x] Document the database model and frontend boundary
 - [ ] Apply and validate the migration on the connected external Supabase project
