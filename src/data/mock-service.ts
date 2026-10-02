@@ -24,7 +24,7 @@ export const questions: SurveyQuestion[] = [
   { id: "q-structure", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", text: "Como você avalia a estrutura do local?", type: "scale", dimensionId: "dim-structure", order: 6, required: false, active: true },
   { id: "q-comment", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", text: "Gostaria de deixar algum comentário?", type: "text", dimensionId: "dim-general", order: 7, required: false, active: true },
   { id: "q-improvement", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", text: "O que poderia ser melhorado?", type: "multiple_choice", dimensionId: "dim-general", order: 8, required: false, active: true, options: ["Tempo de atendimento", "Atendimento", "Clareza das informações", "Estrutura", "Resolutividade", "Outro"], condition: { sourceQuestionId: "q-rating", operator: "lte", value: 3 } },
-  { id: "q-unresolved", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", text: "Gostaria de explicar o que aconteceu?", type: "text", dimensionId: "dim-resolution", order: 9, required: false, active: true, condition: { sourceQuestionId: "q-resolution", operator: "equals", value: false } },
+  { id: "q-unresolved", registryId: ACTIVE_REGISTRY_ID, surveyId: "survey-service-v1", text: "Gostaria de explicar o que aconteceu?", type: "text", dimensionId: "dim-resolution", order: 9, required: false, active: true, condition: { sourceQuestionId: "q-resolution", operator: "equals", value: "Não" } },
 ];
 export const answerOptions: AnswerOption[] = ["Sim", "Parcialmente", "Não"].map((text, index) => ({ id: `option-resolution-${index + 1}`, questionId: "q-resolution", text, value: text, order: index + 1 }));
 export const points: EvaluationPoint[] = [
