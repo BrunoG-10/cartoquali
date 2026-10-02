@@ -56,3 +56,10 @@
 - [x] Remove direct mock imports from presentation and session layers
 - [x] Document the future external API and backend boundary
 - [x] Validate decoupled flows across the required desktop and mobile views
+
+# Backend — Etapa 1
+- [ ] Create the external PostgreSQL schema migration
+- [ ] Add reproducible DEMO seed data
+- [ ] Add structural, relational, and negative constraint validation SQL
+- [ ] Document the database model and frontend boundary
+- [ ] Apply and validate the migration on the connected external Supabase project
