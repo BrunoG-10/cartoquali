@@ -18,6 +18,7 @@ import { Route as OcorrenciasRouteImport } from './routes/ocorrencias'
 import { Route as PesquisasRouteImport } from './routes/pesquisas'
 import { Route as PlanosMelhoriaRouteImport } from './routes/planos-melhoria'
 import { Route as PontosRouteImport } from './routes/pontos'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as QualidadeRouteImport } from './routes/qualidade'
 import { Route as RelatoriosRouteImport } from './routes/relatorios'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
@@ -71,6 +72,11 @@ const PontosRoute = PontosRouteImport.update({
   path: '/pontos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QualidadeRoute = QualidadeRouteImport.update({
   id: '/qualidade',
   path: '/qualidade',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/pesquisas': typeof PesquisasRoute
   '/planos-melhoria': typeof PlanosMelhoriaRoute
   '/pontos': typeof PontosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRouteWithChildren
   '/usuarios': typeof UsuariosRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/pesquisas': typeof PesquisasRoute
   '/planos-melhoria': typeof PlanosMelhoriaRoute
   '/pontos': typeof PontosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/qualidade': typeof QualidadeRoute
   '/usuarios': typeof UsuariosRoute
   '/visao-executiva': typeof VisaoExecutivaRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/pesquisas': typeof PesquisasRoute
   '/planos-melhoria': typeof PlanosMelhoriaRoute
   '/pontos': typeof PontosRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/qualidade': typeof QualidadeRoute
   '/relatorios': typeof RelatoriosRouteWithChildren
   '/usuarios': typeof UsuariosRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/pesquisas'
     | '/planos-melhoria'
     | '/pontos'
+    | '/privacidade'
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
@@ -191,6 +201,7 @@ export interface FileRouteTypes {
     | '/pesquisas'
     | '/planos-melhoria'
     | '/pontos'
+    | '/privacidade'
     | '/qualidade'
     | '/usuarios'
     | '/visao-executiva'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/pesquisas'
     | '/planos-melhoria'
     | '/pontos'
+    | '/privacidade'
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
@@ -227,6 +239,7 @@ export interface RootRouteChildren {
   PesquisasRoute: typeof PesquisasRoute
   PlanosMelhoriaRoute: typeof PlanosMelhoriaRoute
   PontosRoute: typeof PontosRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   QualidadeRoute: typeof QualidadeRoute
   RelatoriosRoute: typeof RelatoriosRouteWithChildren
   UsuariosRoute: typeof UsuariosRoute
@@ -296,6 +309,13 @@ declare module '@tanstack/react-router' {
       path: '/pontos'
       fullPath: '/pontos'
       preLoaderRoute: typeof PontosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/qualidade': {
@@ -385,6 +405,7 @@ const rootRouteChildren: RootRouteChildren = {
   PesquisasRoute: PesquisasRoute,
   PlanosMelhoriaRoute: PlanosMelhoriaRoute,
   PontosRoute: PontosRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   QualidadeRoute: QualidadeRoute,
   RelatoriosRoute: RelatoriosRouteWithChildren,
   UsuariosRoute: UsuariosRoute,
