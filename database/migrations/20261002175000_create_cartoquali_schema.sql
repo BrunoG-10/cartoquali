@@ -83,6 +83,7 @@ create table public.pontos_avaliacao (
   updated_at timestamptz not null default now(),
   unique (cartorio_id, codigo),
   unique (cartorio_id, public_slug),
+  unique (id, cartorio_id),
   unique (id, cartorio_id, pesquisa_id),
   foreign key (pesquisa_id, cartorio_id)
     references public.pesquisas(id, cartorio_id) on delete restrict
