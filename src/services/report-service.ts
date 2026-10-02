@@ -63,7 +63,7 @@ function generate(kind: ReportKind, source: ReportSource, filters: ReportFilters
   const plans = filterPlans(source.improvementPlans, filters);
   const management = calculateManagementSummary(occurrences, plans);
   const dissatisfactionCounts = rankDissatisfaction(reviews);
-  const negativeTotal = Math.max(1, indicators.negative);
+  const negativeTotal = Math.max(1, indicators.negativeCount);
   const completedPlans = plans.filter((item) => item.status === "Concluído").length;
   const resolvedDurations = occurrences.filter((item) => item.resolvedAt).map((item) => {
     const opened = new Date(`${item.openedAt.slice(0, 10)}T12:00:00`).getTime();
@@ -87,7 +87,7 @@ function generate(kind: ReportKind, source: ReportSource, filters: ReportFilters
   return {
     kind, title: titles[kind], generatedAt: NOW.toLocaleString("pt-BR"), periodLabel: periodLabel(filters), registry: source.registry, filters,
     reviews, previousReviews, indicators, previousIndicators, dimensions,
-    evolution: buildQualityEvolution(source.reviews, filters.pointId, filters.period, NOW),
+    evolution: buildQualityEvolution(source.reviews, filters, NOW),
     pointPerformance: groupByPoint(reviews, source.points.filter((point) => !filters.pointId || point.id === filters.pointId).map((point) => point.id)),
     dissatisfaction: dissatisfactionCounts.map(([label, count]) => ({ label, count, percentage: Number((count / negativeTotal * 100).toFixed(1)) })),
     occurrences,
