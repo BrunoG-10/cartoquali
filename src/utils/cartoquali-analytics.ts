@@ -23,7 +23,7 @@ export function calculateNegativeRate(reviews: Review[]) { return reviews.length
 export function calculateResolutionRate(reviews: Review[]) { const valid = reviews.filter((item) => item.resolution); return valid.length ? round(valid.filter((item) => item.resolution === "Sim").length / valid.length * 100) : 0; }
 export function calculateDimensionIndex(values: number[]) { return values.length ? round(values.reduce((sum, value) => sum + value, 0) / values.length / 5 * 100) : 0; }
 export function calculateVariation(current: number, previous: number) { return round(current - previous, 2); }
-export function calculateIndicators(reviews: Review[]): Indicators { const distribution: Indicators["distribution"] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }; reviews.forEach((review) => { if (review.rating >= 1 && review.rating <= 5) distribution[review.rating as 1 | 2 | 3 | 4 | 5] += 1; }); return { total: reviews.length, average: calculateAverageScore(reviews), satisfaction: calculateSatisfactionRate(reviews), resolution: calculateResolutionRate(reviews), time: reviews.length ? round(reviews.reduce((sum, item) => sum + item.time, 0) / reviews.length, 2) : 0, negative: reviews.filter((item) => item.rating <= 3).length, distribution }; }
+export function calculateIndicators(reviews: Review[]): Indicators { const distribution: Indicators["distribution"] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }; reviews.forEach((review) => { if (review.rating >= 1 && review.rating <= 5) distribution[review.rating as 1 | 2 | 3 | 4 | 5] += 1; }); return { total: reviews.length, average: calculateAverageScore(reviews), satisfaction: calculateSatisfactionRate(reviews), resolution: calculateResolutionRate(reviews), time: reviews.length ? round(reviews.reduce((sum, item) => sum + item.time, 0) / reviews.length, 2) : 0, negativeCount: reviews.filter((item) => item.rating <= 3).length, negativeRate: calculateNegativeRate(reviews), distribution }; }
 export function calculatePreviousPeriod(reviews: Review[], filters: QualityFilters, now = CARTOQUALI_NOW) {
   const days=periodDays[filters.period];
   const start=filters.period==="Personalizado"&&filters.startDate?new Date(`${filters.startDate}T00:00:00`):filters.period==="Este ano"?new Date(now.getFullYear(),0,1):filters.period==="Este mês"?new Date(now.getFullYear(),now.getMonth(),1):filters.period==="Mês anterior"?new Date(now.getFullYear(),now.getMonth()-1,1):new Date(now.getTime()-(days??30)*DAY);
@@ -41,8 +41,9 @@ export function calculateConfiguredDimensions(reviews: Review[], answers: Evalua
 }
 export function getQualityHighlights(dimensions: DimensionIndicator[], count = 2) { return [...dimensions].sort((a, b) => b.index - a.index).slice(0, count); }
 export function getQualityAttentionPoints(dimensions: DimensionIndicator[], count = 2) { return [...dimensions].sort((a, b) => a.index - b.index).slice(0, count); }
-export function buildQualityEvolution(reviews: Review[], pointId?: string, period: DashboardPeriod = "Este ano", now = CARTOQUALI_NOW): QualityEvolutionPoint[] {
-  const scoped = reviews.filter((review) => !pointId || review.pointId === pointId);
+export function buildQualityEvolution(reviews: Review[], filters: QualityFilters = { period: "Este ano" }, now = CARTOQUALI_NOW): QualityEvolutionPoint[] {
+  const scoped = reviews.filter((review) => (!filters.pointId || review.pointId === filters.pointId) && (!filters.surveyId || review.surveyId === filters.surveyId) && (!filters.category || review.category === filters.category) && (!filters.status || review.status === filters.status) && (!filters.rating || review.rating === filters.rating));
+  const period = filters.period;
   const shortDays = period === "Hoje" ? 1 : period === "7 dias" ? 7 : period === "30 dias" || period === "Este mês" || period === "Mês anterior" ? 30 : undefined;
   if (shortDays) {
     const bucketCount = shortDays <= 7 ? shortDays : 6;
