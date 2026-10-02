@@ -80,7 +80,7 @@ function generate(kind: ReportKind, source: ReportSource, filters: ReportFilters
   const recurring = countBy(occurrences, (item) => item.category)[0];
   const evidence = [
     { label: "avaliações analisadas", value: indicators.total },
-    { label: "avaliações com nota ≤ 3", value: indicators.negative },
+    { label: "avaliações com nota ≤ 3", value: indicators.negativeCount },
     ...dimensions.map((dimension) => ({ label: `respostas sobre ${dimension.label.toLowerCase()}`, value: dimension.responses })),
     { label: "respostas válidas", value: relevantAnswers.length },
   ];
