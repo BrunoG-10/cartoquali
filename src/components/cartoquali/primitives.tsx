@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Star } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Inbox, LoaderCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function GlassPanel({ children, className }: { children: ReactNode; className?: string }) {
@@ -21,4 +21,9 @@ export function Stars({ value, interactive = false, onChange, size = "md" }: { v
 
 export function StatusBadge({ children, tone = "neutral" }: { children: ReactNode; tone?: "positive" | "warning" | "danger" | "neutral" }) {
   return <span className={cn("inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold", tone === "positive" && "bg-success-soft text-success", tone === "warning" && "bg-warning-soft text-warning", tone === "danger" && "bg-danger-soft text-destructive", tone === "neutral" && "bg-muted text-muted-foreground")}>{children}</span>;
+}
+
+export function InterfaceState({ kind, title, description, action }: { kind: "loading" | "empty" | "error" | "success"; title: string; description: string; action?: ReactNode }) {
+  const Icon = kind === "loading" ? LoaderCircle : kind === "error" ? AlertTriangle : kind === "success" ? CheckCircle2 : Inbox;
+  return <div role={kind === "error" ? "alert" : "status"} aria-live="polite" className="py-10 text-center"><Icon className={cn("mx-auto size-8",kind==="loading"&&"animate-spin",kind==="error"?"text-destructive":kind==="success"?"text-success":"text-muted-foreground")}/><h2 className="mt-3 font-display text-lg font-bold">{title}</h2><p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{description}</p>{action&&<div className="mt-4">{action}</div>}</div>;
 }

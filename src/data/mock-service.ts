@@ -2,6 +2,7 @@ import { ACTIVE_REGISTRY_ID, QUALITY_METHODOLOGY } from "@/constants/cartoquali"
 import { calculateIndicators } from "@/utils/cartoquali-analytics";
 import type { CartoQualiService } from "@/services/cartoquali-service";
 import type { AnswerOption, AuditEvent, EvaluationAnswer, EvaluationPoint, EvaluationSubmission, ImprovementPlan, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion } from "@/types/cartoquali";
+import { validateMockRelationships } from "@/utils/mock-health-check";
 
 export const registry: Registry = { id: ACTIVE_REGISTRY_ID, slug: "cartorio-demo", officialName: "Cartório Modelo de Registro Civil", tradeName: "Cartório Modelo", cnpj: "00.000.000/0001-00", serviceType: "Registro Civil", phone: "(86) 3000-0000", email: "gestao@cartoriomodelo.com.br", street: "Avenida das Palmeiras", number: "120", complement: "", district: "Centro", city: "Parnaíba", state: "PI", zipCode: "64200-000", manager: "Renata Martins", status: "Ativo", plan: "Profissional", createdAt: "2025-01-15", renewalDate: "2027-01-15" };
 export const users: RegistryUser[] = [
@@ -56,6 +57,11 @@ export const improvementPlans: ImprovementPlan[] = [
  { id: "PM-004", registryId: ACTIVE_REGISTRY_ID, occurrenceId: "OC-003", pointId: "point-recepcao", dimension: "time", title: "Ajustar escala da manhã", problem: "Espera elevada no início do expediente", objective: "Reduzir o tempo percebido", action: "Redistribuir a equipe no primeiro horário", ownerId: "usr-002", owner: "Carlos Oliveira", priority: "Crítica", dueDate: "2026-09-21", status: "Concluído", progress: 100, expectedResult: "Melhora perceptível na espera da manhã.", actualResult: "Após a redistribuição da equipe, o tempo percebido pelos usuários apresentou melhora.", resultObservation: "Acompanhamento realizado por duas semanas.", indicatorLabel: "Índice de Tempo", indicatorBefore: 78, indicatorAfter: 89, completedAt: "2026-09-21", createdAt: "2026-09-18" },
 ];
 export const auditEvents: AuditEvent[] = [{ id: "audit-001", registryId: ACTIVE_REGISTRY_ID, userId: "usr-001", action: "Pesquisa alterada", entityType: "survey", entityId: "survey-service-v1", createdAt: "2026-09-20T11:00:00" }, { id: "audit-002", registryId: ACTIVE_REGISTRY_ID, userId: "usr-002", action: "Ocorrência atualizada", entityType: "occurrence", entityId: "occ-001", createdAt: "2026-10-01T14:00:00" }];
+
+if (import.meta.env.DEV) {
+  const errors = validateMockRelationships({ registryId: ACTIVE_REGISTRY_ID, users, surveys, questions, answers, dimensions, points, reviews, occurrences, plans: improvementPlans });
+  if (errors.length) console.error("[CartoQuali] Relacionamentos mock inválidos:\n" + errors.join("\n"));
+}
 
 const forTenant = <T extends { registryId: string }>(items: T[], registryId: string) => items.filter((item) => item.registryId === registryId);
 let shouldSimulateSubmissionFailure = true;

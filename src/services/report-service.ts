@@ -50,8 +50,10 @@ function periodLabel(filters: ReportFilters) {
 }
 
 function generate(kind: ReportKind, source: ReportSource, filters: ReportFilters): ReportData {
-  const baseReviews = filterReviews(source.reviews, filters, NOW);
-  const reviews = baseReviews.filter((review) => (!filters.withComment || Boolean(review.comment.trim())) && (!filters.withContact || Boolean(review.contact?.requested)));
+  const { rating: _rating, withComment: _withComment, withContact: _withContact, ...qualityFilters } = filters;
+  const commonFilters = kind === "avaliacoes" ? filters : qualityFilters;
+  const baseReviews = filterReviews(source.reviews, commonFilters, NOW);
+  const reviews = kind === "avaliacoes" ? baseReviews.filter((review) => (!filters.withComment || Boolean(review.comment.trim())) && (!filters.withContact || Boolean(review.contact?.requested))) : baseReviews;
   const previousReviews = calculatePreviousPeriod(source.reviews, filters, NOW);
   const indicators = calculateIndicators(reviews);
   const previousIndicators = calculateIndicators(previousReviews);
@@ -85,7 +87,7 @@ function generate(kind: ReportKind, source: ReportSource, filters: ReportFilters
   return {
     kind, title: titles[kind], generatedAt: NOW.toLocaleString("pt-BR"), periodLabel: periodLabel(filters), registry: source.registry, filters,
     reviews, previousReviews, indicators, previousIndicators, dimensions,
-    evolution: buildQualityEvolution(filterReviews(source.reviews, { ...filters, period: "Este ano" }, NOW), filters.pointId),
+    evolution: buildQualityEvolution(source.reviews, filters.pointId, filters.period, NOW),
     pointPerformance: groupByPoint(reviews, source.points.filter((point) => !filters.pointId || point.id === filters.pointId).map((point) => point.id)),
     dissatisfaction: dissatisfactionCounts.map(([label, count]) => ({ label, count, percentage: Number((count / negativeTotal * 100).toFixed(1)) })),
     occurrences,

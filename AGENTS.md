@@ -16,3 +16,4 @@
 - Keep occurrence and improvement-plan mutations inside the shared session provider behind typed service-shaped operations, so presentation code never edits mock collections directly.
 - Keep all administrative mutations inside the shared session provider and derive quality dimensions through answer-to-question mappings, so mock configuration and future external adapters remain interchangeable.
 - Build all report view models through the typed report service from session-scoped domain data and shared analytics, so future exports or external APIs never fork indicator logic.
+- Validate relational mock fixtures with a development-only health check, so broken tenant links fail before they reach presentation flows.
