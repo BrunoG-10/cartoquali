@@ -18,6 +18,7 @@ export function filterReviews(reviews: Review[], filters: QualityFilters, now = 
     return inPeriod && (!filters.pointId || review.pointId === filters.pointId) && (!filters.rating || review.rating === filters.rating) && (!filters.category || review.category === filters.category) && (!filters.surveyId || review.surveyId === filters.surveyId) && (!filters.status || review.status === filters.status);
   });
 }
+export function searchReviews(reviews: Review[], query: string) { const normalized=query.trim().toLocaleLowerCase("pt-BR"); return normalized ? reviews.filter((review)=>`${review.comment} ${review.point} ${review.category}`.toLocaleLowerCase("pt-BR").includes(normalized)) : reviews; }
 export function calculateAverageScore(reviews: Review[]) { return reviews.length ? round(reviews.reduce((sum, item) => sum + item.rating, 0) / reviews.length, 2) : 0; }
 export function calculateSatisfactionRate(reviews: Review[]) { return reviews.length ? round(reviews.filter((item) => item.rating >= 4).length / reviews.length * 100) : 0; }
 export function calculateNegativeRate(reviews: Review[]) { return reviews.length ? round(reviews.filter((item) => item.rating <= 3).length / reviews.length * 100) : 0; }
