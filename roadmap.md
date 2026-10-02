@@ -46,9 +46,9 @@
 - [x] Complete quality, indicators and executive report insights
 - [x] Add specialized report filters and improvement evidence
 - [x] Validate report consistency, printing and responsive layouts
-- [ ] Validate mock relationships and tenant isolation
-- [ ] Align date ranges, evolution series and report filters
-- [ ] Complete privacy, consent and negative-evaluation UX
-- [ ] Harden administrative validation and destructive actions
-- [ ] Standardize interface states and session report history
-- [ ] Validate the complete MVP flow, accessibility and responsive printing
+- [x] Validate mock relationships and tenant isolation
+- [x] Align date ranges, evolution series and report filters
+- [x] Complete privacy, consent and negative-evaluation UX
+- [x] Harden administrative validation and destructive actions
+- [x] Standardize interface states and session report history
+- [x] Validate the complete MVP flow, accessibility and responsive printing
