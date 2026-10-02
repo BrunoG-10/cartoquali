@@ -39,3 +39,6 @@
 - [x] Add report evidence, methodology links and print presentation
 - [x] Expand deterministic mock coverage and align Dashboard calculations
 - [x] Validate report flows, filtering and responsive printing
+- [x] Complete registry address, evaluation settings and point descriptions
+- [x] Duplicate surveys with independent question copies
+- [x] Share the configured questionnaire between public evaluation and administrative preview
