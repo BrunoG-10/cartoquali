@@ -34,7 +34,26 @@ export function calculateConfiguredDimensions(reviews: Review[], answers: Evalua
 }
 export function getQualityHighlights(dimensions: DimensionIndicator[], count = 2) { return [...dimensions].sort((a, b) => b.index - a.index).slice(0, count); }
 export function getQualityAttentionPoints(dimensions: DimensionIndicator[], count = 2) { return [...dimensions].sort((a, b) => a.index - b.index).slice(0, count); }
-export function buildQualityEvolution(reviews: Review[], pointId?: string): QualityEvolutionPoint[] { return ["Mai", "Jun", "Jul", "Ago", "Set", "Out"].map((label, index) => { const month = index + 4; const items = reviews.filter((review) => { const date = reviewDate(review); return date.getFullYear() === 2026 && date.getMonth() === month && (!pointId || review.pointId === pointId); }); return { label, average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items), total: items.length }; }); }
+export function buildQualityEvolution(reviews: Review[], pointId?: string, period: DashboardPeriod = "Este ano", now = CARTOQUALI_NOW): QualityEvolutionPoint[] {
+  const scoped = reviews.filter((review) => !pointId || review.pointId === pointId);
+  const shortDays = period === "Hoje" ? 1 : period === "7 dias" ? 7 : period === "30 dias" || period === "Este mês" || period === "Mês anterior" ? 30 : undefined;
+  if (shortDays) {
+    const bucketCount = shortDays <= 7 ? shortDays : 6;
+    const bucketSize = Math.ceil(shortDays / bucketCount);
+    return Array.from({ length: bucketCount }, (_, index) => {
+      const end = new Date(now.getTime() - (bucketCount - index - 1) * bucketSize * DAY);
+      const start = new Date(end.getTime() - bucketSize * DAY);
+      const items = scoped.filter((review) => { const date=reviewDate(review,now); return date > start && date <= end; });
+      const label = shortDays <= 7 ? end.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }) : `${start.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}–${end.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})}`;
+      return { label, average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items), total: items.length };
+    });
+  }
+  return Array.from({ length: 6 }, (_, index) => {
+    const date = new Date(now.getFullYear(), now.getMonth() - 5 + index, 1);
+    const items = scoped.filter((review) => { const value=reviewDate(review,now); return value.getFullYear()===date.getFullYear()&&value.getMonth()===date.getMonth(); });
+    return { label: date.toLocaleDateString("pt-BR",{month:"short"}).replace(".",""), average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items), total: items.length };
+  });
+}
 export function groupByPoint(reviews: Review[], pointIds: string[]) { return pointIds.map((pointId) => { const items = reviews.filter((item) => item.pointId === pointId); return { pointId, total: items.length, average: calculateAverageScore(items), satisfaction: calculateSatisfactionRate(items), resolution: calculateResolutionRate(items), negative: calculateNegativeRate(items) }; }); }
 export function rankDissatisfaction(reviews: Review[]) { const counts = new Map<string, number>(); reviews.filter((item) => item.rating <= 3).forEach((item) => (item.improvementReasons?.length ? item.improvementReasons : [item.category]).forEach((reason) => counts.set(reason, (counts.get(reason) ?? 0) + 1))); return [...counts.entries()].sort((a,b) => b[1] - a[1]); }
 export function isPotentialAttention(review: Review) { return review.rating <= 3 && Boolean(review.comment.trim() || review.improvementReasons?.length); }
