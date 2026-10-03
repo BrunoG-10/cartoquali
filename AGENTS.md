@@ -22,3 +22,4 @@
 - Resolve administrative identity and invitations through authenticated server functions; keep operational modules on the mock provider until the API stage.
 - Let authenticated Supabase queries enforce tenant isolation through RLS; reserve the admin client for Auth administration after an RLS-scoped authorization check.
 - Migrate Stage 4 administrative modules through authenticated TanStack server functions and TanStack Query, while session mocks remain authoritative only for modules not yet migrated.
+- Read Stage 5 evaluations and answers through authenticated, paginated server functions; treat persisted evaluations as immutable history and expose contact details only to authorized roles.
