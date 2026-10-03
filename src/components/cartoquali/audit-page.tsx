@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
 import { listAuditEvents } from "@/lib/audit.functions";
 
-const entityLabels: Record<string,string> = { user:"Usuário", registry:"Cartório", survey:"Pesquisa", question:"Pergunta", answer_option:"Opção", registry_settings:"Configurações", quality_occurrence:"Ocorrência", improvement_plan:"Plano", evaluation_point:"Ponto" };
+const entityLabels: Record<string,string> = { user:"Usuário", registry:"Cartório", survey:"Pesquisa", question:"Pergunta", answer_option:"Opção", registry_settings:"Configurações", quality_occurrence:"Ocorrência", improvement_plan:"Plano", evaluation_point:"Ponto", privacy_request:"Solicitação de privacidade", evaluation:"Avaliação", quality_report:"Relatório" };
 
 export function AuditPage() {
   const load = useServerFn(listAuditEvents); const [page,setPage]=useState(1); const [entity,setEntity]=useState(""); const [action,setAction]=useState(""); const [startDate,setStartDate]=useState(""); const [endDate,setEndDate]=useState("");

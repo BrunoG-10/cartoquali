@@ -34,3 +34,5 @@
 - Keep browser printing as the Stage 10 PDF path; do not add a dedicated PDF dependency without mature server-side support.
 - Centralize administrative capabilities in the typed permissions module, mirror them in server authorization and RLS, and never treat hidden navigation as authorization.
 - Persist surveys, questions, settings, users, and audit history through authenticated tenant-scoped services; session mocks are not authoritative for these modules.
+- Keep optional evaluator contact separate from immutable evaluation content, restrict it to authorized administrators, and exclude it from aggregates and general exports.
+- Treat privacy retention as tenant configuration with no automatic deletion until legally and contractually approved periods exist.

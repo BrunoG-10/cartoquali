@@ -15,6 +15,7 @@ import { Route as AvaliarRouteImport } from './routes/avaliar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedCartorioRouteImport } from './routes/_authenticated/cartorio'
@@ -26,6 +27,7 @@ import { Route as AuthenticatedPlanosMelhoriaRouteImport } from './routes/_authe
 import { Route as AuthenticatedPontosRouteImport } from './routes/_authenticated/pontos'
 import { Route as AuthenticatedQualidadeRouteImport } from './routes/_authenticated/qualidade'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
+import { Route as AuthenticatedSolicitacoesPrivacidadeRouteImport } from './routes/_authenticated/solicitacoes-privacidade'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedVisaoExecutivaRouteImport } from './routes/_authenticated/visao-executiva'
 import { Route as AvaliarCodigoRouteImport } from './routes/avaliar_.$codigo'
@@ -60,6 +62,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
@@ -120,6 +127,12 @@ const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
   path: '/relatorios',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSolicitacoesPrivacidadeRoute =
+  AuthenticatedSolicitacoesPrivacidadeRouteImport.update({
+    id: '/solicitacoes-privacidade',
+    path: '/solicitacoes-privacidade',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
@@ -160,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/cartorio': typeof AuthenticatedCartorioRoute
@@ -171,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/pontos': typeof AuthenticatedPontosRoute
   '/qualidade': typeof AuthenticatedQualidadeRoute
   '/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
+  '/solicitacoes-privacidade': typeof AuthenticatedSolicitacoesPrivacidadeRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
   '/avaliar/$codigo': typeof AvaliarCodigoRoute
@@ -184,6 +199,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/cartorio': typeof AuthenticatedCartorioRoute
@@ -194,6 +210,7 @@ export interface FileRoutesByTo {
   '/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
   '/pontos': typeof AuthenticatedPontosRoute
   '/qualidade': typeof AuthenticatedQualidadeRoute
+  '/solicitacoes-privacidade': typeof AuthenticatedSolicitacoesPrivacidadeRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
   '/avaliar/$codigo': typeof AvaliarCodigoRoute
@@ -209,6 +226,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/termos': typeof TermosRoute
   '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/cartorio': typeof AuthenticatedCartorioRoute
@@ -220,6 +238,7 @@ export interface FileRoutesById {
   '/_authenticated/pontos': typeof AuthenticatedPontosRoute
   '/_authenticated/qualidade': typeof AuthenticatedQualidadeRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
+  '/_authenticated/solicitacoes-privacidade': typeof AuthenticatedSolicitacoesPrivacidadeRoute
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
   '/avaliar_/$codigo': typeof AvaliarCodigoRoute
@@ -235,6 +254,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/reset-password'
+    | '/termos'
     | '/auditoria'
     | '/avaliacoes'
     | '/cartorio'
@@ -246,6 +266,7 @@ export interface FileRouteTypes {
     | '/pontos'
     | '/qualidade'
     | '/relatorios'
+    | '/solicitacoes-privacidade'
     | '/usuarios'
     | '/visao-executiva'
     | '/avaliar/$codigo'
@@ -259,6 +280,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/reset-password'
+    | '/termos'
     | '/auditoria'
     | '/avaliacoes'
     | '/cartorio'
@@ -269,6 +291,7 @@ export interface FileRouteTypes {
     | '/planos-melhoria'
     | '/pontos'
     | '/qualidade'
+    | '/solicitacoes-privacidade'
     | '/usuarios'
     | '/visao-executiva'
     | '/avaliar/$codigo'
@@ -283,6 +306,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/reset-password'
+    | '/termos'
     | '/_authenticated/auditoria'
     | '/_authenticated/avaliacoes'
     | '/_authenticated/cartorio'
@@ -294,6 +318,7 @@ export interface FileRouteTypes {
     | '/_authenticated/pontos'
     | '/_authenticated/qualidade'
     | '/_authenticated/relatorios'
+    | '/_authenticated/solicitacoes-privacidade'
     | '/_authenticated/usuarios'
     | '/_authenticated/visao-executiva'
     | '/avaliar_/$codigo'
@@ -309,6 +334,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermosRoute: typeof TermosRoute
   AvaliarCodigoRoute: typeof AvaliarCodigoRoute
 }
 
@@ -354,6 +380,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/auditoria': {
@@ -433,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/solicitacoes-privacidade': {
+      id: '/_authenticated/solicitacoes-privacidade'
+      path: '/solicitacoes-privacidade'
+      fullPath: '/solicitacoes-privacidade'
+      preLoaderRoute: typeof AuthenticatedSolicitacoesPrivacidadeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/usuarios': {
       id: '/_authenticated/usuarios'
       path: '/usuarios'
@@ -506,6 +546,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPontosRoute: typeof AuthenticatedPontosRoute
   AuthenticatedQualidadeRoute: typeof AuthenticatedQualidadeRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRouteWithChildren
+  AuthenticatedSolicitacoesPrivacidadeRoute: typeof AuthenticatedSolicitacoesPrivacidadeRoute
   AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
   AuthenticatedVisaoExecutivaRoute: typeof AuthenticatedVisaoExecutivaRoute
 }
@@ -522,6 +563,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPontosRoute: AuthenticatedPontosRoute,
   AuthenticatedQualidadeRoute: AuthenticatedQualidadeRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRouteWithChildren,
+  AuthenticatedSolicitacoesPrivacidadeRoute:
+    AuthenticatedSolicitacoesPrivacidadeRoute,
   AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
   AuthenticatedVisaoExecutivaRoute: AuthenticatedVisaoExecutivaRoute,
 }
@@ -547,6 +590,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermosRoute: TermosRoute,
   AvaliarCodigoRoute: AvaliarCodigoRoute,
 }
 export const routeTree = rootRouteImport
