@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
+import { setResponseHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 const answerValue = z.union([
@@ -10,10 +10,15 @@ const answerValue = z.union([
 ]);
 
 const codeSchema = z.string().trim().min(3).max(80);
+const answersSchema = z.record(z.string().uuid(), answerValue).superRefine((answers, context) => {
+  if (Object.keys(answers).length > 50) context.addIssue({ code: z.ZodIssueCode.custom, message: "Muitas respostas foram enviadas." });
+  if (new TextEncoder().encode(JSON.stringify(answers)).byteLength > 32_768) context.addIssue({ code: z.ZodIssueCode.custom, message: "As respostas excedem o limite permitido." });
+});
 const submissionSchema = z.object({
   code: codeSchema,
   idempotencyKey: z.string().uuid(),
-  answers: z.record(z.string().uuid(), answerValue),
+  submissionSession: z.string().uuid(),
+  answers: answersSchema,
   contact: z.object({
     requested: z.boolean(),
     name: z.string().trim().max(100).optional(),
@@ -86,6 +91,8 @@ function parseContext(value: unknown): PublicEvaluationContext {
 export const getPublicEvaluation = createServerFn({ method: "GET" })
   .inputValidator((input: unknown) => z.object({ code: codeSchema }).parse(input))
   .handler(async ({ data }) => {
+    setResponseHeader("Cache-Control", "private, no-store, max-age=0");
+    setResponseHeader("X-Content-Type-Options", "nosniff");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: result, error } = await supabaseAdmin.rpc("get_public_evaluation_context", { _code: data.code });
     if (error) {
@@ -98,11 +105,10 @@ export const getPublicEvaluation = createServerFn({ method: "GET" })
 export const submitPublicEvaluation = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => submissionSchema.parse(input))
   .handler(async ({ data }) => {
-    const request = getRequest();
-    const forwarded = request.headers.get("cf-connecting-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-    const userAgent = request.headers.get("user-agent")?.slice(0, 300) ?? "unknown";
+    setResponseHeader("Cache-Control", "no-store, max-age=0");
+    setResponseHeader("X-Content-Type-Options", "nosniff");
     const secret = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
-    const sourceBytes = new TextEncoder().encode(`${secret}:${forwarded}:${userAgent}`);
+    const sourceBytes = new TextEncoder().encode(`${secret}:${data.submissionSession}`);
     const digest = await crypto.subtle.digest("SHA-256", sourceBytes);
     const sourceHash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -116,9 +122,9 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
     if (error) {
       const safeMessages: Record<string, string> = {
         point_not_found: "Este ponto de avaliação não foi encontrado.",
-        point_inactive: "Este ponto de avaliação está inativo.",
-        survey_unavailable: "A pesquisa deste ponto está indisponível.",
-        rate_limited: "Muitas avaliações foram enviadas deste dispositivo. Aguarde alguns minutos.",
+        point_inactive: "Este ponto de avaliação está temporariamente indisponível.",
+        survey_unavailable: "A avaliação está temporariamente indisponível.",
+        rate_limited: "Muitas avaliações foram enviadas nesta sessão. Aguarde alguns minutos.",
         required_answer_missing: "Responda todas as perguntas obrigatórias.",
         invalid_contact: "Confira os dados de contato informados.",
       };
