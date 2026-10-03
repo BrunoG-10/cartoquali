@@ -1,2 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router"; import { AppShell } from "@/components/cartoquali/app-shell"; import { DashboardPage } from "@/components/cartoquali/dashboard";
-export const Route=createFileRoute("/")({head:()=>({meta:[{title:"Dashboard — CartoQuali"},{name:"description",content:"Visão geral de satisfação e qualidade do CartoQuali."},{property:"og:title",content:"Dashboard — CartoQuali"},{property:"og:description",content:"Indicadores de satisfação e qualidade para cartórios."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <AppShell><DashboardPage/></AppShell>});
+import { createFileRoute, redirect } from "@tanstack/react-router";
+
+export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    throw redirect({ to: "/login" });
+  },
+  head: () => ({
+    meta: [
+      { title: "CartoQuali — Gestão de qualidade" },
+      { name: "description", content: "Acesso administrativo ao CartoQuali." },
+      { property: "og:title", content: "CartoQuali — Gestão de qualidade" },
+      { property: "og:description", content: "Acesso administrativo ao CartoQuali." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+});

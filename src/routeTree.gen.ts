@@ -10,21 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AvaliacoesRouteImport } from './routes/avaliacoes'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AvaliarRouteImport } from './routes/avaliar'
-import { Route as CartorioRouteImport } from './routes/cartorio'
-import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
-import { Route as OcorrenciasRouteImport } from './routes/ocorrencias'
-import { Route as PesquisasRouteImport } from './routes/pesquisas'
-import { Route as PlanosMelhoriaRouteImport } from './routes/planos-melhoria'
-import { Route as PontosRouteImport } from './routes/pontos'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
-import { Route as QualidadeRouteImport } from './routes/qualidade'
-import { Route as RelatoriosRouteImport } from './routes/relatorios'
-import { Route as UsuariosRouteImport } from './routes/usuarios'
-import { Route as VisaoExecutivaRouteImport } from './routes/visao-executiva'
-import { Route as RelatoriosIndexRouteImport } from './routes/relatorios.index'
-import { Route as RelatoriosTipoRouteImport } from './routes/relatorios.$tipo'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
+import { Route as AuthenticatedCartorioRouteImport } from './routes/_authenticated/cartorio'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedOcorrenciasRouteImport } from './routes/_authenticated/ocorrencias'
+import { Route as AuthenticatedPesquisasRouteImport } from './routes/_authenticated/pesquisas'
+import { Route as AuthenticatedPlanosMelhoriaRouteImport } from './routes/_authenticated/planos-melhoria'
+import { Route as AuthenticatedPontosRouteImport } from './routes/_authenticated/pontos'
+import { Route as AuthenticatedQualidadeRouteImport } from './routes/_authenticated/qualidade'
+import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
+import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
+import { Route as AuthenticatedVisaoExecutivaRouteImport } from './routes/_authenticated/visao-executiva'
+import { Route as AuthenticatedRelatoriosIndexRouteImport } from './routes/_authenticated/relatorios.index'
+import { Route as AuthenticatedRelatoriosTipoRouteImport } from './routes/_authenticated/relatorios.$tipo'
 import { Route as AvaliarCartorioPontoRouteImport } from './routes/avaliar.$cartorio.$ponto'
 
 const IndexRoute = IndexRouteImport.update({
@@ -32,9 +36,8 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AvaliacoesRoute = AvaliacoesRouteImport.update({
-  id: '/avaliacoes',
-  path: '/avaliacoes',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AvaliarRoute = AvaliarRouteImport.update({
@@ -42,34 +45,9 @@ const AvaliarRoute = AvaliarRouteImport.update({
   path: '/avaliar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CartorioRoute = CartorioRouteImport.update({
-  id: '/cartorio',
-  path: '/cartorio',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
-  id: '/configuracoes',
-  path: '/configuracoes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OcorrenciasRoute = OcorrenciasRouteImport.update({
-  id: '/ocorrencias',
-  path: '/ocorrencias',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PesquisasRoute = PesquisasRouteImport.update({
-  id: '/pesquisas',
-  path: '/pesquisas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlanosMelhoriaRoute = PlanosMelhoriaRouteImport.update({
-  id: '/planos-melhoria',
-  path: '/planos-melhoria',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PontosRoute = PontosRouteImport.update({
-  id: '/pontos',
-  path: '/pontos',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -77,36 +55,87 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
   path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
-const QualidadeRoute = QualidadeRouteImport.update({
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAvaliacoesRoute = AuthenticatedAvaliacoesRouteImport.update({
+  id: '/avaliacoes',
+  path: '/avaliacoes',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCartorioRoute = AuthenticatedCartorioRouteImport.update({
+  id: '/cartorio',
+  path: '/cartorio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOcorrenciasRoute =
+  AuthenticatedOcorrenciasRouteImport.update({
+    id: '/ocorrencias',
+    path: '/ocorrencias',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPesquisasRoute = AuthenticatedPesquisasRouteImport.update({
+  id: '/pesquisas',
+  path: '/pesquisas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlanosMelhoriaRoute =
+  AuthenticatedPlanosMelhoriaRouteImport.update({
+    id: '/planos-melhoria',
+    path: '/planos-melhoria',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPontosRoute = AuthenticatedPontosRouteImport.update({
+  id: '/pontos',
+  path: '/pontos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedQualidadeRoute = AuthenticatedQualidadeRouteImport.update({
   id: '/qualidade',
   path: '/qualidade',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const RelatoriosRoute = RelatoriosRouteImport.update({
+const AuthenticatedRelatoriosRoute = AuthenticatedRelatoriosRouteImport.update({
   id: '/relatorios',
   path: '/relatorios',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const UsuariosRoute = UsuariosRouteImport.update({
+const AuthenticatedUsuariosRoute = AuthenticatedUsuariosRouteImport.update({
   id: '/usuarios',
   path: '/usuarios',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const VisaoExecutivaRoute = VisaoExecutivaRouteImport.update({
-  id: '/visao-executiva',
-  path: '/visao-executiva',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RelatoriosIndexRoute = RelatoriosIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => RelatoriosRoute,
-} as any)
-const RelatoriosTipoRoute = RelatoriosTipoRouteImport.update({
-  id: '/$tipo',
-  path: '/$tipo',
-  getParentRoute: () => RelatoriosRoute,
-} as any)
+const AuthenticatedVisaoExecutivaRoute =
+  AuthenticatedVisaoExecutivaRouteImport.update({
+    id: '/visao-executiva',
+    path: '/visao-executiva',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedRelatoriosIndexRoute =
+  AuthenticatedRelatoriosIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedRelatoriosRoute,
+  } as any)
+const AuthenticatedRelatoriosTipoRoute =
+  AuthenticatedRelatoriosTipoRouteImport.update({
+    id: '/$tipo',
+    path: '/$tipo',
+    getParentRoute: () => AuthenticatedRelatoriosRoute,
+  } as any)
 const AvaliarCartorioPontoRoute = AvaliarCartorioPontoRouteImport.update({
   id: '/$cartorio/$ponto',
   path: '/$cartorio/$ponto',
@@ -115,135 +144,147 @@ const AvaliarCartorioPontoRoute = AvaliarCartorioPontoRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/avaliacoes': typeof AvaliacoesRoute
   '/avaliar': typeof AvaliarRouteWithChildren
-  '/cartorio': typeof CartorioRoute
-  '/configuracoes': typeof ConfiguracoesRoute
-  '/ocorrencias': typeof OcorrenciasRoute
-  '/pesquisas': typeof PesquisasRoute
-  '/planos-melhoria': typeof PlanosMelhoriaRoute
-  '/pontos': typeof PontosRoute
+  '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
-  '/qualidade': typeof QualidadeRoute
-  '/relatorios': typeof RelatoriosRouteWithChildren
-  '/usuarios': typeof UsuariosRoute
-  '/visao-executiva': typeof VisaoExecutivaRoute
-  '/relatorios/$tipo': typeof RelatoriosTipoRoute
-  '/relatorios/': typeof RelatoriosIndexRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
+  '/cartorio': typeof AuthenticatedCartorioRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/ocorrencias': typeof AuthenticatedOcorrenciasRoute
+  '/pesquisas': typeof AuthenticatedPesquisasRoute
+  '/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
+  '/pontos': typeof AuthenticatedPontosRoute
+  '/qualidade': typeof AuthenticatedQualidadeRoute
+  '/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
+  '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
+  '/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
+  '/relatorios/': typeof AuthenticatedRelatoriosIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/avaliacoes': typeof AvaliacoesRoute
   '/avaliar': typeof AvaliarRouteWithChildren
-  '/cartorio': typeof CartorioRoute
-  '/configuracoes': typeof ConfiguracoesRoute
-  '/ocorrencias': typeof OcorrenciasRoute
-  '/pesquisas': typeof PesquisasRoute
-  '/planos-melhoria': typeof PlanosMelhoriaRoute
-  '/pontos': typeof PontosRoute
+  '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
-  '/qualidade': typeof QualidadeRoute
-  '/usuarios': typeof UsuariosRoute
-  '/visao-executiva': typeof VisaoExecutivaRoute
-  '/relatorios/$tipo': typeof RelatoriosTipoRoute
-  '/relatorios': typeof RelatoriosIndexRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
+  '/cartorio': typeof AuthenticatedCartorioRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/ocorrencias': typeof AuthenticatedOcorrenciasRoute
+  '/pesquisas': typeof AuthenticatedPesquisasRoute
+  '/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
+  '/pontos': typeof AuthenticatedPontosRoute
+  '/qualidade': typeof AuthenticatedQualidadeRoute
+  '/usuarios': typeof AuthenticatedUsuariosRoute
+  '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
+  '/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
+  '/relatorios': typeof AuthenticatedRelatoriosIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/avaliacoes': typeof AvaliacoesRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/avaliar': typeof AvaliarRouteWithChildren
-  '/cartorio': typeof CartorioRoute
-  '/configuracoes': typeof ConfiguracoesRoute
-  '/ocorrencias': typeof OcorrenciasRoute
-  '/pesquisas': typeof PesquisasRoute
-  '/planos-melhoria': typeof PlanosMelhoriaRoute
-  '/pontos': typeof PontosRoute
+  '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
-  '/qualidade': typeof QualidadeRoute
-  '/relatorios': typeof RelatoriosRouteWithChildren
-  '/usuarios': typeof UsuariosRoute
-  '/visao-executiva': typeof VisaoExecutivaRoute
-  '/relatorios/$tipo': typeof RelatoriosTipoRoute
-  '/relatorios/': typeof RelatoriosIndexRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
+  '/_authenticated/cartorio': typeof AuthenticatedCartorioRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/ocorrencias': typeof AuthenticatedOcorrenciasRoute
+  '/_authenticated/pesquisas': typeof AuthenticatedPesquisasRoute
+  '/_authenticated/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
+  '/_authenticated/pontos': typeof AuthenticatedPontosRoute
+  '/_authenticated/qualidade': typeof AuthenticatedQualidadeRoute
+  '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
+  '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
+  '/_authenticated/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
+  '/_authenticated/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
+  '/_authenticated/relatorios/': typeof AuthenticatedRelatoriosIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/avaliacoes'
     | '/avaliar'
+    | '/login'
+    | '/privacidade'
+    | '/reset-password'
+    | '/avaliacoes'
     | '/cartorio'
     | '/configuracoes'
+    | '/dashboard'
     | '/ocorrencias'
     | '/pesquisas'
     | '/planos-melhoria'
     | '/pontos'
-    | '/privacidade'
     | '/qualidade'
     | '/relatorios'
     | '/usuarios'
     | '/visao-executiva'
     | '/relatorios/$tipo'
-    | '/relatorios/'
     | '/avaliar/$cartorio/$ponto'
+    | '/relatorios/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/avaliacoes'
     | '/avaliar'
+    | '/login'
+    | '/privacidade'
+    | '/reset-password'
+    | '/avaliacoes'
     | '/cartorio'
     | '/configuracoes'
+    | '/dashboard'
     | '/ocorrencias'
     | '/pesquisas'
     | '/planos-melhoria'
     | '/pontos'
-    | '/privacidade'
     | '/qualidade'
     | '/usuarios'
     | '/visao-executiva'
     | '/relatorios/$tipo'
-    | '/relatorios'
     | '/avaliar/$cartorio/$ponto'
+    | '/relatorios'
   id:
     | '__root__'
     | '/'
-    | '/avaliacoes'
+    | '/_authenticated'
     | '/avaliar'
-    | '/cartorio'
-    | '/configuracoes'
-    | '/ocorrencias'
-    | '/pesquisas'
-    | '/planos-melhoria'
-    | '/pontos'
+    | '/login'
     | '/privacidade'
-    | '/qualidade'
-    | '/relatorios'
-    | '/usuarios'
-    | '/visao-executiva'
-    | '/relatorios/$tipo'
-    | '/relatorios/'
+    | '/reset-password'
+    | '/_authenticated/avaliacoes'
+    | '/_authenticated/cartorio'
+    | '/_authenticated/configuracoes'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/ocorrencias'
+    | '/_authenticated/pesquisas'
+    | '/_authenticated/planos-melhoria'
+    | '/_authenticated/pontos'
+    | '/_authenticated/qualidade'
+    | '/_authenticated/relatorios'
+    | '/_authenticated/usuarios'
+    | '/_authenticated/visao-executiva'
+    | '/_authenticated/relatorios/$tipo'
     | '/avaliar/$cartorio/$ponto'
+    | '/_authenticated/relatorios/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AvaliacoesRoute: typeof AvaliacoesRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AvaliarRoute: typeof AvaliarRouteWithChildren
-  CartorioRoute: typeof CartorioRoute
-  ConfiguracoesRoute: typeof ConfiguracoesRoute
-  OcorrenciasRoute: typeof OcorrenciasRoute
-  PesquisasRoute: typeof PesquisasRoute
-  PlanosMelhoriaRoute: typeof PlanosMelhoriaRoute
-  PontosRoute: typeof PontosRoute
+  LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
-  QualidadeRoute: typeof QualidadeRoute
-  RelatoriosRoute: typeof RelatoriosRouteWithChildren
-  UsuariosRoute: typeof UsuariosRoute
-  VisaoExecutivaRoute: typeof VisaoExecutivaRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -255,11 +296,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/avaliacoes': {
-      id: '/avaliacoes'
-      path: '/avaliacoes'
-      fullPath: '/avaliacoes'
-      preLoaderRoute: typeof AvaliacoesRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/avaliar': {
@@ -269,46 +310,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AvaliarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cartorio': {
-      id: '/cartorio'
-      path: '/cartorio'
-      fullPath: '/cartorio'
-      preLoaderRoute: typeof CartorioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/configuracoes': {
-      id: '/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof ConfiguracoesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/ocorrencias': {
-      id: '/ocorrencias'
-      path: '/ocorrencias'
-      fullPath: '/ocorrencias'
-      preLoaderRoute: typeof OcorrenciasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pesquisas': {
-      id: '/pesquisas'
-      path: '/pesquisas'
-      fullPath: '/pesquisas'
-      preLoaderRoute: typeof PesquisasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/planos-melhoria': {
-      id: '/planos-melhoria'
-      path: '/planos-melhoria'
-      fullPath: '/planos-melhoria'
-      preLoaderRoute: typeof PlanosMelhoriaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/pontos': {
-      id: '/pontos'
-      path: '/pontos'
-      fullPath: '/pontos'
-      preLoaderRoute: typeof PontosRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -318,47 +324,110 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/qualidade': {
-      id: '/qualidade'
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/avaliacoes': {
+      id: '/_authenticated/avaliacoes'
+      path: '/avaliacoes'
+      fullPath: '/avaliacoes'
+      preLoaderRoute: typeof AuthenticatedAvaliacoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cartorio': {
+      id: '/_authenticated/cartorio'
+      path: '/cartorio'
+      fullPath: '/cartorio'
+      preLoaderRoute: typeof AuthenticatedCartorioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ocorrencias': {
+      id: '/_authenticated/ocorrencias'
+      path: '/ocorrencias'
+      fullPath: '/ocorrencias'
+      preLoaderRoute: typeof AuthenticatedOcorrenciasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pesquisas': {
+      id: '/_authenticated/pesquisas'
+      path: '/pesquisas'
+      fullPath: '/pesquisas'
+      preLoaderRoute: typeof AuthenticatedPesquisasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planos-melhoria': {
+      id: '/_authenticated/planos-melhoria'
+      path: '/planos-melhoria'
+      fullPath: '/planos-melhoria'
+      preLoaderRoute: typeof AuthenticatedPlanosMelhoriaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/pontos': {
+      id: '/_authenticated/pontos'
+      path: '/pontos'
+      fullPath: '/pontos'
+      preLoaderRoute: typeof AuthenticatedPontosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/qualidade': {
+      id: '/_authenticated/qualidade'
       path: '/qualidade'
       fullPath: '/qualidade'
-      preLoaderRoute: typeof QualidadeRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedQualidadeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/relatorios': {
-      id: '/relatorios'
+    '/_authenticated/relatorios': {
+      id: '/_authenticated/relatorios'
       path: '/relatorios'
       fullPath: '/relatorios'
-      preLoaderRoute: typeof RelatoriosRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/usuarios': {
-      id: '/usuarios'
+    '/_authenticated/usuarios': {
+      id: '/_authenticated/usuarios'
       path: '/usuarios'
       fullPath: '/usuarios'
-      preLoaderRoute: typeof UsuariosRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedUsuariosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/visao-executiva': {
-      id: '/visao-executiva'
+    '/_authenticated/visao-executiva': {
+      id: '/_authenticated/visao-executiva'
       path: '/visao-executiva'
       fullPath: '/visao-executiva'
-      preLoaderRoute: typeof VisaoExecutivaRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof AuthenticatedVisaoExecutivaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/relatorios/': {
-      id: '/relatorios/'
+    '/_authenticated/relatorios/': {
+      id: '/_authenticated/relatorios/'
       path: '/'
       fullPath: '/relatorios/'
-      preLoaderRoute: typeof RelatoriosIndexRouteImport
-      parentRoute: typeof RelatoriosRoute
+      preLoaderRoute: typeof AuthenticatedRelatoriosIndexRouteImport
+      parentRoute: typeof AuthenticatedRelatoriosRoute
     }
-    '/relatorios/$tipo': {
-      id: '/relatorios/$tipo'
+    '/_authenticated/relatorios/$tipo': {
+      id: '/_authenticated/relatorios/$tipo'
       path: '/$tipo'
       fullPath: '/relatorios/$tipo'
-      preLoaderRoute: typeof RelatoriosTipoRouteImport
-      parentRoute: typeof RelatoriosRoute
+      preLoaderRoute: typeof AuthenticatedRelatoriosTipoRouteImport
+      parentRoute: typeof AuthenticatedRelatoriosRoute
     }
     '/avaliar/$cartorio/$ponto': {
       id: '/avaliar/$cartorio/$ponto'
@@ -369,6 +438,55 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AuthenticatedRelatoriosRouteChildren {
+  AuthenticatedRelatoriosTipoRoute: typeof AuthenticatedRelatoriosTipoRoute
+  AuthenticatedRelatoriosIndexRoute: typeof AuthenticatedRelatoriosIndexRoute
+}
+
+const AuthenticatedRelatoriosRouteChildren: AuthenticatedRelatoriosRouteChildren =
+  {
+    AuthenticatedRelatoriosTipoRoute: AuthenticatedRelatoriosTipoRoute,
+    AuthenticatedRelatoriosIndexRoute: AuthenticatedRelatoriosIndexRoute,
+  }
+
+const AuthenticatedRelatoriosRouteWithChildren =
+  AuthenticatedRelatoriosRoute._addFileChildren(
+    AuthenticatedRelatoriosRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
+  AuthenticatedCartorioRoute: typeof AuthenticatedCartorioRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedOcorrenciasRoute: typeof AuthenticatedOcorrenciasRoute
+  AuthenticatedPesquisasRoute: typeof AuthenticatedPesquisasRoute
+  AuthenticatedPlanosMelhoriaRoute: typeof AuthenticatedPlanosMelhoriaRoute
+  AuthenticatedPontosRoute: typeof AuthenticatedPontosRoute
+  AuthenticatedQualidadeRoute: typeof AuthenticatedQualidadeRoute
+  AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRouteWithChildren
+  AuthenticatedUsuariosRoute: typeof AuthenticatedUsuariosRoute
+  AuthenticatedVisaoExecutivaRoute: typeof AuthenticatedVisaoExecutivaRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
+  AuthenticatedCartorioRoute: AuthenticatedCartorioRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedOcorrenciasRoute: AuthenticatedOcorrenciasRoute,
+  AuthenticatedPesquisasRoute: AuthenticatedPesquisasRoute,
+  AuthenticatedPlanosMelhoriaRoute: AuthenticatedPlanosMelhoriaRoute,
+  AuthenticatedPontosRoute: AuthenticatedPontosRoute,
+  AuthenticatedQualidadeRoute: AuthenticatedQualidadeRoute,
+  AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRouteWithChildren,
+  AuthenticatedUsuariosRoute: AuthenticatedUsuariosRoute,
+  AuthenticatedVisaoExecutivaRoute: AuthenticatedVisaoExecutivaRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface AvaliarRouteChildren {
   AvaliarCartorioPontoRoute: typeof AvaliarCartorioPontoRoute
@@ -381,35 +499,13 @@ const AvaliarRouteChildren: AvaliarRouteChildren = {
 const AvaliarRouteWithChildren =
   AvaliarRoute._addFileChildren(AvaliarRouteChildren)
 
-interface RelatoriosRouteChildren {
-  RelatoriosTipoRoute: typeof RelatoriosTipoRoute
-  RelatoriosIndexRoute: typeof RelatoriosIndexRoute
-}
-
-const RelatoriosRouteChildren: RelatoriosRouteChildren = {
-  RelatoriosTipoRoute: RelatoriosTipoRoute,
-  RelatoriosIndexRoute: RelatoriosIndexRoute,
-}
-
-const RelatoriosRouteWithChildren = RelatoriosRoute._addFileChildren(
-  RelatoriosRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AvaliacoesRoute: AvaliacoesRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AvaliarRoute: AvaliarRouteWithChildren,
-  CartorioRoute: CartorioRoute,
-  ConfiguracoesRoute: ConfiguracoesRoute,
-  OcorrenciasRoute: OcorrenciasRoute,
-  PesquisasRoute: PesquisasRoute,
-  PlanosMelhoriaRoute: PlanosMelhoriaRoute,
-  PontosRoute: PontosRoute,
+  LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
-  QualidadeRoute: QualidadeRoute,
-  RelatoriosRoute: RelatoriosRouteWithChildren,
-  UsuariosRoute: UsuariosRoute,
-  VisaoExecutivaRoute: VisaoExecutivaRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

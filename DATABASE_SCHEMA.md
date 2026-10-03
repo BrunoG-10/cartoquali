@@ -2,7 +2,7 @@
 
 ## Escopo
 
-O PostgreSQL externo prepara a persistência real do CartoQuali. Nesta etapa, o frontend continua exclusivamente no provedor mock em memória. Não há autenticação, RLS, API ou leitura/escrita do frontend.
+O PostgreSQL externo prepara a persistência real do CartoQuali. Os dados operacionais do frontend continuam no provedor mock em memória. A Etapa 2 usa Supabase Auth e leitura administrativa privilegiada no servidor somente para identidade, cartório, papel e convites; os demais módulos ainda não leem nem gravam no banco.
 
 `registryId`, usado no domínio TypeScript, corresponde a `cartorio_id` no banco.
 
@@ -38,7 +38,9 @@ Cartórios ─ Auditoria
 - UUIDs usam `gen_random_uuid()`; datas de evento usam `timestamptz` com `now()`.
 - Exclusões destrutivas de entidades operacionais são restritas. Papéis, perguntas, opções e respostas dependentes usam cascata quando o filho perde significado sem o pai.
 - Índices cobrem tenant, datas de avaliações/auditoria, status e chaves de pesquisa, ponto, avaliação, pergunta e responsável.
-- RLS está habilitada nas 12 tabelas com políticas explícitas de bloqueio para `anon` e `authenticated`; somente `service_role` pode acessar os dados até a etapa de autenticação e políticas funcionais.
+- RLS está habilitada nas 12 tabelas com políticas explícitas de bloqueio para `anon` e `authenticated`; leituras de identidade e convites da Etapa 2 passam por funções de servidor autenticadas, que mantêm a chave privilegiada fora do navegador.
+- `usuarios.auth_user_id` vincula a identidade do Supabase Auth ao cadastro funcional; senhas permanecem exclusivamente no Supabase Auth.
+- `user_roles` continua separado de `usuarios`; o servidor valida `PLATFORM_ADMIN` ou `CARTORIO_ADMIN` antes de enviar convites.
 
 ## Artefatos reproduzíveis
 
@@ -46,4 +48,4 @@ Cartórios ─ Auditoria
 - Dados fictícios: `database/seed.sql`
 - Validação transacional: `database/tests/001_schema_validation.sql`
 
-A estrutura foi aplicada no projeto Supabase externo conectado pelo executor de migrations. A cópia em `database/migrations` permanece como artefato reproduzível e documentação da Etapa 1; o frontend continua sem consumir essas tabelas.
+A estrutura foi aplicada no projeto Supabase externo conectado. A cópia em `database/migrations` permanece como artefato reproduzível da Etapa 1. Na Etapa 2, apenas autenticação e contexto administrativo consomem dados reais; avaliações, pesquisas, indicadores, ocorrências, planos e relatórios continuam em memória.
