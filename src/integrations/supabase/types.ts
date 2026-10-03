@@ -705,25 +705,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_my_cartoquali_context: {
-        Args: never
-        Returns: {
-          auth_user_id: string
-          cartorio_id: string
-          cartorio_nome: string
-          cartorio_status: string
-          email: string
-          nome: string
-          role: string
-          telefone: string
-          usuario_id: string
-          usuario_status: string
-        }[]
-      }
-      has_cartoquali_role: {
-        Args: { _auth_user_id: string; _roles: string[] }
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
