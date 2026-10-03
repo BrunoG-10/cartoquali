@@ -20,3 +20,4 @@
 - Resolve all runtime data through the typed data-provider boundary; only the provider adapter may import mock fixtures.
 - Keep external PostgreSQL migrations, demo seeds, and database validation scripts under `database/`; the frontend stays on mocks until the API stage.
 - Resolve administrative identity and invitations through authenticated server functions; keep operational modules on the mock provider until the API stage.
+- Let authenticated Supabase queries enforce tenant isolation through RLS; reserve the admin client for Auth administration after an RLS-scoped authorization check.

@@ -12,8 +12,7 @@ const roleMap = {
 export const getCurrentAuthContext = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: usuario, error } = await supabaseAdmin
+    const { data: usuario, error } = await context.supabase
       .from("usuarios")
       .select("id, cartorio_id, auth_user_id, nome, email, telefone, status, created_at, updated_at")
       .eq("auth_user_id", context.userId)
@@ -22,8 +21,8 @@ export const getCurrentAuthContext = createServerFn({ method: "GET" })
     if (!usuario) return { status: "missing_profile" as const };
 
     const [{ data: cartorio }, { data: roles }] = await Promise.all([
-      supabaseAdmin.from("cartorios").select("id, nome_fantasia, razao_social, status").eq("id", usuario.cartorio_id).maybeSingle(),
-      supabaseAdmin.from("user_roles").select("role").eq("user_id", usuario.id),
+      context.supabase.from("cartorios").select("id, nome_fantasia, razao_social, status").eq("id", usuario.cartorio_id).maybeSingle(),
+      context.supabase.from("user_roles").select("role").eq("user_id", usuario.id),
     ]);
     if (!cartorio) return { status: "missing_registry" as const };
     if (usuario.status !== "ativo") return { status: "inactive_user" as const };
@@ -41,27 +40,26 @@ export const getCurrentAuthContext = createServerFn({ method: "GET" })
 export const listRealUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: caller } = await supabaseAdmin.from("usuarios").select("id, cartorio_id, status").eq("auth_user_id", context.userId).maybeSingle();
+    const { data: caller } = await context.supabase.from("usuarios").select("id, cartorio_id, status").eq("auth_user_id", context.userId).maybeSingle();
     if (!caller || caller.status !== "ativo") throw new Error("Acesso não autorizado.");
-    const { data, error } = await supabaseAdmin.from("usuarios").select("id, cartorio_id, auth_user_id, nome, email, telefone, status, created_at, user_roles(role)").eq("cartorio_id", caller.cartorio_id).order("nome");
+    const { data, error } = await context.supabase.from("usuarios").select("id, cartorio_id, auth_user_id, nome, email, telefone, status, created_at, user_roles(role)").order("nome");
     if (error) throw new Error("Não foi possível listar os usuários.");
     return data ?? [];
   });
 
 export const inviteAdministrativeUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ email: z.string().email(), redirectTo: z.string().url() }).parse(input))
+  .validator((input) => z.object({ email: z.string().email(), redirectTo: z.string().url() }).parse(input))
   .handler(async ({ context, data }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: caller } = await supabaseAdmin.from("usuarios").select("id, cartorio_id, status").eq("auth_user_id", context.userId).maybeSingle();
+    const { data: caller } = await context.supabase.from("usuarios").select("id, cartorio_id, status").eq("auth_user_id", context.userId).maybeSingle();
     if (!caller || caller.status !== "ativo") throw new Error("Acesso não autorizado.");
-    const { data: roles } = await supabaseAdmin.from("user_roles").select("role").eq("user_id", caller.id);
+    const { data: roles } = await context.supabase.from("user_roles").select("role").eq("user_id", caller.id);
     if (!roles?.some((item) => item.role === "PLATFORM_ADMIN" || item.role === "CARTORIO_ADMIN")) throw new Error("Você não possui permissão para enviar convites.");
-    const { data: target } = await supabaseAdmin.from("usuarios").select("id, auth_user_id, status").eq("cartorio_id", caller.cartorio_id).ilike("email", data.email).maybeSingle();
+    const { data: target } = await context.supabase.from("usuarios").select("id, auth_user_id, status").ilike("email", data.email).maybeSingle();
     if (!target) throw new Error("Cadastre o usuário funcional antes de enviar o convite.");
     if (target.status !== "ativo") throw new Error("Ative o usuário antes de enviar o convite.");
     if (target.auth_user_id) throw new Error("Este usuário já possui acesso autenticado.");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, { redirectTo: data.redirectTo });
     if (error) throw new Error("Não foi possível enviar o convite.");
     if (!invited.user) throw new Error("Não foi possível criar o acesso autenticado.");
