@@ -64,3 +64,13 @@
 - [x] Document the database model and frontend boundary
 - [x] Connect the user-provided external Supabase project without enabling Lovable Cloud
 - [x] Apply and validate the migration on the connected external Supabase project
+
+# Backend — Etapa 2
+- [x] Add Supabase Auth login, recovery and password-definition flows
+- [x] Protect every administrative page and preserve public evaluation routes
+- [x] Resolve the signed-in user, registry and role through secured server functions
+- [x] Add server-authorized administrative invitations and real access listing
+- [x] Send and link the initial registry-administrator invitation
+- [x] Add authenticated identity and safe sign-out to the administrative menu
+- [x] Validate signed-out protection, invalid login, public access and responsive auth screens
+- [ ] Validate invitation acceptance, authenticated persistence, full recovery and logout after the invited administrator defines a password
