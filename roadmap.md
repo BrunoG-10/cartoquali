@@ -138,10 +138,10 @@
 - [x] Confirm Stage 11 was not started
 
 # Backend — Etapa 11
-- [ ] Audit point schema, public routes, RLS, permissions, links and remaining mocks
-- [ ] Harden tenant-scoped point operations, lifecycle, uniqueness and audit history
-- [ ] Add canonical public URLs, QR preview/download/print and NFC preparation
-- [ ] Validate real submission, survey reassignment, activation, roles and two-tenant isolation
-- [ ] Validate mobile, errors, performance and absence of exposed secrets or internal IDs
-- [ ] Remove only point mocks and publish Stage 11 documentation and final matrix
-- [ ] Confirm Stage 12 was not started
+- [x] Audit point schema, public routes, RLS, permissions, links and remaining mocks
+- [x] Harden tenant-scoped point operations, lifecycle, uniqueness and audit history
+- [x] Add canonical public URLs, QR preview/download/print and NFC preparation
+- [x] Validate real submission, survey reassignment, activation, roles and two-tenant isolation
+- [x] Validate mobile, errors, performance and absence of exposed secrets or internal IDs
+- [x] Remove only point mocks and publish Stage 11 documentation and final matrix
+- [x] Confirm Stage 12 was not started
