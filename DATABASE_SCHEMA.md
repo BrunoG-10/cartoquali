@@ -1,8 +1,8 @@
-# Estrutura do banco do CartoQuali — Etapas 1 a 3
+# Estrutura do banco do CartoQuali — Etapas 1 a 5
 
 ## Escopo
 
-O PostgreSQL externo prepara a persistência real do CartoQuali. Os dados operacionais do frontend continuam no provedor mock em memória. A Etapa 2 usa Supabase Auth e leitura administrativa privilegiada no servidor somente para identidade, cartório, papel e convites; os demais módulos ainda não leem nem gravam no banco.
+O PostgreSQL externo persiste os módulos administrativos já migrados. Na Etapa 5, a página administrativa de Avaliações passou a consultar `avaliacoes` e `respostas` diretamente, sob a sessão autenticada e o isolamento do Supabase. Os módulos ainda não migrados continuam no provedor em memória.
 
 `registryId`, usado no domínio TypeScript, corresponde a `cartorio_id` no banco.
 
@@ -54,3 +54,5 @@ Cartórios ─ Auditoria
 A estrutura foi aplicada no projeto Supabase externo conectado. A cópia em `database/migrations` permanece como artefato reproduzível da Etapa 1. Na Etapa 2, apenas autenticação e contexto administrativo consomem dados reais; avaliações, pesquisas, indicadores, ocorrências, planos e relatórios continuam em memória.
 
 A Etapa 3 foi aplicada por migrações gerenciadas do Supabase. A validação sequencial dos seis blocos aprovou o contexto do tenant (3/3), cartórios e usuários (10/10), auditoria e usuários especiais (8/8), além da matriz direta de dois tenants (61/61). As consultas mais lentas observadas durante os testes ficaram abaixo de 17 ms em média/máximo relevante, sem gargalo nas policies. Todas as fixtures temporárias foram removidas. Consulte `SECURITY.md` e `BACKEND_STAGE_3_REPORT.md`.
+
+Na Etapa 5, `avaliacoes` e `respostas` ficaram disponíveis para leitura e criação autenticada no próprio tenant, mas sem alteração ou exclusão administrativa. A listagem ganhou paginação e filtros reais, e o detalhe resolve avaliação → respostas → perguntas → opções. O modelo atual não guarda cópias históricas do texto da pergunta ou opção; alterações posteriores nesses cadastros podem mudar a interpretação visual de respostas antigas.

@@ -15,7 +15,8 @@ As funções `cartoquali_private.current_user_id()`, `cartoquali_private.current
 - `cartorios`: leitura do próprio cartório; alteração somente por `CARTORIO_ADMIN` do tenant.
 - `usuarios`: leitura do próprio tenant; criação, alteração e exclusão somente por `CARTORIO_ADMIN` do tenant.
 - `user_roles`: leitura do próprio tenant; mutações somente por `CARTORIO_ADMIN`, sempre para usuário do mesmo tenant.
-- `pesquisas`, `pontos_avaliacao` e `avaliacoes`: todas as operações administrativas exigem o tenant atual; criações e alterações também validam os pais relacionados.
+- `pesquisas` e `pontos_avaliacao`: todas as operações administrativas exigem o tenant atual; criações e alterações também validam os pais relacionados.
+- `avaliacoes` e `respostas`: leitura e criação exigem o tenant atual e relações compatíveis; atualização e exclusão são negadas aos usuários administrativos para manter o histórico imutável.
 - `perguntas` e `opcoes_resposta`: o acesso deriva de pesquisa → cartório.
 - `respostas`: o acesso deriva de avaliação → cartório; gravações também exigem pergunta da mesma pesquisa.
 - `ocorrencias_qualidade`: exige tenant próprio e valida avaliação, ponto e responsável relacionados.
@@ -50,3 +51,7 @@ A matriz cobriu:
 - limpeza integral das contas e registros temporários, confirmada com zero resíduos.
 
 O bloqueio de exclusão de `cartorios` ocorre por ausência deliberada de privilégio/policy de exclusão; a resposta HTTP de permissão negada é o resultado seguro esperado. O linter não encontrou alerta introduzido pelas policies. Permanece um aviso preexistente de configuração: proteção contra senhas vazadas desabilitada no Supabase Auth.
+
+## Evidências da Etapa 5
+
+A matriz direta com dois cartórios temporários aprovou 12/12 cenários para ambos: listagem própria, bloqueio cruzado de avaliações e respostas, criação controlada, bloqueio de pesquisa/ponto/resposta cruzados, imutabilidade, persistência após nova autenticação e paginação/filtros. As contas e fixtures temporárias foram removidas ao final.
