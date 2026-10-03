@@ -1,4 +1,4 @@
-# Estrutura do banco do CartoQuali — Etapas 1 a 12
+# Estrutura do banco do CartoQuali — Etapas 1 a 13
 
 ## Escopo
 
@@ -14,6 +14,8 @@ Cartórios ─┬─ Usuários ─ Papéis
            └─ Pontos de avaliação ─ Avaliações ─ Respostas
                                       └─ Ocorrências ─ Planos de melhoria
 Cartórios ─ Auditoria
+Cartórios ─ Solicitações de privacidade
+Avaliações ─ Contato opcional restrito
 ```
 
 ## Dicionário de dados
@@ -33,6 +35,8 @@ Cartórios ─ Auditoria
 | `planos_melhoria`       | Ação ligada à ocorrência          | `id uuid`, textos, prazo, progresso, indicadores, timestamps                   | Cartório e ocorrência obrigatórios; ponto/responsável opcionais                  | Progresso 0/25/50/75/100; relações no mesmo cartório; indicadores 0–100                                         |
 | `audit_logs`            | Base para auditoria futura        | `id uuid`, ação, entidade, `entity_id uuid`, `metadata jsonb`, timestamp       | Cartório obrigatório; usuário opcional                                           | Sem gatilhos ou gravação automática nesta etapa                                                                 |
 | `configuracoes_cartorio` | Preferências administrativas | nome exibido, idioma, data, fuso, agradecimento, pesquisa padrão e flags de coleta | Um registro por cartório; pesquisa padrão opcional | Consulta e alteração apenas por administradores do tenant; mudanças auditadas |
+| `evaluation_contacts` | Contato opcional separado | nome, telefone, e-mail, versão e data da autorização | Uma avaliação; mesmo cartório | Somente administradores autorizados; nunca integra indicadores ou exportação geral |
+| `privacy_requests` | Direitos e governança | tipo, descrição, contato mínimo, status, responsável, observações e conclusão | Cartório obrigatório; avaliação e responsável opcionais no mesmo tenant | Administradores do tenant; registro não é excluído; encerramento é terminal |
 
 ## Integridade, índices e acesso
 
@@ -57,3 +61,5 @@ A estrutura foi aplicada no projeto Supabase externo conectado. A cópia em `dat
 A Etapa 3 foi aplicada por migrações gerenciadas do Supabase. A validação sequencial dos seis blocos aprovou o contexto do tenant (3/3), cartórios e usuários (10/10), auditoria e usuários especiais (8/8), além da matriz direta de dois tenants (61/61). As consultas mais lentas observadas durante os testes ficaram abaixo de 17 ms em média/máximo relevante, sem gargalo nas policies. Todas as fixtures temporárias foram removidas. Consulte `SECURITY.md` e `BACKEND_STAGE_3_REPORT.md`.
 
 Na Etapa 5, `avaliacoes` e `respostas` ficaram disponíveis para leitura e criação autenticada no próprio tenant, mas sem alteração ou exclusão administrativa. A listagem ganhou paginação e filtros reais, e o detalhe resolve avaliação → respostas → perguntas → opções. O modelo atual não guarda cópias históricas do texto da pergunta ou opção; alterações posteriores nesses cadastros podem mudar a interpretação visual de respostas antigas.
+
+Na Etapa 13, contatos deixaram de permanecer nas colunas da avaliação e passaram para `evaluation_contacts` por gatilho transacional. `privacy_requests` sustenta o fluxo administrativo de direitos. Configurações receberam canal de privacidade, versão do aviso e prazos nullable para avaliações, contatos e auditoria; `NULL` significa prazo pendente de definição jurídica/contratual e não ativa exclusão automática.

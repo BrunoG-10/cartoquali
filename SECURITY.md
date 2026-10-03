@@ -60,6 +60,14 @@ A auditoria passou a cobrir cartório, usuários, papéis, pesquisas, perguntas,
 
 A matriz real da Etapa 12 passou 12/12 cenários com contas temporárias e confirmou, entre outros itens, bloqueio de autoelevação direta, isolamento A/B, restrição da lista de usuários, auditoria imutável e perda imediata de leituras após inativação. As fixtures foram removidas.
 
+## Privacidade e dados pessoais — Etapa 13
+
+O contato opcional foi separado em `evaluation_contacts`. Somente `PLATFORM_ADMIN` e `CARTORIO_ADMIN` do tenant atual podem consultá-lo ou removê-lo; gestores e operadores não recebem esses campos. A leitura de contato e a exportação operacional são auditadas. Avaliações, respostas, indicadores, ocorrências, planos e CSV continuam sem contato.
+
+`privacy_requests` é tenant-scoped, imutável após encerramento e acessível apenas aos administradores autorizados. A minimização remove contato e pode redigir textos livres, mas preserva nota e respostas estruturadas. Metadados históricos com chaves de nome, telefone, e-mail ou contato foram limpos; os novos gatilhos registram somente metadados operacionais.
+
+O linter não encontrou alertas introduzidos pela Etapa 13. Permanece o aviso anterior de proteção contra senhas vazadas desabilitada no Supabase Auth.
+
 ## Evidências da Etapa 5
 
 A matriz direta com dois cartórios temporários aprovou 12/12 cenários para ambos: listagem própria, bloqueio cruzado de avaliações e respostas, criação controlada, bloqueio de pesquisa/ponto/resposta cruzados, imutabilidade, persistência após nova autenticação e paginação/filtros. As contas e fixtures temporárias foram removidas ao final.
