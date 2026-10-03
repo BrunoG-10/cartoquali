@@ -1,0 +1,4 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/cartoquali/app-shell";
+import { AuditPage } from "@/components/cartoquali/audit-page";
+export const Route=createFileRoute("/_authenticated/auditoria")({head:()=>({meta:[{title:"Auditoria — CartoQuali"},{name:"description",content:"Consulte o histórico operacional protegido do CartoQuali."},{property:"og:title",content:"Auditoria — CartoQuali"},{property:"og:description",content:"Consulte o histórico operacional protegido do CartoQuali."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <AppShell><AuditPage/></AppShell>});
