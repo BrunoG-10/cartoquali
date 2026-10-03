@@ -1,4 +1,4 @@
-# Estrutura do banco do CartoQuali — Etapa 1
+# Estrutura do banco do CartoQuali — Etapas 1 a 3
 
 ## Escopo
 
@@ -38,7 +38,10 @@ Cartórios ─ Auditoria
 - UUIDs usam `gen_random_uuid()`; datas de evento usam `timestamptz` com `now()`.
 - Exclusões destrutivas de entidades operacionais são restritas. Papéis, perguntas, opções e respostas dependentes usam cascata quando o filho perde significado sem o pai.
 - Índices cobrem tenant, datas de avaliações/auditoria, status e chaves de pesquisa, ponto, avaliação, pergunta e responsável.
-- RLS está habilitada nas 12 tabelas com políticas explícitas de bloqueio para `anon` e `authenticated`; leituras de identidade e convites da Etapa 2 passam por funções de servidor autenticadas, que mantêm a chave privilegiada fora do navegador.
+- RLS está habilitada nas 12 tabelas. As 43 policies isolam usuários autenticados por `cartorio_id`, inclusive nas relações indiretas pesquisa → pergunta → opção e avaliação → resposta. `anon` permanece sem acesso.
+- O tenant é derivado por funções no schema privado `cartoquali_private`, a partir de `auth.uid()` e apenas quando usuário e cartório estão ativos. O cliente não escolhe o tenant.
+- Alterações de cartório, usuários e papéis exigem `CARTORIO_ADMIN` do próprio tenant. `audit_logs` é somente leitura para clientes autenticados.
+- O acesso global de `PLATFORM_ADMIN` e a avaliação pública não foram abertos nesta etapa.
 - `usuarios.auth_user_id` vincula a identidade do Supabase Auth ao cadastro funcional; senhas permanecem exclusivamente no Supabase Auth.
 - `user_roles` continua separado de `usuarios`; o servidor valida `PLATFORM_ADMIN` ou `CARTORIO_ADMIN` antes de enviar convites.
 
@@ -49,3 +52,5 @@ Cartórios ─ Auditoria
 - Validação transacional: `database/tests/001_schema_validation.sql`
 
 A estrutura foi aplicada no projeto Supabase externo conectado. A cópia em `database/migrations` permanece como artefato reproduzível da Etapa 1. Na Etapa 2, apenas autenticação e contexto administrativo consomem dados reais; avaliações, pesquisas, indicadores, ocorrências, planos e relatórios continuam em memória.
+
+A Etapa 3 foi aplicada por migrações gerenciadas do Supabase. A matriz direta de dois tenants executou 61 verificações de isolamento, todas aprovadas, e removeu as fixtures temporárias ao terminar. Consulte `SECURITY.md` e `BACKEND_STAGE_3_REPORT.md`.

@@ -78,5 +78,5 @@
 # Backend — Etapa 3
 - [x] Add private current-user and current-registry database helpers
 - [x] Replace deny-all policies with tenant-scoped RLS policies and minimum grants
-- [ ] Execute the two-registry direct-request security matrix and clean test fixtures
-- [ ] Validate legitimate frontend flows and publish the Stage 3 security report
+- [x] Execute the two-registry direct-request security matrix and clean test fixtures
+- [x] Validate legitimate frontend flows and publish the Stage 3 security report
