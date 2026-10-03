@@ -27,3 +27,4 @@
 - Compute Stage 7 dashboard indicators in one authenticated, RLS-scoped database function using America/Sao_Paulo period boundaries; presentation pages never fall back to mock metrics.
 - Persist Stage 8 occurrence writes through authenticated RLS-scoped RPCs and database triggers, with immutable origin, ordered status transitions, idempotency and audit history.
 - Persist Stage 9 improvement-plan reads and writes through authenticated tenant-scoped server functions, with database-enforced lifecycle, idempotency, optimistic concurrency and audit history.
+- Build Stage 10 reports through one authenticated tenant-scoped aggregate and reuse that authorized result for CSV; report pages never read session mocks.
