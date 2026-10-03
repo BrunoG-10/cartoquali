@@ -74,3 +74,9 @@
 - [x] Add authenticated identity and safe sign-out to the administrative menu
 - [x] Validate signed-out protection, invalid login, public access and responsive auth screens
 - [ ] Validate invitation acceptance, authenticated persistence, full recovery and logout after the invited administrator defines a password
+
+# Backend — Etapa 3
+- [x] Add private current-user and current-registry database helpers
+- [x] Replace deny-all policies with tenant-scoped RLS policies and minimum grants
+- [ ] Execute the two-registry direct-request security matrix and clean test fixtures
+- [ ] Validate legitimate frontend flows and publish the Stage 3 security report
