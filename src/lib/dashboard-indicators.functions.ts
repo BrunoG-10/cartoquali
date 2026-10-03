@@ -38,15 +38,19 @@ export const getDashboardIndicators = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ context, data }) => {
-    const { data: result, error } = await context.supabase.rpc("get_dashboard_indicators", {
+    const params: {
+      _current_start: string; _current_end: string; _previous_start: string; _previous_end: string;
+      _granularity: "day" | "week" | "month"; _point_id?: string; _survey_id?: string;
+    } = {
       _current_start: data.currentStart,
       _current_end: data.currentEnd,
       _previous_start: data.previousStart,
       _previous_end: data.previousEnd,
-      _point_id: data.pointId ?? undefined,
-      _survey_id: data.surveyId ?? undefined,
       _granularity: data.granularity,
-    });
+    };
+    if (data.pointId) params._point_id = data.pointId;
+    if (data.surveyId) params._survey_id = data.surveyId;
+    const { data: result, error } = await context.supabase.rpc("get_dashboard_indicators", params);
     if (error) {
       console.error("dashboard indicators query failed", error.code);
       throw new Error("Não foi possível carregar os indicadores. Tente novamente.");

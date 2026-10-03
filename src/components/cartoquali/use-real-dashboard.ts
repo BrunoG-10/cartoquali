@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { getDashboardIndicators } from "@/lib/dashboard-indicators.functions";
 import type { DashboardPeriod } from "@/types/cartoquali";
 
-export type RealDashboardFilters = { period: DashboardPeriod; pointId?: string; surveyId?: string; startDate?: string; endDate?: string };
+export type RealDashboardFilters = { period: DashboardPeriod; pointId?: string | undefined; surveyId?: string | undefined; startDate?: string | undefined; endDate?: string | undefined };
 
 const SAO_PAULO_OFFSET = "-03:00";
 const dateFormatter = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo", year: "numeric", month: "2-digit", day: "2-digit" });
@@ -16,7 +16,9 @@ function monthBoundary(year: number, month: number) { return atStart(`${year}-${
 export function resolveDashboardRange(filters: RealDashboardFilters, now = new Date()) {
   const todayText = isoDate(now);
   const today = atStart(todayText);
-  const [year, month] = todayText.split("-").map(Number);
+  const parts = todayText.split("-").map(Number);
+  const year = parts[0] ?? now.getUTCFullYear();
+  const month = parts[1] ?? now.getUTCMonth() + 1;
   let start = today;
   let end = addDays(today, 1);
   if (filters.period === "7 dias") start = addDays(today, -6);
@@ -45,7 +47,12 @@ export function useRealDashboard(filters: RealDashboardFilters) {
   const range = useMemo(() => resolveDashboardRange(filters), [filters]);
   return useQuery({
     queryKey: ["dashboard-indicators", filters, range],
-    queryFn: () => fetchIndicators({ data: { ...range, pointId: filters.pointId, surveyId: filters.surveyId } }),
+    queryFn: () => {
+      const data: typeof range & { pointId?: string; surveyId?: string } = { ...range };
+      if (filters.pointId) data.pointId = filters.pointId;
+      if (filters.surveyId) data.surveyId = filters.surveyId;
+      return fetchIndicators({ data });
+    },
     staleTime: 30_000,
     refetchOnWindowFocus: true,
   });
