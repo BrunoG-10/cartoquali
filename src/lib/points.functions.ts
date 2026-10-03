@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 import type { EvaluationPoint } from "@/types/cartoquali";
 
 const pointInput = z.object({
@@ -52,7 +54,7 @@ const columns =
   "id, cartorio_id, pesquisa_id, nome, localizacao, codigo, descricao, status, public_slug, metodo, created_at";
 const managingRoles = ["PLATFORM_ADMIN", "CARTORIO_ADMIN", "GESTOR"];
 
-async function permissions(context: { supabase: any; userId: string }) {
+async function permissions(context: { supabase: SupabaseClient<Database>; userId: string }) {
   const { data: profile } = await context.supabase
     .from("usuarios")
     .select("id, cartorio_id, status")
