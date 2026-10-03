@@ -205,10 +205,13 @@ export type Database = {
           avaliacao_id: string | null
           cartorio_id: string
           categoria: string
+          client_request_id: string | null
           created_at: string
+          criado_por_id: string | null
           data_abertura: string
           data_resolucao: string | null
           descricao: string
+          encerrado_por_id: string | null
           id: string
           observacao: string | null
           origem: string
@@ -224,10 +227,13 @@ export type Database = {
           avaliacao_id?: string | null
           cartorio_id: string
           categoria: string
+          client_request_id?: string | null
           created_at?: string
+          criado_por_id?: string | null
           data_abertura?: string
           data_resolucao?: string | null
           descricao: string
+          encerrado_por_id?: string | null
           id?: string
           observacao?: string | null
           origem: string
@@ -243,10 +249,13 @@ export type Database = {
           avaliacao_id?: string | null
           cartorio_id?: string
           categoria?: string
+          client_request_id?: string | null
           created_at?: string
+          criado_por_id?: string | null
           data_abertura?: string
           data_resolucao?: string | null
           descricao?: string
+          encerrado_por_id?: string | null
           id?: string
           observacao?: string | null
           origem?: string
@@ -259,6 +268,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ocorrencias_criado_por_tenant_fkey"
+            columns: ["criado_por_id", "cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id", "cartorio_id"]
+          },
+          {
+            foreignKeyName: "ocorrencias_encerrado_por_tenant_fkey"
+            columns: ["encerrado_por_id", "cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id", "cartorio_id"]
+          },
           {
             foreignKeyName: "ocorrencias_qualidade_avaliacao_id_cartorio_id_fkey"
             columns: ["avaliacao_id", "cartorio_id"]
@@ -705,6 +728,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_quality_occurrence: {
+        Args: {
+          _category: string
+          _client_request_id: string
+          _description: string
+          _due_date?: string
+          _evaluation_id?: string
+          _observation?: string
+          _origin: string
+          _point_id?: string
+          _priority: string
+          _responsible_id?: string
+          _title: string
+        }
+        Returns: Json
+      }
       get_dashboard_indicators: {
         Args: {
           _current_end: string
@@ -725,6 +764,21 @@ export type Database = {
           _contact?: Json
           _idempotency_key: string
           _source_hash: string
+        }
+        Returns: Json
+      }
+      update_quality_occurrence: {
+        Args: {
+          _category: string
+          _description: string
+          _due_date: string
+          _expected_updated_at: string
+          _id: string
+          _observation: string
+          _priority: string
+          _responsible_id: string
+          _status: string
+          _title: string
         }
         Returns: Json
       }
