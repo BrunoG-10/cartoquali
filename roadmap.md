@@ -119,3 +119,10 @@
 - [x] Connect creation from a real evaluation and remove only occurrence-page mock dependencies
 - [x] Validate roles, two-tenant isolation, integrity, errors, end-to-end treatment and responsive states
 - [x] Publish occurrence documentation, the final matrix and confirmation that Stage 9 was not started
+
+# Backend — Etapa 9
+- [x] Audit improvement-plan schema, permissions, relationships and mock flows
+- [x] Add tenant-scoped plan commands with authorship, idempotency, lifecycle, concurrency and audit history
+- [x] Connect paginated plan list, filters, detail, creation, updates and occurrence handoff to real Supabase data
+- [ ] Validate roles, two-tenant isolation, integrity, full lifecycle and responsive states
+- [ ] Publish improvement-plan documentation and the final 19-item validation matrix
