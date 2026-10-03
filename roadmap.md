@@ -179,3 +179,12 @@
 - [x] Add configurable privacy channel and nullable retention settings without automatic deletion
 - [x] Validate public submissions, roles, two-tenant isolation, exports, minimization and responsive states
 - [x] Publish Stage 13 documentation and final 31-item matrix without starting a later stage
+
+# Backend — Etapa 14
+
+- [ ] Audit the complete public evaluation route, server boundary, database validation, QR URL and mobile states
+- [ ] Harden resilience, accessibility, payload limits, cache behavior and shared-network abuse protection
+- [ ] Validate two-tenant integrity, manipulated payloads, retry/idempotency, dynamic survey and point reactivation
+- [ ] Validate 320–430 px layouts, performance, XSS-safe rendering and QR production URL behavior
+- [ ] Remove only public-flow leftovers and publish Stage 14 documentation and final matrix
+- [ ] Confirm the onboarding stage was not started
