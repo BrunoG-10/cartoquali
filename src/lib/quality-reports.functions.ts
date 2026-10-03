@@ -76,7 +76,8 @@ export const exportQualityReportCsv = createServerFn({ method: "POST" })
     const { data: profile } = await context.supabase.from("usuarios").select("id,status").eq("auth_user_id", context.userId).maybeSingle();
     const { data: roles } = profile ? await context.supabase.from("user_roles").select("role").eq("user_id", profile.id) : { data: [] };
     if (!profile || profile.status !== "ativo" || !(roles ?? []).some((item: { role: string }) => ["PLATFORM_ADMIN", "CARTORIO_ADMIN", "GESTOR"].includes(item.role))) throw new Error("Você não possui permissão para exportar relatórios.");
-    await context.supabase.rpc("log_privacy_event", { _action: "operational_report_exported", _entity: "quality_report", _metadata: { current_start: data.currentStart, current_end: data.currentEnd } });
+    const privacyRpc = context.supabase.rpc as unknown as (name: string, args: Record<string, unknown>) => Promise<{ error: { message: string } | null }>;
+    await privacyRpc("log_privacy_event", { _action: "operational_report_exported", _entity: "quality_report", _entity_id: null, _metadata: { current_start: data.currentStart, current_end: data.currentEnd } });
     const header = ["data", "ponto", "pesquisa", "nota", "status", "comentario"];
     const rows = report.evaluations.map((item) => [item.created_at, item.point_name, item.survey_name, item.rating, item.status, item.comment]);
     return { filename: `cartoquali-relatorio-${data.currentStart.slice(0, 10)}-${data.currentEnd.slice(0, 10)}.csv`, content: `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n")}` };
