@@ -293,6 +293,57 @@ export type Database = {
           },
         ]
       }
+      evaluation_contacts: {
+        Row: {
+          cartorio_id: string
+          consent_at: string
+          consent_version: string
+          created_at: string
+          email: string | null
+          evaluation_id: string
+          name: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          cartorio_id: string
+          consent_at?: string
+          consent_version: string
+          created_at?: string
+          email?: string | null
+          evaluation_id: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cartorio_id?: string
+          consent_at?: string
+          consent_version?: string
+          created_at?: string
+          email?: string | null
+          evaluation_id?: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluation_contacts_cartorio_id_fkey"
+            columns: ["cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "cartorios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluation_contacts_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: true
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ocorrencias_qualidade: {
         Row: {
           avaliacao_id: string | null
