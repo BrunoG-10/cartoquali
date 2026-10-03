@@ -96,3 +96,11 @@
 - [x] Connect evaluation details and question answers with restricted contact data
 - [x] Validate controlled insertion, persistence and complete two-tenant isolation
 - [x] Remove replaced evaluation mocks and publish the Stage 5 report
+
+# Backend — Etapa 6
+- [ ] Audit the real public evaluation schema, routes, policies and questionnaire
+- [ ] Add narrow public survey loading and transactional submission boundaries
+- [ ] Connect the mobile public flow to real point, survey, question and option data
+- [ ] Expose copyable public evaluation links in Evaluation Points
+- [ ] Validate two-tenant isolation, abuse controls, duplicate protection and admin visibility
+- [ ] Remove only replaced public-flow mocks and publish the Stage 6 report
