@@ -25,3 +25,4 @@
 - Read Stage 5 evaluations and answers through authenticated, paginated server functions; treat persisted evaluations as immutable history and expose contact details only to authorized roles.
 - Resolve Stage 6 public surveys by opaque point slug through narrow server functions; submit atomically with server-side relationship validation and idempotency, never exposing evaluation reads.
 - Compute Stage 7 dashboard indicators in one authenticated, RLS-scoped database function using America/Sao_Paulo period boundaries; presentation pages never fall back to mock metrics.
+- Persist Stage 8 occurrence writes through authenticated RLS-scoped RPCs and database triggers, with immutable origin, ordered status transitions, idempotency and audit history.
