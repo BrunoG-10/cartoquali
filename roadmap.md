@@ -89,3 +89,10 @@
 - [ ] Block 3: migrate Evaluation Points management
 - [ ] Block 4: migrate Surveys, Questions and Answer Options management
 - [ ] Remove replaced mocks, validate persistence/responsiveness and publish the Stage 4 report
+
+# Backend — Etapa 5
+- [ ] Inspect evaluations, answers, relationships, constraints and RLS
+- [ ] Connect the authenticated evaluation list, filters and pagination to Supabase
+- [ ] Connect evaluation details and question answers with restricted contact data
+- [ ] Validate controlled insertion, persistence and complete two-tenant isolation
+- [ ] Remove replaced evaluation mocks and publish the Stage 5 report
