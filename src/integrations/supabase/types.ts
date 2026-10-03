@@ -705,8 +705,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      current_cartoquali_user_id: { Args: never; Returns: string }
-      get_current_cartorio_id: { Args: never; Returns: string }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
