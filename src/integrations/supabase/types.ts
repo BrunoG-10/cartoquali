@@ -705,7 +705,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_public_evaluation_context: { Args: { _code: string }; Returns: Json }
+      submit_public_evaluation: {
+        Args: {
+          _answers: Json
+          _code: string
+          _contact?: Json
+          _idempotency_key: string
+          _source_hash: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never

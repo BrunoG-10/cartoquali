@@ -27,6 +27,7 @@ import { Route as AuthenticatedQualidadeRouteImport } from './routes/_authentica
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedVisaoExecutivaRouteImport } from './routes/_authenticated/visao-executiva'
+import { Route as AvaliarCodigoRouteImport } from './routes/avaliar_.$codigo'
 import { Route as AuthenticatedRelatoriosIndexRouteImport } from './routes/_authenticated/relatorios.index'
 import { Route as AuthenticatedRelatoriosTipoRouteImport } from './routes/_authenticated/relatorios.$tipo'
 import { Route as AvaliarCartorioPontoRouteImport } from './routes/avaliar.$cartorio.$ponto'
@@ -124,6 +125,11 @@ const AuthenticatedVisaoExecutivaRoute =
     path: '/visao-executiva',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AvaliarCodigoRoute = AvaliarCodigoRouteImport.update({
+  id: '/avaliar_/$codigo',
+  path: '/avaliar/$codigo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedRelatoriosIndexRoute =
   AuthenticatedRelatoriosIndexRouteImport.update({
     id: '/',
@@ -160,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
+  '/avaliar/$codigo': typeof AvaliarCodigoRoute
   '/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
   '/relatorios/': typeof AuthenticatedRelatoriosIndexRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/qualidade': typeof AuthenticatedQualidadeRoute
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
+  '/avaliar/$codigo': typeof AvaliarCodigoRoute
   '/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
   '/relatorios': typeof AuthenticatedRelatoriosIndexRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
+  '/avaliar_/$codigo': typeof AvaliarCodigoRoute
   '/_authenticated/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
   '/_authenticated/relatorios/': typeof AuthenticatedRelatoriosIndexRoute
@@ -229,6 +238,7 @@ export interface FileRouteTypes {
     | '/relatorios'
     | '/usuarios'
     | '/visao-executiva'
+    | '/avaliar/$codigo'
     | '/relatorios/$tipo'
     | '/avaliar/$cartorio/$ponto'
     | '/relatorios/'
@@ -250,6 +260,7 @@ export interface FileRouteTypes {
     | '/qualidade'
     | '/usuarios'
     | '/visao-executiva'
+    | '/avaliar/$codigo'
     | '/relatorios/$tipo'
     | '/avaliar/$cartorio/$ponto'
     | '/relatorios'
@@ -273,6 +284,7 @@ export interface FileRouteTypes {
     | '/_authenticated/relatorios'
     | '/_authenticated/usuarios'
     | '/_authenticated/visao-executiva'
+    | '/avaliar_/$codigo'
     | '/_authenticated/relatorios/$tipo'
     | '/avaliar/$cartorio/$ponto'
     | '/_authenticated/relatorios/'
@@ -285,6 +297,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  AvaliarCodigoRoute: typeof AvaliarCodigoRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -415,6 +428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVisaoExecutivaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/avaliar_/$codigo': {
+      id: '/avaliar_/$codigo'
+      path: '/avaliar/$codigo'
+      fullPath: '/avaliar/$codigo'
+      preLoaderRoute: typeof AvaliarCodigoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/relatorios/': {
       id: '/_authenticated/relatorios/'
       path: '/'
@@ -506,6 +526,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  AvaliarCodigoRoute: AvaliarCodigoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

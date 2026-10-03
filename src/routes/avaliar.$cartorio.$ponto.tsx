@@ -1,5 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { PublicEvaluation } from "@/components/cartoquali/public-evaluation";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/avaliar/$cartorio/$ponto")({
   head: () => ({ meta: [
@@ -14,6 +13,6 @@ export const Route = createFileRoute("/avaliar/$cartorio/$ponto")({
 });
 
 function DynamicEvaluation() {
-  const { cartorio, ponto } = Route.useParams();
-  return <PublicEvaluation cartorioSlug={cartorio} pointSlug={ponto} />;
+  const { ponto } = Route.useParams();
+  return <Navigate to="/avaliar/$codigo" params={{ codigo: ponto }} replace />;
 }
