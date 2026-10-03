@@ -182,9 +182,11 @@
 
 # Backend — Etapa 14
 
-- [ ] Audit the complete public evaluation route, server boundary, database validation, QR URL and mobile states
-- [ ] Harden resilience, accessibility, payload limits, cache behavior and shared-network abuse protection
-- [ ] Validate two-tenant integrity, manipulated payloads, retry/idempotency, dynamic survey and point reactivation
-- [ ] Validate 320–430 px layouts, performance, XSS-safe rendering and QR production URL behavior
-- [ ] Remove only public-flow leftovers and publish Stage 14 documentation and final matrix
-- [ ] Confirm the onboarding stage was not started
+- [x] Audit the complete public evaluation route, server boundary, database validation, QR URL and mobile states
+- [x] Harden resilience, accessibility, payload limits, cache behavior and shared-network abuse protection
+- [x] Validate two-tenant integrity, manipulated payloads, retry/idempotency, dynamic survey and point reactivation
+- [x] Validate 320–430 px layouts, performance, XSS-safe rendering and QR production URL behavior
+- [x] Remove only public-flow leftovers and publish Stage 14 documentation and final matrix
+- [x] Confirm the onboarding stage was not started
+
+Status: **APROVADA COM RESSALVAS OPERACIONAIS**. A origem HTTPS de produção ainda precisa ser definida em `VITE_PUBLIC_APP_URL`; a sessão autenticada do Supabase externo não estava disponível para uma inspeção visual administrativa. A Etapa 15 não foi iniciada.

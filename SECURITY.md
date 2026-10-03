@@ -68,6 +68,12 @@ O contato opcional foi separado em `evaluation_contacts`. Somente `PLATFORM_ADMI
 
 O linter não encontrou alertas introduzidos pela Etapa 13. Permanece o aviso anterior de proteção contra senhas vazadas desabilitada no Supabase Auth.
 
+## Proteção do fluxo público — Etapa 14
+
+As funções TanStack são a única fronteira HTTP pública e respondem com `Cache-Control: no-store` e `X-Content-Type-Options: nosniff`. O navegador envia um UUID efêmero por sessão; o servidor combina esse valor com segredo privado e usa somente o hash no limitador. Assim, visitantes diferentes na mesma rede não compartilham o contador. O mecanismo é defesa proporcional, não CAPTCHA: uma nova sessão pode obter outro token.
+
+O banco limita quantidade e tamanho do payload, valida todas as relações novamente e grava avaliação e respostas em uma transação. Repetições com a mesma chave são idempotentes. React renderiza comentários como texto; o teste com conteúdo semelhante a script não criou elemento executável. A URL pública contém apenas o código opaco do ponto. UUIDs técnicos permanecem no contrato interno pergunta–resposta, nunca na URL nem no conteúdo visual.
+
 ## Evidências da Etapa 5
 
 A matriz direta com dois cartórios temporários aprovou 12/12 cenários para ambos: listagem própria, bloqueio cruzado de avaliações e respostas, criação controlada, bloqueio de pesquisa/ponto/resposta cruzados, imutabilidade, persistência após nova autenticação e paginação/filtros. As contas e fixtures temporárias foram removidas ao final.
