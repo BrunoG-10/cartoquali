@@ -445,8 +445,11 @@ export type Database = {
         Row: {
           acao: string
           cartorio_id: string
+          client_request_id: string | null
           concluido_em: string | null
+          concluido_por_id: string | null
           created_at: string
+          criado_por_id: string | null
           dimensao: string | null
           id: string
           indicador_antes: number | null
@@ -470,8 +473,11 @@ export type Database = {
         Insert: {
           acao: string
           cartorio_id: string
+          client_request_id?: string | null
           concluido_em?: string | null
+          concluido_por_id?: string | null
           created_at?: string
+          criado_por_id?: string | null
           dimensao?: string | null
           id?: string
           indicador_antes?: number | null
@@ -495,8 +501,11 @@ export type Database = {
         Update: {
           acao?: string
           cartorio_id?: string
+          client_request_id?: string | null
           concluido_em?: string | null
+          concluido_por_id?: string | null
           created_at?: string
+          criado_por_id?: string | null
           dimensao?: string | null
           id?: string
           indicador_antes?: number | null
@@ -524,6 +533,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "cartorios"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "planos_melhoria_concluido_por_cartorio_fkey"
+            columns: ["concluido_por_id", "cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id", "cartorio_id"]
+          },
+          {
+            foreignKeyName: "planos_melhoria_criado_por_cartorio_fkey"
+            columns: ["criado_por_id", "cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id", "cartorio_id"]
           },
           {
             foreignKeyName: "planos_melhoria_ocorrencia_id_cartorio_id_fkey"
@@ -728,6 +751,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_improvement_plan: {
+        Args: {
+          _action: string
+          _client_request_id: string
+          _dimension?: string
+          _due_date: string
+          _expected_result?: string
+          _objective: string
+          _occurrence_id: string
+          _priority: string
+          _problem: string
+          _responsible_id: string
+          _title: string
+        }
+        Returns: Json
+      }
       create_quality_occurrence: {
         Args: {
           _category: string
@@ -764,6 +803,28 @@ export type Database = {
           _contact?: Json
           _idempotency_key: string
           _source_hash: string
+        }
+        Returns: Json
+      }
+      update_improvement_plan: {
+        Args: {
+          _action: string
+          _due_date: string
+          _expected_result: string
+          _expected_updated_at: string
+          _id: string
+          _indicator_after: number
+          _indicator_before: number
+          _indicator_name: string
+          _objective: string
+          _priority: string
+          _problem: string
+          _progress: number
+          _responsible_id: string
+          _result: string
+          _result_observation: string
+          _status: string
+          _title: string
         }
         Returns: Json
       }
