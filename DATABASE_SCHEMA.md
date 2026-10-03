@@ -1,4 +1,4 @@
-# Estrutura do banco do CartoQuali — Etapas 1 a 13
+# Estrutura do banco do CartoQuali — Etapas 1 a 14
 
 ## Escopo
 
@@ -63,3 +63,5 @@ A Etapa 3 foi aplicada por migrações gerenciadas do Supabase. A validação se
 Na Etapa 5, `avaliacoes` e `respostas` ficaram disponíveis para leitura e criação autenticada no próprio tenant, mas sem alteração ou exclusão administrativa. A listagem ganhou paginação e filtros reais, e o detalhe resolve avaliação → respostas → perguntas → opções. O modelo atual não guarda cópias históricas do texto da pergunta ou opção; alterações posteriores nesses cadastros podem mudar a interpretação visual de respostas antigas.
 
 Na Etapa 13, contatos deixaram de permanecer nas colunas da avaliação e passaram para `evaluation_contacts` por gatilho transacional. `privacy_requests` sustenta o fluxo administrativo de direitos. Configurações receberam canal de privacidade, versão do aviso e prazos nullable para avaliações, contatos e auditoria; `NULL` significa prazo pendente de definição jurídica/contratual e não ativa exclusão automática.
+
+Na Etapa 14, `submit_public_evaluation` passou a rejeitar envelopes com mais de 50 respostas, mais de 32 KiB, listas com mais de 20 opções ou opções acima de 200 caracteres. Ponto, cartório, pesquisa, perguntas, condições, obrigatoriedade e opções continuam validados dentro da transação. A idempotência precede o limite de frequência para permitir repetição segura da mesma tentativa. Somente `service_role` executa as duas RPCs públicas; visitantes não leem tabelas diretamente.
