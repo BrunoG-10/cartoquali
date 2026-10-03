@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { AlertCircle, ChevronLeft, ChevronRight, FilterX, LockKeyhole, Search, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,18 +13,20 @@ const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateSty
 
 export function ReviewsPage() {
   const navigate = useNavigate();
+  const searchStr = useRouterState({ select: (state) => state.location.searchStr });
+  const initialSearch = new URLSearchParams(searchStr);
   const fetchList = useServerFn(listEvaluations);
   const fetchDetail = useServerFn(getEvaluationDetail);
   const [page, setPage] = useState(1);
   const [draftSearch, setDraftSearch] = useState("");
   const [search, setSearch] = useState("");
-  const [pointId, setPointId] = useState("");
-  const [surveyId, setSurveyId] = useState("");
+  const [pointId, setPointId] = useState(initialSearch.get("point") ?? "");
+  const [surveyId, setSurveyId] = useState(initialSearch.get("survey") ?? "");
   const [rating, setRating] = useState("");
   const [status, setStatus] = useState("");
-  const [classification, setClassification] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [classification, setClassification] = useState(initialSearch.get("classification") ?? "");
+  const [startDate, setStartDate] = useState(initialSearch.get("start") ?? "");
+  const [endDate, setEndDate] = useState(initialSearch.get("end") ?? "");
   const [selectedId, setSelectedId] = useState<string>();
   const pageSize = 10;
   useEffect(() => { const timer = window.setTimeout(() => { setSearch(draftSearch.trim()); setPage(1); }, 350); return () => window.clearTimeout(timer); }, [draftSearch]);
