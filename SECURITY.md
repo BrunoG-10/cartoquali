@@ -31,7 +31,15 @@ A chave `service_role` existe apenas no ambiente de servidor. Leituras administr
 
 ## Evidências de validação
 
-Foram criados dois cartórios e quatro usuários Auth temporários para requisições diretas ao Supabase. A matriz final executou 61 verificações e aprovou todas:
+Foram criados cartórios e usuários Auth temporários para requisições diretas ao Supabase. A revalidação sequencial dos seis blocos aprovou:
+
+- Bloco 1: 3/3 testes de contexto do tenant;
+- Bloco 2: 10/10 testes de cartórios, usuários e bloqueio de exclusão do tenant;
+- Blocos 3 e 4: matriz de 61/61 verificações sobre dados principais, avaliações e qualidade;
+- Bloco 5: 8/8 testes de auditoria, usuário sem perfil, usuário inativo e visitante;
+- Bloco 6: linter, inspeção das funções privadas, pesquisa de chave privilegiada, TypeScript, compilação, desempenho e limpeza final.
+
+A matriz cobriu:
 
 - leitura própria e cruzada nas 12 tabelas;
 - criação e alteração no próprio tenant;
@@ -39,6 +47,6 @@ Foram criados dois cartórios e quatro usuários Auth temporários para requisi�
 - tentativa de mudar `cartorio_id`;
 - relações cruzadas em perguntas, respostas, ocorrências e planos;
 - usuário sem perfil, usuário inativo e visitante;
-- limpeza integral das contas e registros temporários.
+- limpeza integral das contas e registros temporários, confirmada com zero resíduos.
 
-O linter não encontrou alerta introduzido pelas policies. Permanece um aviso preexistente de configuração: proteção contra senhas vazadas desabilitada no Supabase Auth.
+O bloqueio de exclusão de `cartorios` ocorre por ausência deliberada de privilégio/policy de exclusão; a resposta HTTP de permissão negada é o resultado seguro esperado. O linter não encontrou alerta introduzido pelas policies. Permanece um aviso preexistente de configuração: proteção contra senhas vazadas desabilitada no Supabase Auth.

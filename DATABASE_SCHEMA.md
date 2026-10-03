@@ -53,4 +53,4 @@ Cartórios ─ Auditoria
 
 A estrutura foi aplicada no projeto Supabase externo conectado. A cópia em `database/migrations` permanece como artefato reproduzível da Etapa 1. Na Etapa 2, apenas autenticação e contexto administrativo consomem dados reais; avaliações, pesquisas, indicadores, ocorrências, planos e relatórios continuam em memória.
 
-A Etapa 3 foi aplicada por migrações gerenciadas do Supabase. A matriz direta de dois tenants executou 61 verificações de isolamento, todas aprovadas, e removeu as fixtures temporárias ao terminar. Consulte `SECURITY.md` e `BACKEND_STAGE_3_REPORT.md`.
+A Etapa 3 foi aplicada por migrações gerenciadas do Supabase. A validação sequencial dos seis blocos aprovou o contexto do tenant (3/3), cartórios e usuários (10/10), auditoria e usuários especiais (8/8), além da matriz direta de dois tenants (61/61). As consultas mais lentas observadas durante os testes ficaram abaixo de 17 ms em média/máximo relevante, sem gargalo nas policies. Todas as fixtures temporárias foram removidas. Consulte `SECURITY.md` e `BACKEND_STAGE_3_REPORT.md`.
