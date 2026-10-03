@@ -102,5 +102,5 @@
 - [x] Add narrow public survey loading and transactional submission boundaries
 - [x] Connect the mobile public flow to real point, survey, question and option data
 - [x] Expose copyable public evaluation links in Evaluation Points
-- [x] Validate tenant isolation, abuse controls, duplicate protection and admin visibility
+- [ ] Validate the public flow with two real test tenants and visually confirm the new row in the authenticated administration (blocked: only one tenant and no injected authenticated session)
 - [x] Remove the public route's dependency on evaluation mocks and publish the Stage 6 report

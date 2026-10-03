@@ -32,13 +32,13 @@ Na página Pontos de avaliação, “Copiar link” gera o endereço canônico e
 
 ## Validação da Etapa 6
 
-Classificação: **APROVADA**.
+Classificação: **APROVADA COM RESSALVAS**.
 
 1. Código válido carrega o ponto e cinco perguntas reais: aprovado.
 2. Código inexistente apresenta mensagem específica: aprovado.
 3. Ponto inativo e pesquisa indisponível têm estados separados: aprovado pela operação do banco e apresentação.
 4. Envio completo salva avaliação e respostas atomicamente: aprovado.
-5. Relações incompatíveis entre cartórios/pesquisas/pontos/perguntas são rejeitadas: aprovado.
+5. Relações incompatíveis são rejeitadas pelas chaves e validações; a execução pública com dois cartórios ficou pendente porque o banco atual possui somente o cartório DEMO: aprovado com ressalvas.
 6. Leitura pública direta de avaliações e respostas permanece bloqueada: aprovado.
 7. Alteração e exclusão públicas permanecem bloqueadas: aprovado.
 8. Identificador interno e segredo do serviço não são enviados ao navegador: aprovado.
@@ -51,7 +51,7 @@ Classificação: **APROVADA**.
 15. Link copiável no cadastro de pontos: aprovado.
 16. Celulares de 320, 390 e 430 px sem rolagem horizontal: aprovado.
 17. Fluxo completo no navegador até “Obrigado pela sua avaliação.”: aprovado.
-18. Registro persistido disponível ao módulo administrativo da Etapa 5: aprovado.
+18. Registro persistido e compatível com a consulta do módulo administrativo da Etapa 5: aprovado; a abertura visual autenticada ficou sem uma sessão injetada nesta execução.
 19. Compilação e verificação de tipos: aprovado.
 
 ## Escopo
