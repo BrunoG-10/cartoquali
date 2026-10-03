@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ReportViewer } from "@/components/cartoquali/report-pages";
 
-export const Route = createFileRoute("/visao-executiva")({
+export const Route = createFileRoute("/_authenticated/visao-executiva")({
   head: () => ({
     meta: [
       { title: "Visão Executiva — CartoQuali" },
