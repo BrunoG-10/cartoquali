@@ -23,3 +23,4 @@
 - Let authenticated Supabase queries enforce tenant isolation through RLS; reserve the admin client for Auth administration after an RLS-scoped authorization check.
 - Migrate Stage 4 administrative modules through authenticated TanStack server functions and TanStack Query, while session mocks remain authoritative only for modules not yet migrated.
 - Read Stage 5 evaluations and answers through authenticated, paginated server functions; treat persisted evaluations as immutable history and expose contact details only to authorized roles.
+- Resolve Stage 6 public surveys by opaque point slug through narrow server functions; submit atomically with server-side relationship validation and idempotency, never exposing evaluation reads.
