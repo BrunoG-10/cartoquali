@@ -1,4 +1,5 @@
 # CartoQuali v1
+
 - [x] Design system and responsive application shell
 - [x] Dashboard and analytics interactions
 - [x] Reviews, surveys, evaluation points and detail flows
@@ -58,6 +59,7 @@
 - [x] Validate decoupled flows across the required desktop and mobile views
 
 # Backend — Etapa 1
+
 - [x] Create the external PostgreSQL schema migration
 - [x] Add reproducible DEMO seed data
 - [x] Add structural, relational, and negative constraint validation SQL
@@ -66,6 +68,7 @@
 - [x] Apply and validate the migration on the connected external Supabase project
 
 # Backend — Etapa 2
+
 - [x] Add Supabase Auth login, recovery and password-definition flows
 - [x] Protect every administrative page and preserve public evaluation routes
 - [x] Resolve the signed-in user, registry and role through secured server functions
@@ -76,6 +79,7 @@
 - [ ] Validate invitation acceptance, authenticated persistence, full recovery and logout after the invited administrator defines a password
 
 # Backend — Etapa 3
+
 - [x] Add private current-user and current-registry database helpers
 - [x] Replace deny-all policies with tenant-scoped RLS policies and minimum grants
 - [x] Execute the two-registry direct-request security matrix and clean test fixtures
@@ -83,6 +87,7 @@
 - [x] Revalidate Stage 3 sequentially across all six requested security blocks
 
 # Backend — Etapa 4
+
 - [x] Inspect the real schema, relationships, RLS policies, grants and administrative mock flows
 - [x] Block 1: migrate Registry read/edit to real tenant-scoped Supabase data and validate persistence/security
 - [x] Block 2: migrate Users and Auth invitation management
@@ -91,6 +96,7 @@
 - [ ] Remove replaced mocks, validate persistence/responsiveness and publish the Stage 4 report
 
 # Backend — Etapa 5
+
 - [x] Inspect evaluations, answers, relationships, constraints and RLS
 - [x] Connect the authenticated evaluation list, filters and pagination to Supabase
 - [x] Connect evaluation details and question answers with restricted contact data
@@ -98,6 +104,7 @@
 - [x] Remove replaced evaluation mocks and publish the Stage 5 report
 
 # Backend — Etapa 6
+
 - [x] Audit the real public evaluation schema, routes, policies and questionnaire
 - [x] Add narrow public survey loading and transactional submission boundaries
 - [x] Connect the mobile public flow to real point, survey, question and option data
@@ -106,6 +113,7 @@
 - [x] Remove the public route's dependency on evaluation mocks and publish the Stage 6 report
 
 # Backend — Etapa 7
+
 - [x] Audit every dashboard and quality indicator data path, formula, filter, permission and state
 - [x] Add authenticated tenant-scoped real indicator queries with Brazilian timezone period boundaries
 - [x] Replace Dashboard and Quality indicator mocks with real Supabase data and real comparisons
@@ -113,6 +121,7 @@
 - [x] Validate desktop, tablet and mobile states; remove only replaced mocks and publish the Stage 7 report
 
 # Backend — Etapa 8
+
 - [x] Audit occurrence schema, relationships, RLS, permissions, audit history and current mock flows
 - [x] Add authenticated tenant-scoped occurrence commands with idempotency, transition rules and immutable audit history
 - [x] Connect paginated occurrence list, filters, detail, creation and treatment to real Supabase data
@@ -121,6 +130,7 @@
 - [x] Publish occurrence documentation, the final matrix and confirmation that Stage 9 was not started
 
 # Backend — Etapa 9
+
 - [x] Audit improvement-plan schema, permissions, relationships and mock flows
 - [x] Add tenant-scoped plan commands with authorship, idempotency, lifecycle, concurrency and audit history
 - [x] Connect paginated plan list, filters, detail, creation, updates and occurrence handoff to real Supabase data
@@ -128,6 +138,7 @@
 - [x] Publish improvement-plan documentation and the final 19-item validation matrix
 
 # Backend — Etapa 10
+
 - [x] Confirm Stage 9 validation and documentation are complete before finalizing reports
 - [x] Audit report mocks, real data sources, permissions, filters and export paths
 - [x] Add one authenticated tenant-scoped report aggregation boundary with São Paulo period rules
@@ -138,6 +149,7 @@
 - [x] Confirm Stage 11 was not started
 
 # Backend — Etapa 11
+
 - [x] Audit point schema, public routes, RLS, permissions, links and remaining mocks
 - [x] Harden tenant-scoped point operations, lifecycle, uniqueness and audit history
 - [x] Add canonical public URLs, QR preview/download/print and NFC preparation

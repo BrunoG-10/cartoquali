@@ -16,29 +16,29 @@ A gestão de Pontos de Avaliação usa dados reais do Supabase, URLs canônicas,
 
 ## Matriz final
 
-| # | Item | Resultado |
-|---:|---|---|
-| 1 | Auditoria do schema e dependências | APROVADO |
-| 2 | Listagem real tenant-scoped | APROVADO |
-| 3 | Criação de ponto | APROVADO |
-| 4 | Edição de ponto | APROVADO |
-| 5 | Ativação e desativação | APROVADO |
-| 6 | Exclusão física bloqueada | APROVADO |
-| 7 | Pesquisa ativa do mesmo tenant | APROVADO |
-| 8 | Código público globalmente único | APROVADO |
-| 9 | URL canônica configurável | APROVADO |
-| 10 | Compatibilidade com slug legado | APROVADO |
-| 11 | Link copiável e abertura pública | APROVADO |
-| 12 | QR Code visualizável | APROVADO |
-| 13 | Download PNG em alta resolução | APROVADO |
-| 14 | Cartaz imprimível | APROVADO |
-| 15 | Preparação NFC documentada | APROVADO |
-| 16 | Matriz de papéis | APROVADO |
-| 17 | Isolamento entre dois tenants | APROVADO |
-| 18 | Auditoria de mudanças | APROVADO |
-| 19 | Submissão pública real | APROVADO |
-| 20 | Mobile, erros e privacidade | APROVADO |
-| 21 | Remoção exclusiva dos mocks de pontos | APROVADO |
+|   # | Item                                  | Resultado |
+| --: | ------------------------------------- | --------- |
+|   1 | Auditoria do schema e dependências    | APROVADO  |
+|   2 | Listagem real tenant-scoped           | APROVADO  |
+|   3 | Criação de ponto                      | APROVADO  |
+|   4 | Edição de ponto                       | APROVADO  |
+|   5 | Ativação e desativação                | APROVADO  |
+|   6 | Exclusão física bloqueada             | APROVADO  |
+|   7 | Pesquisa ativa do mesmo tenant        | APROVADO  |
+|   8 | Código público globalmente único      | APROVADO  |
+|   9 | URL canônica configurável             | APROVADO  |
+|  10 | Compatibilidade com slug legado       | APROVADO  |
+|  11 | Link copiável e abertura pública      | APROVADO  |
+|  12 | QR Code visualizável                  | APROVADO  |
+|  13 | Download PNG em alta resolução        | APROVADO  |
+|  14 | Cartaz imprimível                     | APROVADO  |
+|  15 | Preparação NFC documentada            | APROVADO  |
+|  16 | Matriz de papéis                      | APROVADO  |
+|  17 | Isolamento entre dois tenants         | APROVADO  |
+|  18 | Auditoria de mudanças                 | APROVADO  |
+|  19 | Submissão pública real                | APROVADO  |
+|  20 | Mobile, erros e privacidade           | APROVADO  |
+|  21 | Remoção exclusiva dos mocks de pontos | APROVADO  |
 
 ## Ressalva
 
