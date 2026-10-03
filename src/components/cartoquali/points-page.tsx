@@ -218,12 +218,12 @@ export function PointsPage() {
                   <dt className="text-xs text-muted-foreground">Coleta</dt>
                   <dd className="font-medium">Link, QR e NFC</dd>
                 </div>
-                  <div className="col-span-2">
-                    <dt className="text-xs text-muted-foreground">Pesquisa ativa</dt>
-                    <dd className="font-medium">
-                      {query.data.surveyNames[point.surveyId] ?? "Pesquisa indisponível"}
-                    </dd>
-                  </div>
+                <div className="col-span-2">
+                  <dt className="text-xs text-muted-foreground">Pesquisa ativa</dt>
+                  <dd className="font-medium">
+                    {query.data.surveyNames[point.surveyId] ?? "Pesquisa indisponível"}
+                  </dd>
+                </div>
               </dl>
               <code className="mt-4 block truncate rounded-md bg-muted px-3 py-2 text-xs">
                 /avaliar/{point.code}
