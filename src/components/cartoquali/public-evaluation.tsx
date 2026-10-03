@@ -370,7 +370,7 @@ function Screen({
 }) {
   return (
     <div className="grid min-h-screen place-items-center overflow-x-hidden bg-background p-3 sm:p-4">
-      <main className="w-full max-w-lg rounded-xl border border-glass-border bg-glass p-5 text-center shadow-glass backdrop-blur-xl sm:p-9">
+      <main className="min-w-0 w-full max-w-lg rounded-xl border border-glass-border bg-glass p-5 text-center shadow-glass backdrop-blur-xl sm:p-9">
         <div className="mb-7 flex min-w-0 items-center justify-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary font-display font-bold text-primary-foreground">
             C
