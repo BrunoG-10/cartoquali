@@ -1,4 +1,4 @@
-# Estrutura do banco do CartoQuali — Etapas 1 a 5
+# Estrutura do banco do CartoQuali — Etapas 1 a 12
 
 ## Escopo
 
@@ -32,6 +32,7 @@ Cartórios ─ Auditoria
 | `ocorrencias_qualidade` | Tratamento de problemas           | `id uuid`, categoria, prioridade, status, datas, textos                        | Cartório obrigatório; avaliação, ponto e responsável opcionais                   | Relações opcionais devem ser do mesmo cartório; datas e enums validados                                         |
 | `planos_melhoria`       | Ação ligada à ocorrência          | `id uuid`, textos, prazo, progresso, indicadores, timestamps                   | Cartório e ocorrência obrigatórios; ponto/responsável opcionais                  | Progresso 0/25/50/75/100; relações no mesmo cartório; indicadores 0–100                                         |
 | `audit_logs`            | Base para auditoria futura        | `id uuid`, ação, entidade, `entity_id uuid`, `metadata jsonb`, timestamp       | Cartório obrigatório; usuário opcional                                           | Sem gatilhos ou gravação automática nesta etapa                                                                 |
+| `configuracoes_cartorio` | Preferências administrativas | nome exibido, idioma, data, fuso, agradecimento, pesquisa padrão e flags de coleta | Um registro por cartório; pesquisa padrão opcional | Consulta e alteração apenas por administradores do tenant; mudanças auditadas |
 
 ## Integridade, índices e acesso
 

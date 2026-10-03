@@ -157,3 +157,15 @@
 - [x] Validate mobile, errors, performance and absence of exposed secrets or internal IDs
 - [x] Remove only point mocks and publish Stage 11 documentation and final matrix
 - [x] Confirm Stage 12 was not started
+
+# Backend — Etapa 12
+
+- [x] Audit roles, tenant policies, private routes, sessions, user lifecycle, privileged functions and audit coverage
+- [x] Centralize the four-role capability matrix and filter administrative navigation
+- [x] Block direct role escalation, self-lockout, cross-tenant writes and protected registry-field changes
+- [x] Make user creation and role/status updates atomic and server-authorized
+- [x] Migrate Surveys, Questions, Answer Options and General Settings from session mocks to real tenant data
+- [x] Add immutable, tenant-scoped, paginated audit history with filters
+- [x] Revalidate inactive users on focus and periodically during long-lived sessions
+- [x] Pass the 12/12 direct role, tenant, stale-session and immutable-audit matrix; remove all fixtures
+- [x] Publish Stage 12 security and audit documentation without starting a later stage
