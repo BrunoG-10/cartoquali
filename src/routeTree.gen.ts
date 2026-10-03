@@ -15,6 +15,7 @@ import { Route as AvaliarRouteImport } from './routes/avaliar'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthenticatedAuditoriaRouteImport } from './routes/_authenticated/auditoria'
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedCartorioRouteImport } from './routes/_authenticated/cartorio'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -60,6 +61,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAuditoriaRoute = AuthenticatedAuditoriaRouteImport.update({
+  id: '/auditoria',
+  path: '/auditoria',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAvaliacoesRoute = AuthenticatedAvaliacoesRouteImport.update({
   id: '/avaliacoes',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/cartorio': typeof AuthenticatedCartorioRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -177,6 +184,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/auditoria': typeof AuthenticatedAuditoriaRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/cartorio': typeof AuthenticatedCartorioRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -201,6 +209,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/auditoria': typeof AuthenticatedAuditoriaRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/cartorio': typeof AuthenticatedCartorioRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -226,6 +235,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/reset-password'
+    | '/auditoria'
     | '/avaliacoes'
     | '/cartorio'
     | '/configuracoes'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/reset-password'
+    | '/auditoria'
     | '/avaliacoes'
     | '/cartorio'
     | '/configuracoes'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/privacidade'
     | '/reset-password'
+    | '/_authenticated/auditoria'
     | '/_authenticated/avaliacoes'
     | '/_authenticated/cartorio'
     | '/_authenticated/configuracoes'
@@ -343,6 +355,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/auditoria': {
+      id: '/_authenticated/auditoria'
+      path: '/auditoria'
+      fullPath: '/auditoria'
+      preLoaderRoute: typeof AuthenticatedAuditoriaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/avaliacoes': {
       id: '/_authenticated/avaliacoes'
@@ -476,6 +495,7 @@ const AuthenticatedRelatoriosRouteWithChildren =
   )
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAuditoriaRoute: typeof AuthenticatedAuditoriaRoute
   AuthenticatedAvaliacoesRoute: typeof AuthenticatedAvaliacoesRoute
   AuthenticatedCartorioRoute: typeof AuthenticatedCartorioRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
@@ -491,6 +511,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAuditoriaRoute: AuthenticatedAuditoriaRoute,
   AuthenticatedAvaliacoesRoute: AuthenticatedAvaliacoesRoute,
   AuthenticatedCartorioRoute: AuthenticatedCartorioRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,

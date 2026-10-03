@@ -32,3 +32,5 @@
 - Build Stage 10 reports through one authenticated tenant-scoped aggregate and reuse that authorized result for CSV; report pages never read session mocks.
 - Manage evaluation points through authenticated tenant-scoped server functions; preserve legacy public slugs, block deletion, and share one canonical URL across link, QR Code and future NFC.
 - Keep browser printing as the Stage 10 PDF path; do not add a dedicated PDF dependency without mature server-side support.
+- Centralize administrative capabilities in the typed permissions module, mirror them in server authorization and RLS, and never treat hidden navigation as authorization.
+- Persist surveys, questions, settings, users, and audit history through authenticated tenant-scoped services; session mocks are not authoritative for these modules.

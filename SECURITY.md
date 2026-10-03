@@ -52,6 +52,14 @@ A matriz cobriu:
 
 O bloqueio de exclusão de `cartorios` ocorre por ausência deliberada de privilégio/policy de exclusão; a resposta HTTP de permissão negada é o resultado seguro esperado. O linter não encontrou alerta introduzido pelas policies. Permanece um aviso preexistente de configuração: proteção contra senhas vazadas desabilitada no Supabase Auth.
 
+## Reforço da Etapa 12
+
+Escritas diretas autenticadas em `usuarios` e `user_roles` foram revogadas. Criação e atualização passam por operações atômicas que derivam o cartório da sessão, aceitam apenas `CARTORIO_ADMIN`, `GESTOR` ou `OPERADOR`, bloqueiam auto-inativação/rebaixamento e preservam o último administrador ativo. `PLATFORM_ADMIN` não ganha acesso global implícito.
+
+A auditoria passou a cobrir cartório, usuários, papéis, pesquisas, perguntas, opções e configurações, além dos eventos já existentes de pontos, ocorrências e planos. Os clientes continuam sem permissão de escrita. A consulta exige papel administrativo e permanece limitada ao tenant.
+
+A matriz real da Etapa 12 passou 12/12 cenários com contas temporárias e confirmou, entre outros itens, bloqueio de autoelevação direta, isolamento A/B, restrição da lista de usuários, auditoria imutável e perda imediata de leituras após inativação. As fixtures foram removidas.
+
 ## Evidências da Etapa 5
 
 A matriz direta com dois cartórios temporários aprovou 12/12 cenários para ambos: listagem própria, bloqueio cruzado de avaliações e respostas, criação controlada, bloqueio de pesquisa/ponto/resposta cruzados, imutabilidade, persistência após nova autenticação e paginação/filtros. As contas e fixtures temporárias foram removidas ao final.
