@@ -38,7 +38,7 @@ Cartórios ─ Auditoria
 - UUIDs usam `gen_random_uuid()`; datas de evento usam `timestamptz` com `now()`.
 - Exclusões destrutivas de entidades operacionais são restritas. Papéis, perguntas, opções e respostas dependentes usam cascata quando o filho perde significado sem o pai.
 - Índices cobrem tenant, datas de avaliações/auditoria, status e chaves de pesquisa, ponto, avaliação, pergunta e responsável.
-- RLS não foi habilitada. `anon` e `authenticated` não recebem privilégios; somente `service_role` pode acessar as tabelas até a etapa de autenticação e políticas.
+- RLS está habilitada nas 12 tabelas com políticas explícitas de bloqueio para `anon` e `authenticated`; somente `service_role` pode acessar os dados até a etapa de autenticação e políticas funcionais.
 
 ## Artefatos reproduzíveis
 
@@ -46,4 +46,4 @@ Cartórios ─ Auditoria
 - Dados fictícios: `database/seed.sql`
 - Validação transacional: `database/tests/001_schema_validation.sql`
 
-A estrutura está fora de `supabase/migrations` porque a integração externa ainda não está vinculada e migrations dessa área só podem ser criadas pelo executor conectado. Quando houver conexão, este SQL deverá ser aplicado pelo mecanismo de migrations, preservando seu conteúdo e histórico.
+A estrutura foi aplicada no projeto Supabase externo conectado pelo executor de migrations. A cópia em `database/migrations` permanece como artefato reproduzível e documentação da Etapa 1; o frontend continua sem consumir essas tabelas.

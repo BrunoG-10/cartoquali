@@ -62,5 +62,5 @@
 - [x] Add reproducible DEMO seed data
 - [x] Add structural, relational, and negative constraint validation SQL
 - [x] Document the database model and frontend boundary
-- [ ] Connect the user-provided external Supabase project without enabling Lovable Cloud
-- [ ] Apply and validate the migration on the connected external Supabase project
+- [x] Connect the user-provided external Supabase project without enabling Lovable Cloud
+- [x] Apply and validate the migration on the connected external Supabase project
