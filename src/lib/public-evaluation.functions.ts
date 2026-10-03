@@ -41,7 +41,7 @@ export type PublicEvaluationContext =
       pointName: string;
       surveyName: string;
       surveyDescription: string | null;
-      settings: Record<string, unknown>;
+      settings: { allowContactRequest: boolean; thankYouMessage: string | null };
       questions: PublicQuestion[];
     };
 
@@ -51,27 +51,33 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function parseContext(value: unknown): PublicEvaluationContext {
   if (!isRecord(value)) throw new Error("Não foi possível carregar esta pesquisa.");
-  if (value.status === "not_found" || value.status === "inactive" || value.status === "unavailable") return { status: value.status };
-  if (value.status !== "ready" || typeof value.registryName !== "string" || typeof value.pointName !== "string" || !Array.isArray(value.questions)) {
+  const status = value["status"];
+  if (status === "not_found" || status === "inactive" || status === "unavailable") return { status };
+  if (status !== "ready" || typeof value["registryName"] !== "string" || typeof value["pointName"] !== "string" || !Array.isArray(value["questions"])) {
     throw new Error("Não foi possível carregar esta pesquisa.");
   }
-  const questions = value.questions.map((raw) => {
-    if (!isRecord(raw) || typeof raw.key !== "string" || typeof raw.text !== "string" || typeof raw.type !== "string") throw new Error("Pesquisa inválida.");
+  const questions: PublicQuestion[] = value["questions"].map((raw) => {
+    if (!isRecord(raw) || typeof raw["key"] !== "string" || typeof raw["text"] !== "string" || typeof raw["type"] !== "string") throw new Error("Pesquisa inválida.");
     const allowed = ["stars", "yes_no", "scale", "text", "single_choice", "multiple_choice"] as const;
-    if (!allowed.includes(raw.type as (typeof allowed)[number])) throw new Error("Tipo de pergunta não suportado.");
-    const options = Array.isArray(raw.options) ? raw.options.filter(isRecord).map((option) => ({ value: String(option.value ?? ""), label: String(option.label ?? "") })) : [];
-    const condition = isRecord(raw.condition) && typeof raw.condition.sourceQuestionId === "string"
-      ? { sourceQuestionId: raw.condition.sourceQuestionId, operator: raw.condition.operator === "lte" ? "lte" as const : "equals" as const, value: raw.condition.value as string | number | boolean }
+    if (!allowed.includes(raw["type"] as (typeof allowed)[number])) throw new Error("Tipo de pergunta não suportado.");
+    const options = Array.isArray(raw["options"]) ? raw["options"].filter(isRecord).map((option) => ({ value: String(option["value"] ?? ""), label: String(option["label"] ?? "") })) : [];
+    const conditionValue = raw["condition"];
+    const condition = isRecord(conditionValue) && typeof conditionValue["sourceQuestionId"] === "string"
+      ? { sourceQuestionId: conditionValue["sourceQuestionId"], operator: conditionValue["operator"] === "lte" ? "lte" as const : "equals" as const, value: conditionValue["value"] as string | number | boolean }
       : null;
-    return { key: raw.key, text: raw.text, type: raw.type as PublicQuestion["type"], order: Number(raw.order), required: raw.required === true, dimension: String(raw.dimension ?? "general"), condition, options };
+    return { key: raw["key"], text: raw["text"], type: raw["type"] as PublicQuestion["type"], order: Number(raw["order"]), required: raw["required"] === true, dimension: String(raw["dimension"] ?? "general"), condition, options };
   });
+  const rawSettings = isRecord(value["settings"]) ? value["settings"] : {};
   return {
     status: "ready",
-    registryName: value.registryName,
-    pointName: value.pointName,
-    surveyName: typeof value.surveyName === "string" ? value.surveyName : "Pesquisa de atendimento",
-    surveyDescription: typeof value.surveyDescription === "string" ? value.surveyDescription : null,
-    settings: isRecord(value.settings) ? value.settings : {},
+    registryName: value["registryName"],
+    pointName: value["pointName"],
+    surveyName: typeof value["surveyName"] === "string" ? value["surveyName"] : "Pesquisa de atendimento",
+    surveyDescription: typeof value["surveyDescription"] === "string" ? value["surveyDescription"] : null,
+    settings: {
+      allowContactRequest: rawSettings["allowContactRequest"] !== false,
+      thankYouMessage: typeof rawSettings["thankYouMessage"] === "string" ? rawSettings["thankYouMessage"] : null,
+    },
     questions,
   };
 }
@@ -85,7 +91,7 @@ export const getPublicEvaluation = createServerFn({ method: "GET" })
       console.error("[public-evaluation] context lookup failed", error.code);
       throw new Error("Não foi possível carregar esta pesquisa.");
     }
-    return parseContext(result);
+    return parseContext(result) as PublicEvaluationContext;
   });
 
 export const submitPublicEvaluation = createServerFn({ method: "POST" })
@@ -119,5 +125,5 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
       console.error("[public-evaluation] submission rejected", error.code, key ?? "validation");
       throw new Error(key ? safeMessages[key] : "Não foi possível registrar sua avaliação. Revise as respostas e tente novamente.");
     }
-    return { ok: true, duplicate: isRecord(result) && result.duplicate === true };
+    return { ok: true, duplicate: isRecord(result) && result["duplicate"] === true };
   });

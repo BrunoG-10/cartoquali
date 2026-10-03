@@ -53,8 +53,8 @@ export function PublicEvaluation({ code }: { code?: string }) {
     options: question.options.map((option) => option.label),
     ...(question.condition ? { condition: question.condition } : {}),
   }));
-  const allowContact = context.settings["allowContactRequest"] !== false;
-  const thankYouMessage = typeof context.settings["thankYouMessage"] === "string" ? context.settings["thankYouMessage"] : "Obrigado por ajudar este cartório a melhorar.";
+  const allowContact = context.settings.allowContactRequest;
+  const thankYouMessage = context.settings.thankYouMessage ?? "Obrigado por ajudar este cartório a melhorar.";
 
   const reset = () => {
     setStarted(false); setAnswers(undefined); setContactRequested(false); setName(""); setPhone(""); setEmail(""); setConsent(false); setDone(false); setError(undefined); setValidationError(undefined);
