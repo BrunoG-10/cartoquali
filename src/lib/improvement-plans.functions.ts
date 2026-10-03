@@ -26,7 +26,7 @@ const createInput = z.object({
 const updateInput = z.object({
   id: z.string().uuid(), expectedUpdatedAt: z.string().datetime(), title: z.string().trim().min(1).max(160),
   problem: z.string().trim().min(1).max(4000), objective: z.string().trim().min(1).max(4000), action: z.string().trim().min(1).max(4000),
-  responsibleId: z.string().uuid().nullable(), priority: z.enum(priorities), dueDate: z.string().date(), status: z.enum(statuses), progress: z.union([z.literal(0),z.literal(25),z.literal(50),z.literal(75),z.literal(100)]),
+  responsibleId: z.string().uuid().nullable(), priority: z.enum(priorities), dueDate: z.string().date(), status: z.enum(statuses), progress: z.number().int().refine((value) => [0, 25, 50, 75, 100].includes(value), "invalid_progress"),
   expectedResult: z.string().trim().max(4000).nullable(), result: z.string().trim().max(4000).nullable(), resultObservation: z.string().trim().max(4000).nullable(),
   indicatorName: z.string().trim().max(160).nullable(), indicatorBefore: z.number().min(0).max(100).nullable(), indicatorAfter: z.number().min(0).max(100).nullable(),
 });
