@@ -80,3 +80,4 @@
 - [x] Replace deny-all policies with tenant-scoped RLS policies and minimum grants
 - [x] Execute the two-registry direct-request security matrix and clean test fixtures
 - [x] Validate legitimate frontend flows and publish the Stage 3 security report
+- [x] Revalidate Stage 3 sequentially across all six requested security blocks
