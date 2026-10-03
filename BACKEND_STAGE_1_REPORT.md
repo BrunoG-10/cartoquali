@@ -67,7 +67,7 @@ Nenhum teste foi reprovado.
 - Papéis foram separados de `usuarios` em `user_roles`.
 - Relações compostas foram adicionadas para impedir referências entre tenants.
 - Campos já presentes no domínio — configurações da pesquisa, condição da pergunta, ponto/dimensão/evidências do plano — foram contemplados sem criar novas entidades fora do escopo.
-- Acesso de `anon` e `authenticated` foi revogado enquanto RLS permanece fora desta etapa.
+- Acesso de `anon` e `authenticated` foi revogado em todas as tabelas.
 - RLS de bloqueio foi habilitada como proteção estrutural mínima; políticas funcionais por usuário e cartório continuam fora desta etapa.
 
 ## 12. Pendências
