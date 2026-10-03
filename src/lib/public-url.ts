@@ -1,4 +1,4 @@
-const configuredBaseUrl = import.meta.env.VITE_PUBLIC_APP_URL?.trim().replace(/\/$/, "");
+const configuredBaseUrl = import.meta.env["VITE_PUBLIC_APP_URL"]?.trim().replace(/\/$/, "");
 
 export function getPublicAppBaseUrl() {
   if (configuredBaseUrl) return configuredBaseUrl;

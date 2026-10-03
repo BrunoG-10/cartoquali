@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { getEvaluationUrl } from "@/lib/public-url";
 import type { EvaluationPoint } from "@/types/cartoquali";
 
-export function PointQrDialog({ point, open, onOpenChange }: { point?: EvaluationPoint; open: boolean; onOpenChange(open: boolean): void }) {
+export function PointQrDialog({ point, open, onOpenChange }: { point: EvaluationPoint | undefined; open: boolean; onOpenChange(open: boolean): void }) {
   const [image, setImage] = useState("");
   const [failed, setFailed] = useState(false);
   const url = point ? getEvaluationUrl(point.code) : "";
