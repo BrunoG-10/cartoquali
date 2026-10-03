@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AvaliarRouteImport } from './routes/avaliar'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authenticated/avaliacoes'
 import { Route as AuthenticatedCartorioRouteImport } from './routes/_authenticated/cartorio'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
@@ -43,9 +45,19 @@ const AvaliarRoute = AvaliarRouteImport.update({
   path: '/avaliar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAvaliacoesRoute = AuthenticatedAvaliacoesRouteImport.update({
@@ -133,7 +145,9 @@ const AvaliarCartorioPontoRoute = AvaliarCartorioPontoRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/avaliar': typeof AvaliarRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/cartorio': typeof AuthenticatedCartorioRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -153,7 +167,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/avaliar': typeof AvaliarRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/cartorio': typeof AuthenticatedCartorioRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -174,7 +190,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/avaliar': typeof AvaliarRouteWithChildren
+  '/login': typeof LoginRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/avaliacoes': typeof AuthenticatedAvaliacoesRoute
   '/_authenticated/cartorio': typeof AuthenticatedCartorioRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
@@ -196,7 +214,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/avaliar'
+    | '/login'
     | '/privacidade'
+    | '/reset-password'
     | '/avaliacoes'
     | '/cartorio'
     | '/configuracoes'
@@ -216,7 +236,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/avaliar'
+    | '/login'
     | '/privacidade'
+    | '/reset-password'
     | '/avaliacoes'
     | '/cartorio'
     | '/configuracoes'
@@ -236,7 +258,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/avaliar'
+    | '/login'
     | '/privacidade'
+    | '/reset-password'
     | '/_authenticated/avaliacoes'
     | '/_authenticated/cartorio'
     | '/_authenticated/configuracoes'
@@ -258,7 +282,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AvaliarRoute: typeof AvaliarRouteWithChildren
+  LoginRoute: typeof LoginRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -284,11 +310,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AvaliarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacidade': {
       id: '/privacidade'
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/avaliacoes': {
@@ -463,7 +503,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AvaliarRoute: AvaliarRouteWithChildren,
+  LoginRoute: LoginRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
