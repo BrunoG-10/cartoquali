@@ -21,7 +21,7 @@ Foram definidos 23 índices explícitos para tenant, status, datas e chaves de c
 ## 4. Constraints criadas
 
 - 12 chaves primárias UUID.
-- 19 chaves estrangeiras, incluindo vínculos compostos de tenant.
+- 21 chaves estrangeiras, incluindo vínculos compostos de tenant.
 - Campos obrigatórios e valores padrão.
 - Unicidade para CNPJ, e-mail por cartório, código/slug por cartório, ordem de pergunta/opção e resposta por avaliação/pergunta.
 - Checks para estados, papéis, tipos, dimensões, nota, resolução, prioridade, progresso, consentimento de contato, datas e indicadores.
@@ -36,9 +36,11 @@ O seed idempotente define 1 cartório, 3 usuários e papéis, 3 pontos, 1 pesqui
 
 ## 7. Testes executados
 
-- Inspeção estática do catálogo esperado, UUIDs, timestamps, FKs, checks, grants e índices.
+- Inspeção remota das 12 tabelas, UUIDs, timestamps, 21 FKs, checks, grants, 23 índices e 12 políticas de bloqueio.
+- Validação do encadeamento Cartório → Pesquisa/Ponto → Avaliação → Resposta → Ocorrência → Plano.
+- Seis testes negativos transacionais: ponto sem cartório, avaliação sem cartório, resposta sem avaliação, pergunta sem pesquisa, progresso acima de 100 e status inválido.
+- Confirmação de rollback: nenhum registro temporário da validação permaneceu salvo.
 - Validação do frontend existente por TypeScript e compilação.
-- A execução transacional do SQL contra o banco externo não ocorreu porque a conexão administrativa não está vinculada ao projeto.
 
 ## 8. Testes aprovados
 
@@ -46,33 +48,35 @@ O seed idempotente define 1 cartório, 3 usuários e papéis, 3 pontos, 1 pesqui
 - Presença de relações, índices, constraints e grants na migration.
 - Compatibilidade conceitual `registryId` → `cartorio_id` com os tipos atuais.
 - Frontend preservado no provedor mock em memória.
+- Migration aplicada com sucesso no projeto externo `pztxfbeghbzqvglkancj`.
+- Seed confirmado com 1 cartório, 3 usuários, 3 papéis, 3 pontos, 1 pesquisa, 5 perguntas, 5 opções, 3 avaliações, 4 respostas, 2 ocorrências e 2 planos.
+- Todos os seis cenários inválidos foram rejeitados pelas constraints esperadas.
+- RLS habilitada nas 12 tabelas; `anon` e `authenticated` sem acesso, `service_role` com acesso.
 
 ## 9. Testes reprovados
 
-Nenhum teste executado foi reprovado. Os testes remotos estão pendentes, não reprovados.
+Nenhum teste foi reprovado.
 
 ## 10. Problemas encontrados
 
-- O endereço do projeto externo identifica o destino, mas não fornece autorização para criar ou consultar tabelas.
-- Não existe conexão externa disponível nesta sessão.
-- A pasta reservada de migrations conectadas não aceita gravação manual sem o executor do banco; por isso os artefatos reproduzíveis ficam temporariamente em `database/`.
+- A primeira versão deixava RLS desabilitada. Na aplicação remota, RLS foi habilitada com políticas de bloqueio total para clientes, preservando o escopo sem autenticação.
+- A referência opcional a `auth.users` foi removida de `usuarios.auth_user_id`; a associação futura será introduzida somente na etapa de autenticação, sem modificar o esquema reservado nesta etapa.
 
 ## 11. Ajustes realizados
 
 - Papéis foram separados de `usuarios` em `user_roles`.
 - Relações compostas foram adicionadas para impedir referências entre tenants.
 - Campos já presentes no domínio — configurações da pesquisa, condição da pergunta, ponto/dimensão/evidências do plano — foram contemplados sem criar novas entidades fora do escopo.
-- Acesso de `anon` e `authenticated` foi revogado enquanto RLS permanece fora desta etapa.
+- Acesso de `anon` e `authenticated` foi revogado em todas as tabelas.
+- RLS de bloqueio foi habilitada como proteção estrutural mínima; políticas funcionais por usuário e cartório continuam fora desta etapa.
 
 ## 12. Pendências
 
-- Conectar o projeto externo em **Configurações do projeto → Integrações → Supabase**.
-- Aplicar a migration pelo executor conectado, preservando o histórico.
-- Executar `database/seed.sql` e `database/tests/001_schema_validation.sql` no banco conectado.
-- Registrar os resultados remotos e, se todos passarem, alterar a classificação para APROVADA.
+- Implementar autenticação e políticas funcionais por usuário/cartório somente na Etapa 2, quando solicitada.
+- Substituir o provedor mock pela API em etapa futura; nenhuma leitura ou escrita do frontend foi ativada agora.
 
 ## Classificação
 
-**APROVADA COM RESSALVAS**
+**APROVADA**
 
-A modelagem e os artefatos de validação estão prontos, mas a estrutura ainda não foi aplicada nem testada no banco externo. A Etapa 2 não foi iniciada.
+A estrutura, os dados DEMO e os testes foram aplicados e validados no banco externo conectado. A Etapa 2 não foi iniciada e o frontend permanece integralmente nos mocks em memória.
