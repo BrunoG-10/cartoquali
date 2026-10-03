@@ -68,10 +68,13 @@ export type Database = {
           atendimento_resolvido: string | null
           cartorio_id: string
           comentario: string | null
+          contact_consent_at: string | null
+          contact_consent_version: string | null
           created_at: string
           deseja_contato: boolean
           email_contato: string | null
           id: string
+          minimized_at: string | null
           motivo_insatisfacao: string | null
           nome_contato: string | null
           nota_geral: number
@@ -85,10 +88,13 @@ export type Database = {
           atendimento_resolvido?: string | null
           cartorio_id: string
           comentario?: string | null
+          contact_consent_at?: string | null
+          contact_consent_version?: string | null
           created_at?: string
           deseja_contato?: boolean
           email_contato?: string | null
           id?: string
+          minimized_at?: string | null
           motivo_insatisfacao?: string | null
           nome_contato?: string | null
           nota_geral: number
@@ -102,10 +108,13 @@ export type Database = {
           atendimento_resolvido?: string | null
           cartorio_id?: string
           comentario?: string | null
+          contact_consent_at?: string | null
+          contact_consent_version?: string | null
           created_at?: string
           deseja_contato?: boolean
           email_contato?: string | null
           id?: string
+          minimized_at?: string | null
           motivo_insatisfacao?: string | null
           nome_contato?: string | null
           nota_geral?: number
@@ -202,8 +211,11 @@ export type Database = {
       }
       configuracoes_cartorio: {
         Row: {
+          audit_retention_days: number | null
           cartorio_id: string
+          contact_retention_days: number | null
           created_at: string
+          evaluation_retention_days: number | null
           formato_data: string
           fuso_horario: string
           id: string
@@ -215,11 +227,17 @@ export type Database = {
           permite_comentarios: boolean
           permite_contato: boolean
           pesquisa_padrao_id: string | null
+          privacy_contact_channel: string | null
+          privacy_notice_effective_at: string | null
+          privacy_notice_version: string
           updated_at: string
         }
         Insert: {
+          audit_retention_days?: number | null
           cartorio_id: string
+          contact_retention_days?: number | null
           created_at?: string
+          evaluation_retention_days?: number | null
           formato_data?: string
           fuso_horario?: string
           id?: string
@@ -231,11 +249,17 @@ export type Database = {
           permite_comentarios?: boolean
           permite_contato?: boolean
           pesquisa_padrao_id?: string | null
+          privacy_contact_channel?: string | null
+          privacy_notice_effective_at?: string | null
+          privacy_notice_version?: string
           updated_at?: string
         }
         Update: {
+          audit_retention_days?: number | null
           cartorio_id?: string
+          contact_retention_days?: number | null
           created_at?: string
+          evaluation_retention_days?: number | null
           formato_data?: string
           fuso_horario?: string
           id?: string
@@ -247,6 +271,9 @@ export type Database = {
           permite_comentarios?: boolean
           permite_contato?: boolean
           pesquisa_padrao_id?: string | null
+          privacy_contact_channel?: string | null
+          privacy_notice_effective_at?: string | null
+          privacy_notice_version?: string
           updated_at?: string
         }
         Relationships: [
@@ -697,6 +724,83 @@ export type Database = {
           },
         ]
       }
+      privacy_requests: {
+        Row: {
+          cartorio_id: string
+          created_at: string
+          created_by_id: string
+          description: string
+          evaluation_id: string | null
+          id: string
+          internal_notes: string | null
+          request_type: string
+          requester_contact: string | null
+          resolved_at: string | null
+          responsible_user_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cartorio_id: string
+          created_at?: string
+          created_by_id: string
+          description: string
+          evaluation_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          request_type: string
+          requester_contact?: string | null
+          resolved_at?: string | null
+          responsible_user_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cartorio_id?: string
+          created_at?: string
+          created_by_id?: string
+          description?: string
+          evaluation_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          request_type?: string
+          requester_contact?: string | null
+          resolved_at?: string | null
+          responsible_user_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "privacy_requests_cartorio_id_fkey"
+            columns: ["cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "cartorios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "privacy_requests_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "privacy_requests_evaluation_id_fkey"
+            columns: ["evaluation_id"]
+            isOneToOne: false
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "privacy_requests_responsible_user_id_fkey"
+            columns: ["responsible_user_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       respostas: {
         Row: {
           avaliacao_id: string
@@ -884,6 +988,23 @@ export type Database = {
           _previous_end: string
           _previous_start: string
           _survey_id?: string
+        }
+        Returns: Json
+      }
+      log_privacy_event: {
+        Args: {
+          _action: string
+          _entity: string
+          _entity_id: string
+          _metadata?: Json
+        }
+        Returns: undefined
+      }
+      minimize_evaluation_personal_data: {
+        Args: {
+          _evaluation_id: string
+          _privacy_request_id: string
+          _redact_free_text?: boolean
         }
         Returns: Json
       }
