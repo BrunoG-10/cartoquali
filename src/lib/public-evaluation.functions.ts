@@ -41,7 +41,7 @@ export type PublicEvaluationContext =
       pointName: string;
       surveyName: string;
       surveyDescription: string | null;
-      settings: { allowContactRequest: boolean; thankYouMessage: string | null };
+      settings: { allowContactRequest: boolean; thankYouMessage: string | null; privacyNoticeVersion: string };
       questions: PublicQuestion[];
     };
 
@@ -77,6 +77,7 @@ function parseContext(value: unknown): PublicEvaluationContext {
     settings: {
       allowContactRequest: rawSettings["allowContactRequest"] !== false,
       thankYouMessage: typeof rawSettings["thankYouMessage"] === "string" ? rawSettings["thankYouMessage"] : null,
+      privacyNoticeVersion: typeof rawSettings["privacyNoticeVersion"] === "string" ? rawSettings["privacyNoticeVersion"] : "1.0",
     },
     questions,
   };
