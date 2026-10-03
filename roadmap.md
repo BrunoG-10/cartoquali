@@ -85,7 +85,7 @@
 # Backend — Etapa 4
 - [x] Inspect the real schema, relationships, RLS policies, grants and administrative mock flows
 - [x] Block 1: migrate Registry read/edit to real tenant-scoped Supabase data and validate persistence/security
-- [ ] Block 2: migrate Users and Auth invitation management
+- [x] Block 2: migrate Users and Auth invitation management
 - [ ] Block 3: migrate Evaluation Points management
 - [ ] Block 4: migrate Surveys, Questions and Answer Options management
 - [ ] Remove replaced mocks, validate persistence/responsiveness and publish the Stage 4 report
