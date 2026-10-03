@@ -15,7 +15,7 @@ As funções `cartoquali_private.current_user_id()`, `cartoquali_private.current
 - `cartorios`: leitura do próprio cartório; alteração somente por `CARTORIO_ADMIN` do tenant.
 - `usuarios`: leitura do próprio tenant; criação, alteração e exclusão somente por `CARTORIO_ADMIN` do tenant.
 - `user_roles`: leitura do próprio tenant; mutações somente por `CARTORIO_ADMIN`, sempre para usuário do mesmo tenant.
-- `pesquisas` e `pontos_avaliacao`: todas as operações administrativas exigem o tenant atual; criações e alterações também validam os pais relacionados.
+- `pesquisas` e `pontos_avaliacao`: todas as operações administrativas exigem o tenant atual; pontos só podem ser alterados por `PLATFORM_ADMIN`, `CARTORIO_ADMIN` ou `GESTOR`, validam pesquisa ativa do mesmo tenant, não podem ser excluídos e geram auditoria.
 - `avaliacoes` e `respostas`: leitura e criação exigem o tenant atual e relações compatíveis; atualização e exclusão são negadas aos usuários administrativos para manter o histórico imutável.
 - `perguntas` e `opcoes_resposta`: o acesso deriva de pesquisa → cartório.
 - `respostas`: o acesso deriva de avaliação → cartório; gravações também exigem pergunta da mesma pesquisa.

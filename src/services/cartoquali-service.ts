@@ -1,4 +1,4 @@
-import type { AuditLog, CreateImprovementPlanInput, CreateOccurrenceInput, DataProviderKind, EvaluationAnswer, EvaluationPoint, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
+import type { AuditLog, CreateImprovementPlanInput, CreateOccurrenceInput, DataProviderKind, EvaluationAnswer, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
 export interface CartoQualiService {
   readonly kind: DataProviderKind;
   getRegistries(): Promise<Registry[]>;
@@ -10,7 +10,6 @@ export interface CartoQualiService {
   createUser(registryId: string, input: Omit<RegistryUser, "id" | "registryId" | "createdAt" | "lastAccess" | "recentActivity">): Promise<RegistryUser>;
   updateUser(registryId: string, id: string, input: Partial<RegistryUser>): Promise<RegistryUser | undefined>;
   toggleUserStatus(registryId: string, id: string): Promise<RegistryUser | undefined>;
-  getPoints(registryId: string): Promise<EvaluationPoint[]>;
   getSurveys(registryId: string): Promise<Survey[]>;
   getSurveyById(registryId: string, id: string): Promise<Survey | undefined>;
   createSurvey(registryId: string, input: Omit<Survey, "id" | "registryId" | "createdAt" | "updatedAt" | "versionDate">): Promise<Survey>;
@@ -23,9 +22,6 @@ export interface CartoQualiService {
   deleteQuestion(registryId: string, id: string): Promise<void>;
   reorderQuestions(registryId: string, surveyId: string, orderedIds: string[]): Promise<SurveyQuestion[]>;
   getAnswers(registryId: string): Promise<EvaluationAnswer[]>;
-  getEvaluationPointById(registryId: string, id: string): Promise<EvaluationPoint | undefined>;
-  createEvaluationPoint(registryId: string, input: Omit<EvaluationPoint, "id" | "registryId" | "createdAt" | "reviews" | "lastReview" | "publicUrl" | "slug" | "method">): Promise<EvaluationPoint>;
-  updateEvaluationPoint(registryId: string, id: string, input: Partial<EvaluationPoint>): Promise<EvaluationPoint | undefined>;
   getDimensions(registryId: string): Promise<QualityDimension[]>;
   getCategories(registryId: string): Promise<QualityCategory[]>;
   getSettings(registryId: string): Promise<PlatformSettings | undefined>;

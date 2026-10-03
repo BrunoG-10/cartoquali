@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -7,6 +8,7 @@
 >
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
+
 <!-- LOVABLE:END -->
 
 - Keep CartoQuali presentation components dependent on typed service contracts and mock adapters, so a future external API can replace mock data without rebuilding the UI.
@@ -28,4 +30,5 @@
 - Persist Stage 8 occurrence writes through authenticated RLS-scoped RPCs and database triggers, with immutable origin, ordered status transitions, idempotency and audit history.
 - Persist Stage 9 improvement-plan reads and writes through authenticated tenant-scoped server functions, with database-enforced lifecycle, idempotency, optimistic concurrency and audit history.
 - Build Stage 10 reports through one authenticated tenant-scoped aggregate and reuse that authorized result for CSV; report pages never read session mocks.
+- Manage evaluation points through authenticated tenant-scoped server functions; preserve legacy public slugs, block deletion, and share one canonical URL across link, QR Code and future NFC.
 - Keep browser printing as the Stage 10 PDF path; do not add a dedicated PDF dependency without mature server-side support.

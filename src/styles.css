@@ -184,4 +184,7 @@
   .report-page table { font-size: 9pt; }
   .report-page .report-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .report-page .report-identification { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  body:has(.point-qr-sheet) * { visibility: hidden; }
+  body:has(.point-qr-sheet) .point-qr-sheet, body:has(.point-qr-sheet) .point-qr-sheet * { visibility: visible; }
+  body:has(.point-qr-sheet) .point-qr-sheet { position: fixed; inset: 0; width: 100%; max-width: none; min-height: 100vh; padding: 16mm; }
 }
