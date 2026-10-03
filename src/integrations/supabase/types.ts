@@ -200,6 +200,72 @@ export type Database = {
         }
         Relationships: []
       }
+      configuracoes_cartorio: {
+        Row: {
+          cartorio_id: string
+          created_at: string
+          formato_data: string
+          fuso_horario: string
+          id: string
+          idioma: string
+          mensagem_agradecimento: string
+          metodologia_ativa: string
+          nome_exibicao: string
+          permite_avaliacao_anonima: boolean
+          permite_comentarios: boolean
+          permite_contato: boolean
+          pesquisa_padrao_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          cartorio_id: string
+          created_at?: string
+          formato_data?: string
+          fuso_horario?: string
+          id?: string
+          idioma?: string
+          mensagem_agradecimento?: string
+          metodologia_ativa?: string
+          nome_exibicao?: string
+          permite_avaliacao_anonima?: boolean
+          permite_comentarios?: boolean
+          permite_contato?: boolean
+          pesquisa_padrao_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cartorio_id?: string
+          created_at?: string
+          formato_data?: string
+          fuso_horario?: string
+          id?: string
+          idioma?: string
+          mensagem_agradecimento?: string
+          metodologia_ativa?: string
+          nome_exibicao?: string
+          permite_avaliacao_anonima?: boolean
+          permite_comentarios?: boolean
+          permite_contato?: boolean
+          pesquisa_padrao_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "configuracoes_cartorio_cartorio_id_fkey"
+            columns: ["cartorio_id"]
+            isOneToOne: true
+            referencedRelation: "cartorios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "configuracoes_cartorio_pesquisa_padrao_id_fkey"
+            columns: ["pesquisa_padrao_id"]
+            isOneToOne: false
+            referencedRelation: "pesquisas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ocorrencias_qualidade: {
         Row: {
           avaliacao_id: string | null
@@ -783,6 +849,17 @@ export type Database = {
         }
         Returns: Json
       }
+      create_registry_user: {
+        Args: {
+          _auth_user_id: string
+          _email: string
+          _name: string
+          _phone: string
+          _role: string
+          _status: string
+        }
+        Returns: Json
+      }
       get_dashboard_indicators: {
         Args: {
           _current_end: string
@@ -854,6 +931,16 @@ export type Database = {
           _responsible_id: string
           _status: string
           _title: string
+        }
+        Returns: Json
+      }
+      update_registry_user: {
+        Args: {
+          _id: string
+          _name: string
+          _phone: string
+          _role: string
+          _status: string
         }
         Returns: Json
       }
