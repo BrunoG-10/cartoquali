@@ -24,13 +24,15 @@ create table public.cartorios (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-revoke all on public.cartorios from anon, authenticated;
 grant all on public.cartorios to service_role;
+alter table public.cartorios enable row level security;
+create policy "cartorios_block_client_access" on public.cartorios for all to anon, authenticated using (false) with check (false);
+revoke all on public.cartorios from anon, authenticated;
 
 create table public.usuarios (
   id uuid primary key default gen_random_uuid(),
   cartorio_id uuid not null references public.cartorios(id) on delete restrict,
-  auth_user_id uuid unique references auth.users(id) on delete set null,
+  auth_user_id uuid unique,
   nome text not null,
   email text not null,
   telefone text,
@@ -40,8 +42,10 @@ create table public.usuarios (
   unique (cartorio_id, email),
   unique (id, cartorio_id)
 );
-revoke all on public.usuarios from anon, authenticated;
 grant all on public.usuarios to service_role;
+alter table public.usuarios enable row level security;
+create policy "usuarios_block_client_access" on public.usuarios for all to anon, authenticated using (false) with check (false);
+revoke all on public.usuarios from anon, authenticated;
 
 create table public.user_roles (
   id uuid primary key default gen_random_uuid(),
@@ -50,8 +54,10 @@ create table public.user_roles (
   created_at timestamptz not null default now(),
   unique (user_id, role)
 );
-revoke all on public.user_roles from anon, authenticated;
 grant all on public.user_roles to service_role;
+alter table public.user_roles enable row level security;
+create policy "user_roles_block_client_access" on public.user_roles for all to anon, authenticated using (false) with check (false);
+revoke all on public.user_roles from anon, authenticated;
 
 create table public.pesquisas (
   id uuid primary key default gen_random_uuid(),
@@ -65,8 +71,10 @@ create table public.pesquisas (
   updated_at timestamptz not null default now(),
   unique (id, cartorio_id)
 );
-revoke all on public.pesquisas from anon, authenticated;
 grant all on public.pesquisas to service_role;
+alter table public.pesquisas enable row level security;
+create policy "pesquisas_block_client_access" on public.pesquisas for all to anon, authenticated using (false) with check (false);
+revoke all on public.pesquisas from anon, authenticated;
 
 create table public.pontos_avaliacao (
   id uuid primary key default gen_random_uuid(),
@@ -88,8 +96,10 @@ create table public.pontos_avaliacao (
   foreign key (pesquisa_id, cartorio_id)
     references public.pesquisas(id, cartorio_id) on delete restrict
 );
-revoke all on public.pontos_avaliacao from anon, authenticated;
 grant all on public.pontos_avaliacao to service_role;
+alter table public.pontos_avaliacao enable row level security;
+create policy "pontos_avaliacao_block_client_access" on public.pontos_avaliacao for all to anon, authenticated using (false) with check (false);
+revoke all on public.pontos_avaliacao from anon, authenticated;
 
 create table public.perguntas (
   id uuid primary key default gen_random_uuid(),
@@ -105,8 +115,10 @@ create table public.perguntas (
   updated_at timestamptz not null default now(),
   unique (pesquisa_id, ordem)
 );
-revoke all on public.perguntas from anon, authenticated;
 grant all on public.perguntas to service_role;
+alter table public.perguntas enable row level security;
+create policy "perguntas_block_client_access" on public.perguntas for all to anon, authenticated using (false) with check (false);
+revoke all on public.perguntas from anon, authenticated;
 
 create table public.opcoes_resposta (
   id uuid primary key default gen_random_uuid(),
@@ -117,8 +129,10 @@ create table public.opcoes_resposta (
   created_at timestamptz not null default now(),
   unique (pergunta_id, ordem)
 );
-revoke all on public.opcoes_resposta from anon, authenticated;
 grant all on public.opcoes_resposta to service_role;
+alter table public.opcoes_resposta enable row level security;
+create policy "opcoes_resposta_block_client_access" on public.opcoes_resposta for all to anon, authenticated using (false) with check (false);
+revoke all on public.opcoes_resposta from anon, authenticated;
 
 create table public.avaliacoes (
   id uuid primary key default gen_random_uuid(),
@@ -142,8 +156,10 @@ create table public.avaliacoes (
   check (deseja_contato or (nome_contato is null and telefone_contato is null and email_contato is null)),
   check (not deseja_contato or not anonymous)
 );
-revoke all on public.avaliacoes from anon, authenticated;
 grant all on public.avaliacoes to service_role;
+alter table public.avaliacoes enable row level security;
+create policy "avaliacoes_block_client_access" on public.avaliacoes for all to anon, authenticated using (false) with check (false);
+revoke all on public.avaliacoes from anon, authenticated;
 
 create table public.respostas (
   id uuid primary key default gen_random_uuid(),
@@ -155,8 +171,10 @@ create table public.respostas (
   unique (avaliacao_id, pergunta_id),
   check (valor is not null or resposta_texto is not null)
 );
-revoke all on public.respostas from anon, authenticated;
 grant all on public.respostas to service_role;
+alter table public.respostas enable row level security;
+create policy "respostas_block_client_access" on public.respostas for all to anon, authenticated using (false) with check (false);
+revoke all on public.respostas from anon, authenticated;
 
 create table public.ocorrencias_qualidade (
   id uuid primary key default gen_random_uuid(),
@@ -185,8 +203,10 @@ create table public.ocorrencias_qualidade (
     references public.pontos_avaliacao(id, cartorio_id) on delete restrict,
   check (data_resolucao is null or data_resolucao >= data_abertura)
 );
-revoke all on public.ocorrencias_qualidade from anon, authenticated;
 grant all on public.ocorrencias_qualidade to service_role;
+alter table public.ocorrencias_qualidade enable row level security;
+create policy "ocorrencias_qualidade_block_client_access" on public.ocorrencias_qualidade for all to anon, authenticated using (false) with check (false);
+revoke all on public.ocorrencias_qualidade from anon, authenticated;
 
 create table public.planos_melhoria (
   id uuid primary key default gen_random_uuid(),
@@ -221,8 +241,10 @@ create table public.planos_melhoria (
   check (indicador_antes is null or indicador_antes between 0 and 100),
   check (indicador_depois is null or indicador_depois between 0 and 100)
 );
-revoke all on public.planos_melhoria from anon, authenticated;
 grant all on public.planos_melhoria to service_role;
+alter table public.planos_melhoria enable row level security;
+create policy "planos_melhoria_block_client_access" on public.planos_melhoria for all to anon, authenticated using (false) with check (false);
+revoke all on public.planos_melhoria from anon, authenticated;
 
 create table public.audit_logs (
   id uuid primary key default gen_random_uuid(),
@@ -236,8 +258,10 @@ create table public.audit_logs (
   foreign key (user_id, cartorio_id)
     references public.usuarios(id, cartorio_id) on delete restrict
 );
-revoke all on public.audit_logs from anon, authenticated;
 grant all on public.audit_logs to service_role;
+alter table public.audit_logs enable row level security;
+create policy "audit_logs_block_client_access" on public.audit_logs for all to anon, authenticated using (false) with check (false);
+revoke all on public.audit_logs from anon, authenticated;
 
 create index usuarios_cartorio_id_idx on public.usuarios (cartorio_id);
 create index usuarios_status_idx on public.usuarios (status);
