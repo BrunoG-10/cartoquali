@@ -10,6 +10,8 @@ Implementar suporte técnico à privacidade e à governança sem declarar confor
 - Contato é opcional e validado, porém as consultas de listagem ainda selecionam colunas de contato antes de descartá-las; o detalhe limita contato a administrador/gestor.
 - Comentários e outros textos livres podem receber dados pessoais ou sensíveis; faltam aviso contextual e visualização administrativa redigida.
 - Dashboard e indicadores são agregados; CSV geral não precisa nem deve receber contato.
+- A auditoria administrativa atual duplica telefone/e-mail em metadados históricos; esses valores devem ser removidos sem apagar a trilha operacional.
+- A permissão de contato diverge entre detalhes de avaliação e ocorrência; será centralizada numa única capacidade administrativa.
 - O navegador guarda somente sessão de autenticação e uma chave técnica de idempotência temporária; não há analytics adicional implementado.
 - O antiabuso guarda hash técnico temporário, sem IP ou user-agent em claro.
 - Não existem política de retenção configurável, solicitações de privacidade, fluxo de anonimização nem auditoria específica de acesso a contato/exportação.
@@ -22,17 +24,20 @@ Implementar suporte técnico à privacidade e à governança sem declarar confor
 
 - Criar `privacy_requests`, tenant-scoped, com tipo, descrição, contato mínimo, status, responsável, notas internas e datas.
 - Criar configuração de privacidade por cartório: versão/data do aviso, canal público opcional e prazos de retenção nullable. Prazo vazio significará “pendente de definição jurídica/contratual”; nada será apagado automaticamente.
+- Registrar na avaliação somente a versão/data da autorização específica de contato quando ela for escolhida; avaliação sem contato não receberá consentimento artificial.
 - Conceder somente os privilégios necessários, ativar RLS e permitir acesso apenas a `PLATFORM_ADMIN`/`CARTORIO_ADMIN` no tenant atual.
 - Criar índices por `cartorio_id`, `created_at`, `status`, `request_type` e `responsible_user_id`.
 - Criar operações atômicas para abrir, atribuir, atualizar e concluir solicitações; validar transições, limites de texto e relações do mesmo tenant.
 - Criar operação controlada de minimização em avaliação de teste/solicitação válida: remover contato e redigir textos selecionados sem apagar nota, respostas estruturadas ou indicadores.
 - Auditar abertura, atribuição, conclusão e minimização sem copiar conteúdo pessoal para `audit_logs`.
+- Remover telefone/e-mail dos novos metadados de auditoria administrativa e redigir cópias históricas desses campos, preservando ação, entidade, autoria e datas.
 - Corrigir privilégios residuais de funções privadas e confirmar `search_path`, `EXECUTE` e ausência de acesso anônimo indevido.
 
 ### 2. Minimização e separação de contato
 
 - Alterar listagens de avaliações para nunca selecionar nome, telefone ou e-mail.
 - Manter contato somente no detalhe autorizado; registrar evento de visualização restrita quando tecnicamente seguro, sem registrar os valores.
+- Centralizar a capacidade de visualizar contato e aplicá-la igualmente aos detalhes de avaliação e ocorrência.
 - Não copiar contato para ocorrências, planos, indicadores, relatórios gerais ou CSV.
 - Manter comentário fora de resumos agregados e oferecer estado redigido na cadeia operacional quando a solicitação exigir.
 - Reforçar validação Zod no cliente e servidor: tamanhos, e-mail, telefone, descrição, notas e enums.
