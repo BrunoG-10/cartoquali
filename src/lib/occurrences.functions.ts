@@ -73,7 +73,7 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" }).middleware
     row.criado_por_id ? context.supabase.from("usuarios").select("id, nome").eq("id", row.criado_por_id).maybeSingle() : Promise.resolve({ data: null }),
     row.encerrado_por_id ? context.supabase.from("usuarios").select("id, nome").eq("id", row.encerrado_por_id).maybeSingle() : Promise.resolve({ data: null }),
     context.supabase.from("audit_logs").select("id, user_id, action, metadata, created_at").eq("entity", "quality_occurrence").eq("entity_id", row.id).order("created_at", { ascending: false }),
-    row.avaliacao_id ? context.supabase.from("avaliacoes").select("id, ponto_id, pesquisa_id, nota_geral, comentario, deseja_contato, anonymous, created_at, nome_contato, telefone_contato, email_contato").eq("id", row.avaliacao_id).maybeSingle() : Promise.resolve({ data: null }),
+    row.avaliacao_id ? context.supabase.from("avaliacoes").select("id, ponto_id, pesquisa_id, nota_geral, comentario, deseja_contato, anonymous, created_at").eq("id", row.avaliacao_id).maybeSingle() : Promise.resolve({ data: null }),
   ]);
   let evaluationDetail = null;
   if (evaluation) {
@@ -85,8 +85,10 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" }).middleware
     const questionIds = (answers ?? []).map((item: any) => item.pergunta_id);
     const { data: questions } = questionIds.length ? await context.supabase.from("perguntas").select("id, texto, ordem").in("id", questionIds) : { data: [] };
     const questionMap = new Map((questions ?? []).map((item: any) => [item.id, item]));
-    const canViewContact = access.roles.some((role: string) => ["PLATFORM_ADMIN", "CARTORIO_ADMIN", "GESTOR"].includes(role));
-    evaluationDetail = { id: evaluation.id, rating: evaluation.nota_geral, createdAt: evaluation.created_at, pointName: evaluationPoint?.nome ?? "Ponto indisponível", surveyName: survey?.nome ?? "Pesquisa indisponível", comment: evaluation.comentario, anonymous: evaluation.anonymous, contact: canViewContact && evaluation.deseja_contato ? { name: evaluation.nome_contato, phone: evaluation.telefone_contato, email: evaluation.email_contato } : null, contactRestricted: evaluation.deseja_contato && !canViewContact, answers: (answers ?? []).map((answer: any) => ({ id: answer.id, question: questionMap.get(answer.pergunta_id)?.texto ?? "Pergunta indisponível", order: questionMap.get(answer.pergunta_id)?.ordem ?? 999, value: answer.resposta_texto ?? (Array.isArray(answer.valor) ? answer.valor.join(" · ") : String(answer.valor ?? "")) })).sort((a: any, b: any) => a.order - b.order) };
+    const canViewContact = access.roles.some((role: string) => ["PLATFORM_ADMIN", "CARTORIO_ADMIN"].includes(role));
+    const { data: contact } = canViewContact && evaluation.deseja_contato ? await context.supabase.from("evaluation_contacts").select("name,phone,email").eq("evaluation_id", evaluation.id).maybeSingle() : { data: null };
+    if (contact) await context.supabase.rpc("log_privacy_event", { _action: "restricted_contact_viewed", _entity: "evaluation", _entity_id: evaluation.id, _metadata: { surface: "occurrence_detail" } });
+    evaluationDetail = { id: evaluation.id, rating: evaluation.nota_geral, createdAt: evaluation.created_at, pointName: evaluationPoint?.nome ?? "Ponto indisponível", surveyName: survey?.nome ?? "Pesquisa indisponível", comment: evaluation.comentario, anonymous: evaluation.anonymous, contact: contact ? { name: contact.name, phone: contact.phone, email: contact.email } : null, contactRestricted: evaluation.deseja_contato && !canViewContact, answers: (answers ?? []).map((answer: any) => ({ id: answer.id, question: questionMap.get(answer.pergunta_id)?.texto ?? "Pergunta indisponível", order: questionMap.get(answer.pergunta_id)?.ordem ?? 999, value: answer.resposta_texto ?? (Array.isArray(answer.valor) ? answer.valor.join(" · ") : String(answer.valor ?? "")) })).sort((a: any, b: any) => a.order - b.order) };
   }
   const logUserIds = [...new Set((logs ?? []).flatMap((log: any) => log.user_id ? [log.user_id] : []))] as string[];
   const { data: logUsers } = logUserIds.length ? await context.supabase.from("usuarios").select("id, nome").in("id", logUserIds) : { data: [] };

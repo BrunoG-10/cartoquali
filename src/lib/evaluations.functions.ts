@@ -22,7 +22,6 @@ type EvaluationRow = {
   id: string; cartorio_id: string; ponto_id: string; pesquisa_id: string; nota_geral: number;
   atendimento_resolvido: string | null; comentario: string | null; motivo_insatisfacao: string | null;
   deseja_contato: boolean; anonymous: boolean; status: string; created_at: string;
-  nome_contato: string | null; telefone_contato: string | null; email_contato: string | null;
 };
 
 function classification(rating: number) { return rating >= 4 ? "Satisfeita" : "Atenção"; }
@@ -35,7 +34,7 @@ export const listEvaluations = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => listInput.parse(input))
   .handler(async ({ context, data }) => {
     const from = (data.page - 1) * data.pageSize;
-    let query = context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at, nome_contato, telefone_contato, email_contato", { count: "exact" });
+    let query = context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at", { count: "exact" });
     if (data.search) query = query.ilike("comentario", `%${data.search}%`);
     if (data.pointId) query = query.eq("ponto_id", data.pointId);
     if (data.surveyId) query = query.eq("pesquisa_id", data.surveyId);
@@ -64,7 +63,7 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
-    const { data: row, error } = await context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at, nome_contato, telefone_contato, email_contato").eq("id", data.id).maybeSingle();
+    const { data: row, error } = await context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at").eq("id", data.id).maybeSingle();
     if (error) throw new Error("Não foi possível carregar a avaliação.");
     if (!row) return null;
     const [{ data: point }, { data: survey }, { data: answers }, { data: profile }] = await Promise.all([
@@ -81,7 +80,11 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
     ]);
     const questionMap = new Map((questions ?? []).map((question) => [question.id, question]));
     const optionRows = options ?? [];
-    const canViewContact = (roles ?? []).some((role) => ["CARTORIO_ADMIN", "GESTOR"].includes(role.role));
+    const canViewContact = (roles ?? []).some((role) => ["PLATFORM_ADMIN", "CARTORIO_ADMIN"].includes(role.role));
+    const { data: contact } = canViewContact && row.deseja_contato
+      ? await context.supabase.from("evaluation_contacts").select("name,phone,email").eq("evaluation_id", row.id).maybeSingle()
+      : { data: null };
+    if (contact) await context.supabase.rpc("log_privacy_event", { _action: "restricted_contact_viewed", _entity: "evaluation", _entity_id: row.id, _metadata: { surface: "evaluation_detail" } });
     return {
       ...summary(row, point?.nome ?? "Ponto indisponível", survey?.nome ?? "Pesquisa indisponível"),
       resolution: row.atendimento_resolvido ? resolutionLabels[row.atendimento_resolvido as keyof typeof resolutionLabels] ?? row.atendimento_resolvido : null,
@@ -93,7 +96,7 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
         const labels = values.map((value) => optionRows.find((option) => option.pergunta_id === answer.pergunta_id && option.valor === value)?.texto ?? value);
         return { id: answer.id, questionId: answer.pergunta_id, question: question?.texto ?? "Pergunta indisponível", type: question?.tipo ?? "", dimension: question?.dimensao ?? "", order: question?.ordem ?? 999, value: labels, text: answer.resposta_texto };
       }).sort((a, b) => a.order - b.order),
-      contact: canViewContact && row.deseja_contato ? { name: row.nome_contato, phone: row.telefone_contato, email: row.email_contato } : null,
+      contact: contact ? { name: contact.name, phone: contact.phone, email: contact.email } : null,
       contactRestricted: row.deseja_contato && !canViewContact,
     };
   });
