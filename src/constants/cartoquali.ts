@@ -11,7 +11,7 @@ export const OCCURRENCE_STATUSES: readonly OccurrenceStatus[] = ["Nova", "Em an�
 export const OCCURRENCE_PRIORITIES: readonly OccurrencePriority[] = ["Baixa", "Média", "Alta", "Crítica"];
 export const OCCURRENCE_ORIGINS: readonly OccurrenceOrigin[] = ["Avaliação de usuário", "Indicador", "Equipe do cartório", "Auditoria interna", "Outro"];
 export const IMPROVEMENT_PLAN_STATUSES: readonly ImprovementPlanStatus[] = ["Planejado", "Em andamento", "Concluído", "Cancelado"];
-export const DASHBOARD_PERIODS = ["Hoje", "7 dias", "30 dias", "90 dias", "Este ano", "Personalizado"] as const;
+export const DASHBOARD_PERIODS = ["Hoje", "7 dias", "30 dias", "Este mês", "Mês anterior", "90 dias", "Personalizado"] as const;
 export const QUALITY_METHODOLOGY: QualityMethodology = {
   version: "1.0",
   dimensions: [
