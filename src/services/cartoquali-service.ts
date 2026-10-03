@@ -1,4 +1,4 @@
-import type { AuditLog, CreateImprovementPlanInput, CreateOccurrenceInput, DataProviderKind, EvaluationAnswer, EvaluationPoint, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, ReportHistoryItem, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
+import type { AuditLog, CreateImprovementPlanInput, CreateOccurrenceInput, DataProviderKind, EvaluationAnswer, EvaluationPoint, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
 export interface CartoQualiService {
   readonly kind: DataProviderKind;
   getRegistries(): Promise<Registry[]>;
@@ -45,6 +45,5 @@ export interface CartoQualiService {
   createImprovementPlan(registryId: string, input: CreateImprovementPlanInput): Promise<ImprovementPlan>;
   updateImprovementPlan(registryId: string, id: string, input: UpdateImprovementPlanInput): Promise<ImprovementPlan | undefined>;
   updateImprovementPlanStatus(registryId: string, id: string, status: ImprovementPlanStatus): Promise<ImprovementPlan | undefined>;
-  getReports(registryId: string): Promise<ReportHistoryItem[]>;
   getAuditLogs(registryId: string): Promise<AuditLog[]>;
 }

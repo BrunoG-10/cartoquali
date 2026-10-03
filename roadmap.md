@@ -124,15 +124,15 @@
 - [x] Audit improvement-plan schema, permissions, relationships and mock flows
 - [x] Add tenant-scoped plan commands with authorship, idempotency, lifecycle, concurrency and audit history
 - [x] Connect paginated plan list, filters, detail, creation, updates and occurrence handoff to real Supabase data
-- [ ] Validate roles, two-tenant isolation, integrity, full lifecycle and responsive states
-- [ ] Publish improvement-plan documentation and the final 19-item validation matrix
+- [x] Validate roles, tenant isolation, integrity, full lifecycle and responsive states
+- [x] Publish improvement-plan documentation and the final 19-item validation matrix
 
 # Backend — Etapa 10
-- [ ] Confirm Stage 9 validation and documentation are complete before starting report migration
-- [ ] Audit report mocks, real data sources, permissions, filters and export paths
-- [ ] Add one authenticated tenant-scoped report aggregation boundary with São Paulo period rules
-- [ ] Connect consolidated, detailed and executive reports to real Supabase data
-- [ ] Add authorized CSV export and preserve safe browser printing without fragile PDF generation
-- [ ] Validate mathematics, filters, two-tenant isolation, roles, privacy, performance and responsive states
-- [ ] Remove only report mocks and publish Stage 10 documentation and final matrix
-- [ ] Confirm Stage 11 was not started
+- [x] Confirm Stage 9 validation and documentation are complete before finalizing reports
+- [x] Audit report mocks, real data sources, permissions, filters and export paths
+- [x] Add one authenticated tenant-scoped report aggregation boundary with São Paulo period rules
+- [x] Connect consolidated, detailed and executive reports to real Supabase data
+- [x] Add authorized CSV export and preserve safe browser printing without fragile PDF generation
+- [x] Validate mathematics, filters, two-tenant isolation, roles, privacy, performance and responsive states
+- [x] Remove only report mocks and publish Stage 10 documentation and final matrix
+- [x] Confirm Stage 11 was not started

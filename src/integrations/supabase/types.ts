@@ -796,6 +796,20 @@ export type Database = {
         Returns: Json
       }
       get_public_evaluation_context: { Args: { _code: string }; Returns: Json }
+      get_quality_report: {
+        Args: {
+          _current_end: string
+          _current_start: string
+          _granularity?: string
+          _occurrence_status?: string
+          _plan_status?: string
+          _point_id?: string
+          _previous_end: string
+          _previous_start: string
+          _survey_id?: string
+        }
+        Returns: Json
+      }
       submit_public_evaluation: {
         Args: {
           _answers: Json

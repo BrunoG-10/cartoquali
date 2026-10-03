@@ -53,46 +53,6 @@ export type DimensionIndicator = QualityDimension & { index: number; responses: 
 export type QualityMethodology = { version: string; dimensions: QualityDimension[]; indicators: Array<{ key: string; label: string; definition: string }>; formulas: Record<string, string>; questionMappings: Partial<Record<QualityDimensionKey, string>> };
 export type QualityEvolutionPoint = { label: string; average: number; satisfaction: number; resolution: number; negative: number; total: number };
 export type ReportKind = "qualidade" | "indicadores" | "satisfacao" | "avaliacoes" | "ocorrencias" | "planos-melhoria" | "executivo";
-export type ReportFormat = "pdf" | "csv" | "excel";
-export type ReportFilters = QualityFilters & { dimensionId?: string; withComment?: boolean; withContact?: boolean };
-export type ReportEvidence = { label: string; value: number };
-export type ReportHistoryItem = { id: string; registryId: TenantId; kind: ReportKind; title: string; periodLabel: string; createdAt: string; createdBy: string; filters: ReportFilters };
-export type ReportHighlight = { label: string; value: string };
-export type ImprovementEvidence = { id: string; indicator: string; before: number; action: string; after: number; completedAt: string; owner: string };
-export type ReportSource = { registry: Registry; reviews: Review[]; answers: EvaluationAnswer[]; questions: SurveyQuestion[]; dimensions: QualityDimension[]; points: EvaluationPoint[]; surveys: Survey[]; occurrences: QualityOccurrence[]; improvementPlans: ImprovementPlan[] };
-export type ReportData = {
-  kind: ReportKind;
-  title: string;
-  generatedAt: string;
-  periodLabel: string;
-  registry: Registry;
-  filters: ReportFilters;
-  reviews: Review[];
-  previousReviews: Review[];
-  indicators: Indicators;
-  previousIndicators: Indicators;
-  dimensions: DimensionIndicator[];
-  evolution: QualityEvolutionPoint[];
-  pointPerformance: Array<{ pointId: string; total: number; average: number; satisfaction: number; resolution: number; negative: number }>;
-  dissatisfaction: Array<{ label: string; count: number; percentage: number }>;
-  occurrences: QualityOccurrence[];
-  occurrenceByStatus: Array<{ label: string; count: number }>;
-  occurrenceByCategory: Array<{ label: string; count: number }>;
-  occurrenceByPriority: Array<{ label: string; count: number }>;
-  occurrenceByOwner: Array<{ label: string; count: number }>;
-  averageResolutionDays: number;
-  recurringOccurrences: Array<{ label: string; count: number }>;
-  plans: ImprovementPlan[];
-  planByStatus: Array<{ label: string; count: number }>;
-  overduePlans: ImprovementPlan[];
-  completionRate: number;
-  resultPlans: ImprovementPlan[];
-  management: { openOccurrences: number; criticalOccurrences: number; activePlans: number; overduePlans: number; completedPlans: number };
-  evidence: ReportEvidence[];
-  highlights: ReportHighlight[];
-  improvementEvidence: ImprovementEvidence[];
-  executiveSummary: string;
-};
 
 export type CartoQualiSnapshot = {
   registry: Registry;
@@ -107,6 +67,5 @@ export type CartoQualiSnapshot = {
   points: EvaluationPoint[];
   occurrences: QualityOccurrence[];
   improvementPlans: ImprovementPlan[];
-  reports: ReportHistoryItem[];
   auditLogs: AuditLog[];
 };
