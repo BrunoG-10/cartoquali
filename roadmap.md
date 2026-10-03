@@ -104,3 +104,10 @@
 - [x] Expose copyable public evaluation links in Evaluation Points
 - [ ] Validate the public flow with two real test tenants and visually confirm the new row in the authenticated administration (blocked: only one tenant and no injected authenticated session)
 - [x] Remove the public route's dependency on evaluation mocks and publish the Stage 6 report
+
+# Backend — Etapa 7
+- [ ] Audit every dashboard and quality indicator data path, formula, filter, permission and state
+- [ ] Add authenticated tenant-scoped real indicator queries with Brazilian timezone period boundaries
+- [ ] Replace Dashboard and Quality indicator mocks with real Supabase data and real comparisons
+- [ ] Validate known-data mathematics, filters, roles, tenant isolation, refresh behavior and security
+- [ ] Validate desktop, tablet and mobile states; remove only replaced mocks and publish the Stage 7 report
