@@ -99,12 +99,10 @@ function parseContext(value: unknown): PublicEvaluationContext {
     if (!allowed.includes(raw["type"] as (typeof allowed)[number]))
       throw new Error("Tipo de pergunta não suportado.");
     const options = Array.isArray(raw["options"])
-      ? raw["options"]
-          .filter(isRecord)
-          .map((option) => ({
-            value: String(option["value"] ?? ""),
-            label: String(option["label"] ?? ""),
-          }))
+      ? raw["options"].filter(isRecord).map((option) => ({
+          value: String(option["value"] ?? ""),
+          label: String(option["label"] ?? ""),
+        }))
       : [];
     const conditionValue = raw["condition"];
     const condition =
