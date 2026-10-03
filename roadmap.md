@@ -136,3 +136,12 @@
 - [x] Validate mathematics, filters, two-tenant isolation, roles, privacy, performance and responsive states
 - [x] Remove only report mocks and publish Stage 10 documentation and final matrix
 - [x] Confirm Stage 11 was not started
+
+# Backend — Etapa 11
+- [ ] Audit point schema, public routes, RLS, permissions, links and remaining mocks
+- [ ] Harden tenant-scoped point operations, lifecycle, uniqueness and audit history
+- [ ] Add canonical public URLs, QR preview/download/print and NFC preparation
+- [ ] Validate real submission, survey reassignment, activation, roles and two-tenant isolation
+- [ ] Validate mobile, errors, performance and absence of exposed secrets or internal IDs
+- [ ] Remove only point mocks and publish Stage 11 documentation and final matrix
+- [ ] Confirm Stage 12 was not started
