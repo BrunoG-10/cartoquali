@@ -86,6 +86,13 @@
 - [x] Inspect the real schema, relationships, RLS policies, grants and administrative mock flows
 - [x] Block 1: migrate Registry read/edit to real tenant-scoped Supabase data and validate persistence/security
 - [x] Block 2: migrate Users and Auth invitation management
-- [ ] Block 3: migrate Evaluation Points management
+- [x] Block 3: migrate Evaluation Points management
 - [ ] Block 4: migrate Surveys, Questions and Answer Options management
 - [ ] Remove replaced mocks, validate persistence/responsiveness and publish the Stage 4 report
+
+# Backend — Etapa 5
+- [x] Inspect evaluations, answers, relationships, constraints and RLS
+- [x] Connect the authenticated evaluation list, filters and pagination to Supabase
+- [x] Connect evaluation details and question answers with restricted contact data
+- [x] Validate controlled insertion, persistence and complete two-tenant isolation
+- [x] Remove replaced evaluation mocks and publish the Stage 5 report
