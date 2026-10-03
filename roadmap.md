@@ -177,5 +177,5 @@
 - [x] Add tenant-scoped privacy requests, minimization and privacy-event auditing
 - [x] Add public privacy notice, operational terms and contextual notices in the evaluation journey
 - [x] Add configurable privacy channel and nullable retention settings without automatic deletion
-- [ ] Validate public submissions, roles, two-tenant isolation, exports, minimization and responsive states
-- [ ] Publish Stage 13 documentation and final 31-item matrix without starting a later stage
+- [x] Validate public submissions, roles, two-tenant isolation, exports, minimization and responsive states
+- [x] Publish Stage 13 documentation and final 31-item matrix without starting a later stage
