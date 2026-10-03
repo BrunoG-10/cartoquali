@@ -1,4 +1,4 @@
-import type { AuditLog, CreateImprovementPlanInput, CreateOccurrenceInput, DataProviderKind, EvaluationAnswer, EvaluationPoint, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
+import type { AuditLog, CreateImprovementPlanInput, CreateOccurrenceInput, DataProviderKind, EvaluationAnswer, EvaluationSubmission, ImprovementPlan, ImprovementPlanStatus, Indicators, OccurrenceStatus, PlatformSettings, QualityCategory, QualityDimension, QualityOccurrence, Registry, RegistryUser, Review, Survey, SurveyQuestion, UpdateImprovementPlanInput, UpdateOccurrenceInput } from "@/types/cartoquali";
 export interface CartoQualiService {
   readonly kind: DataProviderKind;
   getRegistries(): Promise<Registry[]>;
