@@ -57,7 +57,7 @@ export function validatePeriod(startDate?: string, endDate?: string) {
 }
 
 export function validateContact(name: string, phone: string, email: string, consent: boolean) {
-  if (name.trim().length < 2) return "Informe seu nome para solicitar contato.";
+  if (name.trim().length === 1) return "Informe um nome válido ou deixe o campo em branco.";
   if (!phone.trim() && !email.trim()) return "Informe um telefone ou e-mail.";
   if (email.trim() && !z.string().email().safeParse(email.trim()).success)
     return "Informe um e-mail válido.";

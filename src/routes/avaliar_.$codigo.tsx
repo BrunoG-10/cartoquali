@@ -4,7 +4,7 @@ import { PublicEvaluation } from "@/components/cartoquali/public-evaluation";
 export const Route = createFileRoute("/avaliar_/$codigo")({
   head: () => ({ meta: [
     { title: "Avalie seu atendimento — CartoQuali" },
-    { name: "description", content: "Compartilhe sua experiência de atendimento de forma rápida e anônima." },
+    { name: "description", content: "Compartilhe sua experiência sem conta; identificação é opcional somente para retorno." },
     { property: "og:title", content: "Avalie seu atendimento — CartoQuali" },
     { property: "og:description", content: "Sua opinião ajuda o cartório a melhorar continuamente." },
     { property: "og:type", content: "website" },
