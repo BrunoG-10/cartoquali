@@ -39,6 +39,7 @@ export function PublicEvaluation({ code }: { code?: string }) {
   if (!context || context.status === "not_found") return <Unavailable title="Ponto de avaliação não encontrado." description="Confira o acesso no cartaz ou peça ajuda à equipe do cartório." />;
   if (context.status === "inactive") return <Unavailable title="Este ponto está inativo." description="Peça à equipe do cartório outro ponto de avaliação." />;
   if (context.status === "unavailable") return <Unavailable title="Pesquisa indisponível." description="Este ponto não possui uma pesquisa ativa no momento." />;
+  if (context.status !== "ready") return <Unavailable title="Pesquisa indisponível." description="Tente novamente em instantes." />;
 
   const surveyQuestions: SurveyQuestion[] = context.questions.map((question) => ({
     id: question.key,
