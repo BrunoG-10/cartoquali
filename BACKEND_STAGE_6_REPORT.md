@@ -2,7 +2,7 @@
 
 ## Resultado
 
-**APROVADA** — o fluxo público real funciona de Ponto → Pesquisa → Perguntas → Respostas → Avaliação → Supabase → módulo administrativo.
+**APROVADA COM RESSALVAS** — o fluxo público real funciona de Ponto → Pesquisa → Perguntas → Respostas → Avaliação → Supabase e persiste no formato lido pelo módulo administrativo.
 
 ## Implementado
 
@@ -26,8 +26,8 @@
 - Código inexistente: aprovado.
 - Envio real completo: aprovado.
 - Tela final de sucesso: aprovado.
-- Persistência no Supabase: aprovado.
-- Isolamento e relações cruzadas: aprovado.
+- Persistência no Supabase: aprovado, com uma avaliação anônima e quatro respostas confirmadas.
+- Isolamento estrutural e relações cruzadas: aprovado; teste público com dois cartórios não executado porque o banco atual contém somente o cartório DEMO.
 - Imutabilidade e negação de leitura pública: aprovado.
 - Idempotência, repetição e limitação de abuso: aprovado.
 - Layout em 320, 390, 430 e 1280 px: aprovado, sem rolagem horizontal.
@@ -41,6 +41,7 @@
 ## Ressalvas
 
 - O aviso preexistente de proteção contra senhas vazadas permanece fora do escopo desta etapa.
+- A validação visual autenticada no módulo administrativo e o cenário público com um segundo cartório aguardam sessão/fixtures apropriadas; nenhum tenant fictício foi deixado no banco.
 - Mocks de módulos ainda não migrados foram preservados; a rota pública não depende mais deles.
 
 ## Escopo confirmado
