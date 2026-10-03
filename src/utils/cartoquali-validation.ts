@@ -18,7 +18,7 @@ export const userSchema = z.object({
 
 export const surveySchema = z.object({ name: requiredText("o nome da pesquisa", 120), description: z.string().trim().max(500), version: requiredText("a versão", 20) });
 export const questionSchema = z.object({ text: requiredText("o texto da pergunta", 500), type: z.string().min(1, "Selecione o tipo."), dimensionId: z.string().min(1, "Selecione a dimensão.") });
-export const pointSchema = z.object({ name: requiredText("o nome do ponto de avaliação", 120), code: requiredText("o código do ponto", 40), surveyId: z.string().min(1, "Selecione uma pesquisa.") });
+export const pointSchema = z.object({ name: requiredText("o nome do ponto de avaliação", 120), location: requiredText("a localização", 160), description: z.string().trim().max(500, "A descrição deve ter no máximo 500 caracteres."), code: z.string().trim().toUpperCase().regex(/^[A-Z0-9][A-Z0-9-]{2,39}$/, "Use 3 a 40 letras, números ou hífens no código."), surveyId: z.string().min(1, "Selecione uma pesquisa.") });
 
 export function firstValidationError(result: z.SafeParseReturnType<unknown, unknown>) {
   return result.success ? undefined : result.error.issues[0]?.message;
