@@ -169,3 +169,13 @@
 - [x] Revalidate inactive users on focus and periodically during long-lived sessions
 - [x] Pass the 12/12 direct role, tenant, stale-session and immutable-audit matrix; remove all fixtures
 - [x] Publish Stage 12 security and audit documentation without starting a later stage
+
+# Backend — Etapa 13
+
+- [x] Audit personal data, public collection, restricted contact, exports, browser storage and privacy language
+- [x] Separate optional contact from evaluations and restrict access to authorized administrators
+- [x] Add tenant-scoped privacy requests, minimization and privacy-event auditing
+- [x] Add public privacy notice, operational terms and contextual notices in the evaluation journey
+- [x] Add configurable privacy channel and nullable retention settings without automatic deletion
+- [ ] Validate public submissions, roles, two-tenant isolation, exports, minimization and responsive states
+- [ ] Publish Stage 13 documentation and final 31-item matrix without starting a later stage
