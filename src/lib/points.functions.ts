@@ -87,6 +87,7 @@ export const listEvaluationPoints = createServerFn({ method: "GET" })
     return {
       points: (points ?? []).map((row) => mapPoint(row)),
       surveys: surveys ?? [],
+      surveyNames: Object.fromEntries((surveys ?? []).map((survey) => [survey.id, survey.nome])),
       canManage: access.canManage,
     };
   });
