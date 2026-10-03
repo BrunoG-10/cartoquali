@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { AlertCircle, ArrowUpRight, CheckCircle2, Filter, MessageSquareText, RefreshCw, Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { DASHBOARD_PERIODS } from "@/constants/cartoquali";
 import type { DashboardPeriod } from "@/types/cartoquali";
 import { GlassPanel, PageHeader, Stars } from "./primitives";
@@ -12,10 +13,12 @@ const number = (value: number | null, digits = 1) => value === null ? "—" : va
 export function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>("30 dias");
   const [pointId, setPointId] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [mobileFilters, setMobileFilters] = useState(false);
-  const query = useRealDashboard({ period, pointId: pointId || undefined });
+  const query = useRealDashboard({ period, pointId: pointId || undefined, startDate: startDate || undefined, endDate: endDate || undefined });
   const data = query.data;
-  const filters = <GlassPanel className="mb-4"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex flex-wrap gap-1">{DASHBOARD_PERIODS.map((item) => <Button key={item} size="sm" variant={period === item ? "default" : "ghost"} onClick={() => setPeriod(item)}>{item}</Button>)}</div><label className="lg:ml-auto"><span className="sr-only">Ponto de avaliação</span><select className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm" value={pointId} onChange={(event) => setPointId(event.target.value)}><option value="">Todos os pontos</option>{data?.filters.points.map((point) => <option key={point.id} value={point.id}>{point.name}</option>)}</select></label></div></GlassPanel>;
+  const filters = <GlassPanel className="mb-4"><div className="flex flex-col gap-3 lg:flex-row lg:items-center"><div className="flex flex-wrap gap-1">{DASHBOARD_PERIODS.map((item) => <Button key={item} size="sm" variant={period === item ? "default" : "ghost"} onClick={() => setPeriod(item)}>{item}</Button>)}</div><label className="lg:ml-auto"><span className="sr-only">Ponto de avaliação</span><select className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm" value={pointId} onChange={(event) => setPointId(event.target.value)}><option value="">Todos os pontos</option>{data?.filters.points.map((point) => <option key={point.id} value={point.id}>{point.name}</option>)}</select></label></div>{period === "Personalizado" && <div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="grid gap-1 text-xs font-semibold text-muted-foreground">Data inicial<Input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)}/></label><label className="grid gap-1 text-xs font-semibold text-muted-foreground">Data final<Input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)}/></label></div>}</GlassPanel>;
 
   return <div className="animate-enter"><PageHeader eyebrow="Painel do gestor" title="Visão geral do cartório" description="Indicadores calculados diretamente das avaliações registradas." action={<div className="flex gap-2"><Button size="icon" variant="outline" aria-label="Atualizar indicadores" onClick={() => query.refetch()} disabled={query.isFetching}><RefreshCw className={query.isFetching ? "animate-spin" : ""}/></Button><Button className="lg:hidden" variant="outline" onClick={() => setMobileFilters(true)}><Filter/>Filtros</Button></div>}/>
     <div className="hidden lg:block">{filters}</div>{mobileFilters && <div className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4" role="dialog" aria-modal="true" aria-label="Filtros do painel"><div className="mx-auto my-8 max-w-xl rounded-lg bg-background p-5"><div className="mb-4 flex items-center justify-between"><h2 className="font-display text-xl font-bold">Filtros</h2><Button size="icon" variant="ghost" aria-label="Fechar filtros" onClick={() => setMobileFilters(false)}><X/></Button></div>{filters}<Button className="w-full" onClick={() => setMobileFilters(false)}>Aplicar filtros</Button></div></div>}
