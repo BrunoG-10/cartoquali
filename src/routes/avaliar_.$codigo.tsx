@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicEvaluation } from "@/components/cartoquali/public-evaluation";
 
-export const Route = createFileRoute("/avaliar/$codigo")({
+export const Route = createFileRoute("/avaliar_/$codigo")({
   head: () => ({ meta: [
     { title: "Avalie seu atendimento — CartoQuali" },
     { name: "description", content: "Compartilhe sua experiência de atendimento de forma rápida e anônima." },
