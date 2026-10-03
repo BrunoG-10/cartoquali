@@ -111,3 +111,11 @@
 - [x] Replace Dashboard and Quality indicator mocks with real Supabase data and real comparisons
 - [x] Validate known-data mathematics, filters, roles, tenant isolation, refresh behavior and security
 - [x] Validate desktop, tablet and mobile states; remove only replaced mocks and publish the Stage 7 report
+
+# Backend — Etapa 8
+- [ ] Audit occurrence schema, relationships, RLS, permissions, audit history and current mock flows
+- [ ] Add authenticated tenant-scoped occurrence commands with idempotency, transition rules and immutable audit history
+- [ ] Connect paginated occurrence list, filters, detail, creation and treatment to real Supabase data
+- [ ] Connect creation from a real evaluation and remove only occurrence-module mocks
+- [ ] Validate roles, two-tenant isolation, integrity, errors, end-to-end treatment and responsive states
+- [ ] Publish occurrence documentation, the final matrix and confirmation that Stage 9 was not started
