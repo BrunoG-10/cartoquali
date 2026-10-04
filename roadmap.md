@@ -190,3 +190,16 @@
 - [x] Confirm the onboarding stage was not started
 
 Status: **APROVADA COM RESSALVAS OPERACIONAIS**. A origem HTTPS de produção ainda precisa ser definida em `VITE_PUBLIC_APP_URL`; a sessão autenticada do Supabase externo não estava disponível para uma inspeção visual administrativa. A Etapa 15 não foi iniciada.
+
+# Backend — Etapa 15
+
+- [x] Criar fluxo guiado e persistente de oito etapas para provisionamento do cartório
+- [x] Convidar administrador com papel limitado ao tenant e compensação em falha
+- [x] Criar pesquisa modelo, validar perguntas, publicar e vincular ponto com QR automático
+- [x] Isolar avaliação de teste dos dados operacionais e bloquear ativação incompleta
+- [x] Permitir ativação, desativação e reativação auditadas
+- [x] Identificar ambientes DEMO e manter novos onboardings como dados reais isolados
+- [x] Adicionar checklist operacional, guia contextual e documentação da implantação
+- [x] Validar contratos TypeScript, segurança do banco e matriz técnica da Etapa 15
+
+Status: **APROVADA COM RESSALVAS OPERACIONAIS**. A origem HTTPS definitiva ainda precisa ser configurada em `VITE_PUBLIC_APP_URL`; o envio real do convite depende de e-mail institucional válido e a entrega física do QR depende da implantação local. A Etapa 16 não foi iniciada.

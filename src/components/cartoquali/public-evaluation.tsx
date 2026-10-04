@@ -11,12 +11,12 @@ import { validateContact } from "@/utils/cartoquali-validation";
 import { SurveyQuestionnaire, type SurveyAnswers } from "./survey-questionnaire";
 import type { SurveyQuestion } from "@/types/cartoquali";
 
-export function PublicEvaluation({ code }: { code?: string }) {
+export function PublicEvaluation({ code, testToken }: { code?: string; testToken?: string }) {
   const fetchEvaluation = useServerFn(getPublicEvaluation);
   const submitEvaluation = useServerFn(submitPublicEvaluation);
   const query = useQuery({
-    queryKey: ["public-evaluation", code],
-    queryFn: () => fetchEvaluation({ data: { code: code ?? "" } }),
+    queryKey: ["public-evaluation", code, testToken],
+    queryFn: () => fetchEvaluation({ data: { code: code ?? "", ...(testToken ? { testToken } : {}) } }),
     enabled: Boolean(code),
     retry: 1,
   });
@@ -160,6 +160,7 @@ export function PublicEvaluation({ code }: { code?: string }) {
                 ...(email.trim() ? { email: email.trim() } : {}),
               }
             : { requested: false },
+          ...(testToken ? { testToken } : {}),
         },
       });
       window.sessionStorage.removeItem(`cartoquali-submission-${code}`);
