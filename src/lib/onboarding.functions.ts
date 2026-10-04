@@ -13,7 +13,7 @@ const pointInput = idInput.extend({ name: z.string().trim().min(1).max(120), loc
 
 export type OnboardingStatus = "IN_PROGRESS" | "READY_FOR_TEST" | "ACTIVE" | "BLOCKED";
 export type OnboardingChecklist = { registry:boolean; administrator:boolean; survey:boolean; questions:boolean; point:boolean; qr:boolean; test:boolean; complete:boolean };
-export type OnboardingItem = { id:string; registryId:string; status:OnboardingStatus; currentStep:number; surveyId:string|null; pointId:string|null; testEvaluationId:string|null; createdAt:string; updatedAt:string; activatedAt:string|null; registry:{ officialName:string; tradeName:string; cnpj:string; city:string; state:string; operationalStatus:string }; administrator:{ name:string; email:string; status:string; hasAuthAccess:boolean }|null; survey:{ name:string; description:string; status:string; questionCount:number }|null; point:{ name:string; location:string; code:string; status:string }|null; checklist:OnboardingChecklist };
+export type OnboardingItem = { id:string; registryId:string; status:OnboardingStatus; currentStep:number; surveyId:string|null; pointId:string|null; testEvaluationId:string|null; createdAt:string; updatedAt:string; activatedAt:string|null; registry:{ officialName:string; tradeName:string; cnpj:string; city:string; state:string; operationalStatus:string; environmentKind:"real"|"demo" }; administrator:{ name:string; email:string; status:string; hasAuthAccess:boolean }|null; survey:{ name:string; description:string; status:string; questionCount:number }|null; point:{ name:string; location:string; code:string; status:string }|null; checklist:OnboardingChecklist };
 
 async function platformAccess(context: { supabase:any; userId:string }) {
   const { data: user } = await context.supabase.from("usuarios").select("id,status").eq("auth_user_id",context.userId).maybeSingle();
@@ -24,7 +24,7 @@ async function platformAccess(context: { supabase:any; userId:string }) {
 }
 
 async function privateRpc<T>(supabase:any,name:string,args:Record<string,unknown>) {
-  const result = await supabase.schema("cartoquali_private").rpc(name,args) as {data:T|null;error:{message:string;code?:string}|null};
+  const result = await supabase.rpc(`onboarding_${name}`,args) as {data:T|null;error:{message:string;code?:string}|null};
   return result;
 }
 
@@ -41,7 +41,7 @@ function friendly(error:{message:string}|null,fallback:string) {
 export const listOnboardings = createServerFn({method:"GET"}).middleware([requireSupabaseAuth]).handler(async({context})=>{
   await platformAccess(context);
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const {data:rows,error}=await supabaseAdmin.from("cartorio_onboarding").select("id,cartorio_id,status,current_step,survey_id,point_id,test_evaluation_id,created_at,updated_at,activated_at,cartorios!inner(razao_social,nome_fantasia,cnpj,cidade,estado,status),pesquisas(nome,descricao,status),pontos_avaliacao(nome,localizacao,codigo,status)").order("updated_at",{ascending:false});
+  const {data:rows,error}=await supabaseAdmin.from("cartorio_onboarding").select("id,cartorio_id,status,current_step,survey_id,point_id,test_evaluation_id,created_at,updated_at,activated_at,cartorios!inner(razao_social,nome_fantasia,cnpj,cidade,estado,status,environment_kind),pesquisas(nome,descricao,status),pontos_avaliacao(nome,localizacao,codigo,status)").order("updated_at",{ascending:false});
   if(error) throw new Error("Não foi possível carregar as implantações.");
   return Promise.all((rows??[]).map(async(row:any)=>{
     const [{data:admins},{data:check}]=await Promise.all([
@@ -50,7 +50,7 @@ export const listOnboardings = createServerFn({method:"GET"}).middleware([requir
     ]);
     const admin=admins?.[0]; const registry=Array.isArray(row.cartorios)?row.cartorios[0]:row.cartorios; const survey=Array.isArray(row.pesquisas)?row.pesquisas[0]:row.pesquisas; const point=Array.isArray(row.pontos_avaliacao)?row.pontos_avaliacao[0]:row.pontos_avaliacao;
     let questionCount=0; if(row.survey_id){const {count}=await supabaseAdmin.from("perguntas").select("id",{count:"exact",head:true}).eq("pesquisa_id",row.survey_id).eq("ativa",true);questionCount=count??0;}
-    return {id:row.id,registryId:row.cartorio_id,status:row.status,currentStep:row.current_step,surveyId:row.survey_id,pointId:row.point_id,testEvaluationId:row.test_evaluation_id,createdAt:row.created_at,updatedAt:row.updated_at,activatedAt:row.activated_at,registry:{officialName:registry.razao_social,tradeName:registry.nome_fantasia,cnpj:registry.cnpj,city:registry.cidade,state:registry.estado,operationalStatus:registry.status},administrator:admin?{name:admin.nome,email:admin.email,status:admin.status,hasAuthAccess:Boolean(admin.auth_user_id)}:null,survey:survey?{name:survey.nome,description:survey.descricao??"",status:survey.status,questionCount}:null,point:point?{name:point.nome,location:point.localizacao,code:point.codigo,status:point.status}:null,checklist:check??{registry:false,administrator:false,survey:false,questions:false,point:false,qr:false,test:false,complete:false}} as OnboardingItem;
+    return {id:row.id,registryId:row.cartorio_id,status:row.status,currentStep:row.current_step,surveyId:row.survey_id,pointId:row.point_id,testEvaluationId:row.test_evaluation_id,createdAt:row.created_at,updatedAt:row.updated_at,activatedAt:row.activated_at,registry:{officialName:registry.razao_social,tradeName:registry.nome_fantasia,cnpj:registry.cnpj,city:registry.cidade,state:registry.estado,operationalStatus:registry.status,environmentKind:registry.environment_kind},administrator:admin?{name:admin.nome,email:admin.email,status:admin.status,hasAuthAccess:Boolean(admin.auth_user_id)}:null,survey:survey?{name:survey.nome,description:survey.descricao??"",status:survey.status,questionCount}:null,point:point?{name:point.nome,location:point.localizacao,code:point.codigo,status:point.status}:null,checklist:check??{registry:false,administrator:false,survey:false,questions:false,point:false,qr:false,test:false,complete:false}} as OnboardingItem;
   }));
 });
 
