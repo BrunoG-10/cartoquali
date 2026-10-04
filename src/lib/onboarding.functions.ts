@@ -25,7 +25,7 @@ async function platformAccess(context: { supabase:any; userId:string }) {
 
 async function privateRpc<T>(name:string,args:Record<string,unknown>) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const result = await supabaseAdmin.schema("cartoquali_private").rpc(name as never,args as never) as {data:T|null;error:{message:string;code?:string}|null};
+  const result = await (supabaseAdmin as any).schema("cartoquali_private").rpc(name,args) as {data:T|null;error:{message:string;code?:string}|null};
   return result;
 }
 

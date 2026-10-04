@@ -34,7 +34,7 @@ export const listEvaluations = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => listInput.parse(input))
   .handler(async ({ context, data }) => {
     const from = (data.page - 1) * data.pageSize;
-    let query = context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at", { count: "exact" });
+    let query = context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at", { count: "exact" }).eq("is_test", false);
     if (data.search) query = query.ilike("comentario", `%${data.search}%`);
     if (data.pointId) query = query.eq("ponto_id", data.pointId);
     if (data.surveyId) query = query.eq("pesquisa_id", data.surveyId);
@@ -63,7 +63,7 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
-    const { data: row, error } = await context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at").eq("id", data.id).maybeSingle();
+    const { data: row, error } = await context.supabase.from("avaliacoes").select("id, cartorio_id, ponto_id, pesquisa_id, nota_geral, atendimento_resolvido, comentario, motivo_insatisfacao, deseja_contato, anonymous, status, created_at").eq("id", data.id).eq("is_test", false).maybeSingle();
     if (error) throw new Error("Não foi possível carregar a avaliação.");
     if (!row) return null;
     const [{ data: point }, { data: survey }, { data: answers }, { data: profile }] = await Promise.all([

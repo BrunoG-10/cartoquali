@@ -18,5 +18,5 @@ export const Route = createFileRoute("/avaliar_/$codigo")({
 function PublicEvaluationRoute() {
   const { codigo } = Route.useParams();
   const { teste } = Route.useSearch();
-  return <PublicEvaluation code={codigo} testToken={teste} />;
+  return <PublicEvaluation code={codigo} {...(teste ? { testToken: teste } : {})} />;
 }
