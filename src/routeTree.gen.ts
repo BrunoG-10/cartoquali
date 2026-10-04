@@ -21,6 +21,7 @@ import { Route as AuthenticatedAvaliacoesRouteImport } from './routes/_authentic
 import { Route as AuthenticatedCartorioRouteImport } from './routes/_authenticated/cartorio'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedImplantacoesRouteImport } from './routes/_authenticated/implantacoes'
 import { Route as AuthenticatedOcorrenciasRouteImport } from './routes/_authenticated/ocorrencias'
 import { Route as AuthenticatedPesquisasRouteImport } from './routes/_authenticated/pesquisas'
 import { Route as AuthenticatedPlanosMelhoriaRouteImport } from './routes/_authenticated/planos-melhoria'
@@ -95,6 +96,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedImplantacoesRoute =
+  AuthenticatedImplantacoesRouteImport.update({
+    id: '/implantacoes',
+    path: '/implantacoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOcorrenciasRoute =
   AuthenticatedOcorrenciasRouteImport.update({
     id: '/ocorrencias',
@@ -179,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/cartorio': typeof AuthenticatedCartorioRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/implantacoes': typeof AuthenticatedImplantacoesRoute
   '/ocorrencias': typeof AuthenticatedOcorrenciasRoute
   '/pesquisas': typeof AuthenticatedPesquisasRoute
   '/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
@@ -205,6 +213,7 @@ export interface FileRoutesByTo {
   '/cartorio': typeof AuthenticatedCartorioRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/implantacoes': typeof AuthenticatedImplantacoesRoute
   '/ocorrencias': typeof AuthenticatedOcorrenciasRoute
   '/pesquisas': typeof AuthenticatedPesquisasRoute
   '/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
@@ -232,6 +241,7 @@ export interface FileRoutesById {
   '/_authenticated/cartorio': typeof AuthenticatedCartorioRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/implantacoes': typeof AuthenticatedImplantacoesRoute
   '/_authenticated/ocorrencias': typeof AuthenticatedOcorrenciasRoute
   '/_authenticated/pesquisas': typeof AuthenticatedPesquisasRoute
   '/_authenticated/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
@@ -260,6 +270,7 @@ export interface FileRouteTypes {
     | '/cartorio'
     | '/configuracoes'
     | '/dashboard'
+    | '/implantacoes'
     | '/ocorrencias'
     | '/pesquisas'
     | '/planos-melhoria'
@@ -286,6 +297,7 @@ export interface FileRouteTypes {
     | '/cartorio'
     | '/configuracoes'
     | '/dashboard'
+    | '/implantacoes'
     | '/ocorrencias'
     | '/pesquisas'
     | '/planos-melhoria'
@@ -312,6 +324,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cartorio'
     | '/_authenticated/configuracoes'
     | '/_authenticated/dashboard'
+    | '/_authenticated/implantacoes'
     | '/_authenticated/ocorrencias'
     | '/_authenticated/pesquisas'
     | '/_authenticated/planos-melhoria'
@@ -422,6 +435,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/implantacoes': {
+      id: '/_authenticated/implantacoes'
+      path: '/implantacoes'
+      fullPath: '/implantacoes'
+      preLoaderRoute: typeof AuthenticatedImplantacoesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/ocorrencias': {
@@ -540,6 +560,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCartorioRoute: typeof AuthenticatedCartorioRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedImplantacoesRoute: typeof AuthenticatedImplantacoesRoute
   AuthenticatedOcorrenciasRoute: typeof AuthenticatedOcorrenciasRoute
   AuthenticatedPesquisasRoute: typeof AuthenticatedPesquisasRoute
   AuthenticatedPlanosMelhoriaRoute: typeof AuthenticatedPlanosMelhoriaRoute
@@ -557,6 +578,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCartorioRoute: AuthenticatedCartorioRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedImplantacoesRoute: AuthenticatedImplantacoesRoute,
   AuthenticatedOcorrenciasRoute: AuthenticatedOcorrenciasRoute,
   AuthenticatedPesquisasRoute: AuthenticatedPesquisasRoute,
   AuthenticatedPlanosMelhoriaRoute: AuthenticatedPlanosMelhoriaRoute,
