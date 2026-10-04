@@ -1,0 +1,3 @@
+DO $$ DECLARE ddl text; BEGIN SELECT pg_get_functiondef('public.submit_onboarding_test_evaluation(text,uuid,uuid,text,jsonb)'::regprocedure) INTO ddl; ddl:=replace(ddl,'jsonb_object_length(_answers)>50','(select count(*) from jsonb_object_keys(_answers))>50'); EXECUTE ddl; END $$;
+REVOKE ALL ON FUNCTION public.submit_onboarding_test_evaluation(text,uuid,uuid,text,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.submit_onboarding_test_evaluation(text,uuid,uuid,text,jsonb) TO service_role;
