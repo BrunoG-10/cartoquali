@@ -1059,21 +1059,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      create_cartorio_onboarding: {
-        Args: {
-          _cidade: string
-          _client_request_id: string
-          _cnpj: string
-          _email?: string
-          _estado: string
-          _nome_fantasia: string
-          _razao_social: string
-          _responsavel: string
-          _telefone?: string
-          _tipo: string
-        }
-        Returns: Json
-      }
       create_improvement_plan: {
         Args: {
           _action: string
@@ -1087,16 +1072,6 @@ export type Database = {
           _problem: string
           _responsible_id: string
           _title: string
-        }
-        Returns: Json
-      }
-      create_onboarding_administrator: {
-        Args: {
-          _auth_user_id: string
-          _cartorio_id: string
-          _email: string
-          _name: string
-          _phone?: string
         }
         Returns: Json
       }
@@ -1173,33 +1148,6 @@ export type Database = {
           _privacy_request_id: string
           _redact_free_text?: boolean
         }
-        Returns: Json
-      }
-      prepare_onboarding_test: { Args: { _cartorio_id: string }; Returns: Json }
-      publish_onboarding_survey: {
-        Args: { _cartorio_id: string }
-        Returns: Json
-      }
-      save_onboarding_point: {
-        Args: {
-          _cartorio_id: string
-          _description?: string
-          _location: string
-          _name: string
-        }
-        Returns: Json
-      }
-      save_onboarding_survey: {
-        Args: {
-          _cartorio_id: string
-          _description: string
-          _name: string
-          _use_template?: boolean
-        }
-        Returns: Json
-      }
-      set_onboarding_operational_status: {
-        Args: { _action: string; _cartorio_id: string }
         Returns: Json
       }
       submit_onboarding_test_evaluation: {
