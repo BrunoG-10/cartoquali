@@ -35,3 +35,30 @@ São registrados: criação do cartório, início/progresso do onboarding, admin
 - `READY_FOR_TEST`: token temporário emitido; produção permanece inativa.
 - `ACTIVE`: checklist completo e operação pública liberada.
 - `BLOCKED`: desativação administrativa; o QR público fica indisponível.
+
+## Matriz final de validação
+
+| Cenário | Resultado | Evidência |
+|---|---|---|
+| A — implantação completa | Aprovado | Cartório, administrador, pesquisa, perguntas, ponto, QR, teste e ativação concluídos |
+| B — interrupção e retomada | Aprovado | Checklist persistido e recuperado sem perda de progresso |
+| C — dados inválidos | Aprovado | Dados cadastrais inválidos rejeitados antes da criação |
+| D — duplicidade e ativação incompleta | Aprovado | CNPJ duplicado e ativação sem checklist bloqueados |
+| E — isolamento entre cartórios | Aprovado | Administradores de dois cartórios não visualizaram o tenant oposto |
+| F — QR antes da ativação | Aprovado | Jornada pública permaneceu indisponível até a ativação |
+| G — teste e repetição | Aprovado | Avaliação de teste concluída; repetição retornou o mesmo resultado sem duplicar dados |
+| H — ciclo operacional | Aprovado | Ativação, avaliação real, indicadores, relatório, desativação e reativação validados |
+| Auditoria | Aprovado | Eventos do ciclo completo registrados com tratamento seguro do operador da plataforma |
+| Limpeza | Aprovado | Dois cartórios, três usuários Auth e dados dependentes de teste removidos ao final |
+| Interface pública | Aprovado | 320, 360, 390 e 430 px sem rolagem horizontal ou erros no console |
+| Compilação | Aprovado | Verificação final sem erros |
+
+Resultado automatizado: **16 verificações aprovadas**. A matriz foi executada com duas organizações independentes e sessões autenticadas distintas.
+
+## Classificação final
+
+**APROVADA COM RESSALVAS OPERACIONAIS.** A origem HTTPS definitiva deve ser definida em `VITE_PUBLIC_APP_URL` antes da entrega do QR de produção. O convite definitivo depende de e-mail institucional válido, e a instalação física do QR permanece uma atividade local. A proteção contra senhas vazadas continua desativada no provedor de autenticação e deve ser avaliada separadamente.
+
+**ETAPA 15 — ONBOARDING E IMPLANTAÇÃO DO CARTÓRIO VALIDADA.**
+
+A Etapa 16 não foi iniciada.

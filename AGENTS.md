@@ -37,3 +37,4 @@
 - Keep optional evaluator contact separate from immutable evaluation content, restrict it to authorized administrators, and exclude it from aggregates and general exports.
 - Treat privacy retention as tenant configuration with no automatic deletion until legally and contractually approved periods exist.
 - Rate-limit public evaluation submissions by an ephemeral browser-session token, never by network address, so shared registry networks do not block unrelated visitors.
+- Provision registries through the persistent eight-step onboarding RPC boundary; keep test evaluations isolated and require a complete checklist before activation.

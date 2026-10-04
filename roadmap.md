@@ -202,4 +202,4 @@ Status: **APROVADA COM RESSALVAS OPERACIONAIS**. A origem HTTPS de produção ai
 - [x] Adicionar checklist operacional, guia contextual e documentação da implantação
 - [x] Validar contratos TypeScript, segurança do banco e matriz técnica da Etapa 15
 
-Status: **APROVADA COM RESSALVAS OPERACIONAIS**. A origem HTTPS definitiva ainda precisa ser configurada em `VITE_PUBLIC_APP_URL`; o envio real do convite depende de e-mail institucional válido e a entrega física do QR depende da implantação local. A Etapa 16 não foi iniciada.
+Status: **APROVADA COM RESSALVAS OPERACIONAIS**. Matriz A–H concluída com 16 verificações aprovadas e limpeza integral dos dados temporários. A origem HTTPS definitiva ainda precisa ser configurada em `VITE_PUBLIC_APP_URL`; o envio real do convite depende de e-mail institucional válido e a entrega física do QR depende da implantação local. A proteção contra senhas vazadas permanece desativada no provedor de autenticação. A Etapa 16 não foi iniciada.
