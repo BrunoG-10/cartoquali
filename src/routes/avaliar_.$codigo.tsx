@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { PublicEvaluation } from "@/components/cartoquali/public-evaluation";
+import { z } from "zod";
 
 export const Route = createFileRoute("/avaliar_/$codigo")({
+  validateSearch: (search) => z.object({ teste: z.string().uuid().optional() }).parse(search),
   head: () => ({ meta: [
     { title: "Avalie seu atendimento — CartoQuali" },
     { name: "description", content: "Compartilhe sua experiência sem conta; identificação é opcional somente para retorno." },
@@ -15,5 +17,6 @@ export const Route = createFileRoute("/avaliar_/$codigo")({
 
 function PublicEvaluationRoute() {
   const { codigo } = Route.useParams();
-  return <PublicEvaluation code={codigo} />;
+  const { teste } = Route.useSearch();
+  return <PublicEvaluation code={codigo} testToken={teste} />;
 }

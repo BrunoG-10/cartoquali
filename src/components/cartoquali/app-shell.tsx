@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { AlertCircle, Building2, ClipboardList, FileBarChart, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Users, X, MapPin, ExternalLink, ListChecks, BriefcaseBusiness, LogOut, ScrollText, UserRoundCheck } from "lucide-react";
+import { AlertCircle, Building2, ClipboardList, FileBarChart, Gauge, Menu, MessageSquareText, Settings, ShieldCheck, Users, X, MapPin, ExternalLink, ListChecks, BriefcaseBusiness, LogOut, ScrollText, UserRoundCheck, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/cartoquali/auth-provider";
@@ -8,7 +8,7 @@ import { USER_ROLE_LABELS } from "@/constants/cartoquali";
 import { can, type AppModule } from "@/lib/permissions";
 
 const nav = [
-  ["/dashboard", "Dashboard", Gauge,"dashboard"], ["/avaliacoes", "Avaliações", MessageSquareText,"evaluations"], ["/pesquisas", "Pesquisas", ClipboardList,"surveys"], ["/pontos", "Pontos de avaliação", MapPin,"points"], ["/qualidade", "Qualidade", ShieldCheck,"quality"], ["/ocorrencias", "Ocorrências", AlertCircle,"occurrences"], ["/planos-melhoria", "Planos de melhoria", ListChecks,"plans"], ["/relatorios", "Relatórios", FileBarChart,"reports"], ["/visao-executiva", "Visão Executiva", BriefcaseBusiness,"reports"], ["/cartorio", "Cartório", Building2,"registry"], ["/usuarios", "Usuários", Users,"users"], ["/configuracoes", "Configurações", Settings,"settings"], ["/solicitacoes-privacidade", "Privacidade", UserRoundCheck,"privacy"], ["/auditoria", "Auditoria", ScrollText,"audit"],
+  ["/dashboard", "Dashboard", Gauge,"dashboard"], ["/implantacoes", "Implantações", Rocket,"onboarding"], ["/avaliacoes", "Avaliações", MessageSquareText,"evaluations"], ["/pesquisas", "Pesquisas", ClipboardList,"surveys"], ["/pontos", "Pontos de avaliação", MapPin,"points"], ["/qualidade", "Qualidade", ShieldCheck,"quality"], ["/ocorrencias", "Ocorrências", AlertCircle,"occurrences"], ["/planos-melhoria", "Planos de melhoria", ListChecks,"plans"], ["/relatorios", "Relatórios", FileBarChart,"reports"], ["/visao-executiva", "Visão Executiva", BriefcaseBusiness,"reports"], ["/cartorio", "Cartório", Building2,"registry"], ["/usuarios", "Usuários", Users,"users"], ["/configuracoes", "Configurações", Settings,"settings"], ["/solicitacoes-privacidade", "Privacidade", UserRoundCheck,"privacy"], ["/auditoria", "Auditoria", ScrollText,"audit"],
 ] as const;
 
 function Brand() { return <Link to="/dashboard" className="flex items-center gap-3 rounded-lg px-2 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-10 place-items-center rounded-xl bg-primary font-display text-lg font-bold text-primary-foreground shadow-glass">C</span><span><strong className="block font-display text-base leading-none">CartoQuali</strong><small className="text-[11px] text-muted-foreground">Gestão de qualidade</small></span></Link>; }

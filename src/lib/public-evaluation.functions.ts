@@ -30,6 +30,7 @@ const submissionSchema = z.object({
     phone: z.string().trim().max(30).optional(),
     email: z.string().trim().email().max(255).optional(),
   }),
+  testToken: z.string().uuid().optional(),
 });
 
 export type PublicQuestion = {
@@ -174,13 +175,10 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
       byte.toString(16).padStart(2, "0"),
     ).join("");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: result, error } = await supabaseAdmin.rpc("submit_public_evaluation", {
-      _code: data.code,
-      _idempotency_key: data.idempotencyKey,
-      _source_hash: sourceHash,
-      _answers: data.answers,
-      _contact: data.contact,
-    });
+    const response = data.testToken
+      ? await supabaseAdmin.rpc("submit_onboarding_test_evaluation", { _code:data.code,_test_token:data.testToken,_idempotency_key:data.idempotencyKey,_source_hash:sourceHash,_answers:data.answers })
+      : await supabaseAdmin.rpc("submit_public_evaluation", { _code:data.code,_idempotency_key:data.idempotencyKey,_source_hash:sourceHash,_answers:data.answers,_contact:data.contact });
+    const { data: result, error } = response;
     if (error) {
       const safeMessages: Record<string, string> = {
         point_not_found: "Este ponto de avaliação não foi encontrado.",
