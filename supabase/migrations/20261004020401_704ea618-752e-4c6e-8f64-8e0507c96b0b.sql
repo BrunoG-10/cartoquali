@@ -1,0 +1,8 @@
+GRANT EXECUTE ON FUNCTION cartoquali_private.get_onboarding_checklist(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION cartoquali_private.create_cartorio_onboarding(uuid,text,text,text,text,text,text,text,text,text) TO authenticated;
+GRANT EXECUTE ON FUNCTION cartoquali_private.create_onboarding_administrator(uuid,uuid,text,text,text) TO authenticated;
+GRANT EXECUTE ON FUNCTION cartoquali_private.save_onboarding_survey(uuid,text,text,boolean) TO authenticated;
+GRANT EXECUTE ON FUNCTION cartoquali_private.publish_onboarding_survey(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION cartoquali_private.save_onboarding_point(uuid,text,text,text) TO authenticated;
+GRANT EXECUTE ON FUNCTION cartoquali_private.prepare_onboarding_test(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION cartoquali_private.set_onboarding_operational_status(uuid,text) TO authenticated;
