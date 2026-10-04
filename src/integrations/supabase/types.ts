@@ -74,6 +74,7 @@ export type Database = {
           deseja_contato: boolean
           email_contato: string | null
           id: string
+          is_test: boolean
           minimized_at: string | null
           motivo_insatisfacao: string | null
           nome_contato: string | null
@@ -94,6 +95,7 @@ export type Database = {
           deseja_contato?: boolean
           email_contato?: string | null
           id?: string
+          is_test?: boolean
           minimized_at?: string | null
           motivo_insatisfacao?: string | null
           nome_contato?: string | null
@@ -114,6 +116,7 @@ export type Database = {
           deseja_contato?: boolean
           email_contato?: string | null
           id?: string
+          is_test?: boolean
           minimized_at?: string | null
           motivo_insatisfacao?: string | null
           nome_contato?: string | null
@@ -137,6 +140,90 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "pontos_avaliacao"
             referencedColumns: ["id", "cartorio_id", "pesquisa_id"]
+          },
+        ]
+      }
+      cartorio_onboarding: {
+        Row: {
+          activated_at: string | null
+          blocked_reason: string | null
+          cartorio_id: string
+          client_request_id: string
+          created_at: string
+          created_by_id: string
+          current_step: number
+          id: string
+          point_id: string | null
+          status: string
+          survey_id: string | null
+          test_evaluation_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          blocked_reason?: string | null
+          cartorio_id: string
+          client_request_id: string
+          created_at?: string
+          created_by_id: string
+          current_step?: number
+          id?: string
+          point_id?: string | null
+          status?: string
+          survey_id?: string | null
+          test_evaluation_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          blocked_reason?: string | null
+          cartorio_id?: string
+          client_request_id?: string
+          created_at?: string
+          created_by_id?: string
+          current_step?: number
+          id?: string
+          point_id?: string | null
+          status?: string
+          survey_id?: string | null
+          test_evaluation_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cartorio_onboarding_cartorio_id_fkey"
+            columns: ["cartorio_id"]
+            isOneToOne: true
+            referencedRelation: "cartorios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cartorio_onboarding_created_by_id_fkey"
+            columns: ["created_by_id"]
+            isOneToOne: false
+            referencedRelation: "usuarios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cartorio_onboarding_point_tenant_fkey"
+            columns: ["point_id", "cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "pontos_avaliacao"
+            referencedColumns: ["id", "cartorio_id"]
+          },
+          {
+            foreignKeyName: "cartorio_onboarding_survey_tenant_fkey"
+            columns: ["survey_id", "cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "pesquisas"
+            referencedColumns: ["id", "cartorio_id"]
+          },
+          {
+            foreignKeyName: "cartorio_onboarding_test_tenant_fkey"
+            columns: ["test_evaluation_id", "cartorio_id"]
+            isOneToOne: false
+            referencedRelation: "avaliacoes"
+            referencedColumns: ["id", "cartorio_id"]
           },
         ]
       }
@@ -972,6 +1059,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_cartorio_onboarding: {
+        Args: {
+          _cidade: string
+          _client_request_id: string
+          _cnpj: string
+          _email?: string
+          _estado: string
+          _nome_fantasia: string
+          _razao_social: string
+          _responsavel: string
+          _telefone?: string
+          _tipo: string
+        }
+        Returns: Json
+      }
       create_improvement_plan: {
         Args: {
           _action: string
@@ -985,6 +1087,16 @@ export type Database = {
           _problem: string
           _responsible_id: string
           _title: string
+        }
+        Returns: Json
+      }
+      create_onboarding_administrator: {
+        Args: {
+          _auth_user_id: string
+          _cartorio_id: string
+          _email: string
+          _name: string
+          _phone?: string
         }
         Returns: Json
       }
@@ -1027,6 +1139,10 @@ export type Database = {
         }
         Returns: Json
       }
+      get_onboarding_checklist: {
+        Args: { _cartorio_id: string }
+        Returns: Json
+      }
       get_public_evaluation_context: { Args: { _code: string }; Returns: Json }
       get_quality_report: {
         Args: {
@@ -1056,6 +1172,43 @@ export type Database = {
           _evaluation_id: string
           _privacy_request_id: string
           _redact_free_text?: boolean
+        }
+        Returns: Json
+      }
+      prepare_onboarding_test: { Args: { _cartorio_id: string }; Returns: Json }
+      publish_onboarding_survey: {
+        Args: { _cartorio_id: string }
+        Returns: Json
+      }
+      save_onboarding_point: {
+        Args: {
+          _cartorio_id: string
+          _description?: string
+          _location: string
+          _name: string
+        }
+        Returns: Json
+      }
+      save_onboarding_survey: {
+        Args: {
+          _cartorio_id: string
+          _description: string
+          _name: string
+          _use_template?: boolean
+        }
+        Returns: Json
+      }
+      set_onboarding_operational_status: {
+        Args: { _action: string; _cartorio_id: string }
+        Returns: Json
+      }
+      submit_onboarding_test_evaluation: {
+        Args: {
+          _answers: Json
+          _code: string
+          _idempotency_key: string
+          _source_hash: string
+          _test_token: string
         }
         Returns: Json
       }
