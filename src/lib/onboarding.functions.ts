@@ -24,9 +24,20 @@ async function platformAccess(context: { supabase:any; userId:string }) {
 }
 
 async function privateRpc<T>(supabase:any,name:string,args:Record<string,unknown>) {
-  const result = await supabase.rpc(`onboarding_${name}`,args) as {data:T|null;error:{message:string;code?:string}|null};
+  const result = await supabase.rpc(onboardingRpcNames[name]??name,args) as {data:T|null;error:{message:string;code?:string}|null};
   return result;
 }
+
+const onboardingRpcNames:Record<string,string>={
+  get_onboarding_checklist:"onboarding_get_onboarding_checklist",
+  create_cartorio_onboarding:"onboarding_create_cartorio_onboarding",
+  create_onboarding_administrator:"onboarding_create_onboarding_administrator",
+  save_onboarding_survey:"onboarding_save_onboarding_survey",
+  publish_onboarding_survey:"onboarding_publish_onboarding_survey",
+  save_onboarding_point:"onboarding_save_onboarding_point",
+  prepare_onboarding_test:"onboarding_prepare_onboarding_test",
+  set_onboarding_operational_status:"onboarding_set_onboarding_operational_status",
+};
 
 function friendly(error:{message:string}|null,fallback:string) {
   const message=error?.message??"";
