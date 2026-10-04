@@ -1118,6 +1118,10 @@ export type Database = {
         Args: { _cartorio_id: string }
         Returns: Json
       }
+      get_onboarding_test_context: {
+        Args: { _code: string; _test_token: string }
+        Returns: Json
+      }
       get_public_evaluation_context: { Args: { _code: string }; Returns: Json }
       get_quality_report: {
         Args: {
