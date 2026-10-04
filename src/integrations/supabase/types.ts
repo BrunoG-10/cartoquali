@@ -238,6 +238,7 @@ export type Database = {
           data_renovacao: string | null
           email: string | null
           endereco: string | null
+          environment_kind: string
           estado: string
           id: string
           nome_fantasia: string
@@ -260,6 +261,7 @@ export type Database = {
           data_renovacao?: string | null
           email?: string | null
           endereco?: string | null
+          environment_kind?: string
           estado: string
           id?: string
           nome_fantasia: string
@@ -282,6 +284,7 @@ export type Database = {
           data_renovacao?: string | null
           email?: string | null
           endereco?: string | null
+          environment_kind?: string
           estado?: string
           id?: string
           nome_fantasia?: string
@@ -1152,6 +1155,65 @@ export type Database = {
           _privacy_request_id: string
           _redact_free_text?: boolean
         }
+        Returns: Json
+      }
+      onboarding_create_cartorio_onboarding: {
+        Args: {
+          _cidade: string
+          _client_request_id: string
+          _cnpj: string
+          _email?: string
+          _estado: string
+          _nome_fantasia: string
+          _razao_social: string
+          _responsavel: string
+          _telefone?: string
+          _tipo: string
+        }
+        Returns: Json
+      }
+      onboarding_create_onboarding_administrator: {
+        Args: {
+          _auth_user_id: string
+          _cartorio_id: string
+          _email: string
+          _name: string
+          _phone?: string
+        }
+        Returns: Json
+      }
+      onboarding_get_onboarding_checklist: {
+        Args: { _cartorio_id: string }
+        Returns: Json
+      }
+      onboarding_prepare_onboarding_test: {
+        Args: { _cartorio_id: string }
+        Returns: Json
+      }
+      onboarding_publish_onboarding_survey: {
+        Args: { _cartorio_id: string }
+        Returns: Json
+      }
+      onboarding_save_onboarding_point: {
+        Args: {
+          _cartorio_id: string
+          _description?: string
+          _location: string
+          _name: string
+        }
+        Returns: Json
+      }
+      onboarding_save_onboarding_survey: {
+        Args: {
+          _cartorio_id: string
+          _description: string
+          _name: string
+          _use_template?: boolean
+        }
+        Returns: Json
+      }
+      onboarding_set_onboarding_operational_status: {
+        Args: { _action: string; _cartorio_id: string }
         Returns: Json
       }
       submit_onboarding_test_evaluation: {
