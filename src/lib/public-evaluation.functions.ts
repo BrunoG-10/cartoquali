@@ -148,14 +148,14 @@ function parseContext(value: unknown): PublicEvaluationContext {
 }
 
 export const getPublicEvaluation = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) => z.object({ code: codeSchema }).parse(input))
+  .inputValidator((input: unknown) => z.object({ code: codeSchema, testToken: z.string().uuid().optional() }).parse(input))
   .handler(async ({ data }) => {
     setResponseHeader("Cache-Control", "private, no-store, max-age=0");
     setResponseHeader("X-Content-Type-Options", "nosniff");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: result, error } = await supabaseAdmin.rpc("get_public_evaluation_context", {
-      _code: data.code,
-    });
+    const { data: result, error } = data.testToken
+      ? await supabaseAdmin.rpc("get_onboarding_test_context", { _code: data.code, _test_token: data.testToken })
+      : await supabaseAdmin.rpc("get_public_evaluation_context", { _code: data.code });
     if (error) {
       console.error("[public-evaluation] context lookup failed", error.code);
       throw new Error("Não foi possível carregar esta pesquisa.");

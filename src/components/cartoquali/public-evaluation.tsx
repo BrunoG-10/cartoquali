@@ -15,8 +15,8 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   const fetchEvaluation = useServerFn(getPublicEvaluation);
   const submitEvaluation = useServerFn(submitPublicEvaluation);
   const query = useQuery({
-    queryKey: ["public-evaluation", code],
-    queryFn: () => fetchEvaluation({ data: { code: code ?? "" } }),
+    queryKey: ["public-evaluation", code, testToken],
+    queryFn: () => fetchEvaluation({ data: { code: code ?? "", ...(testToken ? { testToken } : {}) } }),
     enabled: Boolean(code),
     retry: 1,
   });
