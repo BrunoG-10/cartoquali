@@ -4,13 +4,13 @@
 
 A rota pública `/` apresenta a narrativa problema → valor → funcionamento → evidência visual → diferencial → objeções → demonstração. As áreas autenticadas, o login e a avaliação pública permanecem em suas rotas existentes.
 
-Os CTAs do hero, problema, dashboard, benefícios, header e encerramento conduzem ao mesmo formulário comercial. “Falar com um especialista” também conduz ao formulário, sem inventar telefone, e-mail ou integração externa.
+Os CTAs do hero, problema, dashboard, benefícios, header e encerramento abrem uma conversa com o WhatsApp comercial **(86) 98184-6766**, usando uma mensagem inicial sobre a demonstração. “Falar com um especialista” e o contato do rodapé usam o mesmo destino.
 
 ## Captação de contatos
 
 Os contatos são gravados em `commercial_leads`, nunca nas tabelas de avaliações. A submissão usa validação no navegador e no servidor, honeypot, limite por sessão, idempotência, resposta sem cache e cliente `service_role` somente no servidor. A tabela tem RLS, bloqueio explícito para `anon` e `authenticated` e acesso de infraestrutura restrito a `service_role`.
 
-Não há disparo automático de e-mail, WhatsApp ou CRM nesta versão. A integração comercial posterior deve consumir a tabela por um processo administrativo autorizado.
+Após o formulário ser validado e registrado, o visitante é encaminhado ao WhatsApp comercial com os dados preenchidos organizados na mensagem. Não há disparo automático de e-mail, mensagem ativa ou integração com CRM nesta versão.
 
 ## Privacidade e segurança
 
@@ -49,8 +49,8 @@ O documento define title, meta description, Open Graph, Twitter card, URL canôn
 
 ## Pendências operacionais
 
-- Definir responsável e processo para atendimento dos contatos recebidos.
-- Integrar CRM, e-mail ou WhatsApp somente quando houver canal empresarial confirmado.
+- Definir responsável e processo para atendimento das conversas recebidas no WhatsApp.
+- Integrar CRM ou e-mail somente quando houver canal empresarial confirmado.
 - Configurar URL HTTPS e imagem social absolutas de produção antes da publicação final.
 - Ativar proteção contra senhas vazadas no provedor Supabase Auth.
 

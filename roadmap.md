@@ -218,5 +218,5 @@ Status: **VALIDADA COM RESSALVAS OPERACIONAIS**. O formulário persiste contatos
 
 ## WhatsApp comercial da landing page
 
-- [ ] Direcionar CTAs, contato e formulário para o WhatsApp (86) 98184-6766
+- [x] Direcionar CTAs, contato e formulário para o WhatsApp (86) 98184-6766
 - [ ] Validar abertura da conversa no celular e desktop
