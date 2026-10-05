@@ -299,6 +299,45 @@ export type Database = {
         }
         Relationships: []
       }
+      commercial_leads: {
+        Row: {
+          city_state: string
+          client_request_id: string
+          created_at: string
+          email: string
+          id: string
+          name: string
+          registry_name: string
+          role_title: string
+          source_hash: string
+          whatsapp: string
+        }
+        Insert: {
+          city_state: string
+          client_request_id: string
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          registry_name: string
+          role_title: string
+          source_hash: string
+          whatsapp: string
+        }
+        Update: {
+          city_state?: string
+          client_request_id?: string
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          registry_name?: string
+          role_title?: string
+          source_hash?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       configuracoes_cartorio: {
         Row: {
           audit_retention_days: number | null
