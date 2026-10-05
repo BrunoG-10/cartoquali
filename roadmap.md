@@ -215,3 +215,8 @@ Status: **APROVADA COM RESSALVAS OPERACIONAIS**. Matriz A–H concluída com 16 
 - [x] Documentar integrações, testes, pendências e classificação final sem iniciar outra etapa
 
 Status: **VALIDADA COM RESSALVAS OPERACIONAIS**. O formulário persiste contatos comerciais de forma isolada no Supabase externo, mas notificações e integração com CRM/WhatsApp permanecem pendentes. Os mockups e números são explicitamente ilustrativos, sem uso de dados privados. A proteção contra senhas vazadas continua desativada no provedor de autenticação, condição preexistente e não causada pela landing page.
+
+## WhatsApp comercial da landing page
+
+- [ ] Direcionar CTAs, contato e formulário para o WhatsApp (86) 98184-6766
+- [ ] Validar abertura da conversa no celular e desktop
