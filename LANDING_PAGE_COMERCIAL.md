@@ -30,6 +30,7 @@ O documento define title, meta description, Open Graph, Twitter card, URL canôn
 - Navegação Playwright: desktop 1280 px, tablet 1024 px e mobile 320/360/390/430 px.
 - Sem overflow horizontal ou erros de console em todas as larguras.
 - Menu compacto, âncoras, CTA, validação vazia, envio real e confirmação testados.
+- Links do WhatsApp validados em desktop e celular para **(86) 98184-6766**, com mensagem inicial preenchida.
 - Rotas `/login`, `/dashboard`, `/privacidade`, `/termos` e `/avaliar` responderam sem quebra.
 - Auditoria textual não encontrou afirmações comerciais proibidas; a menção oficial à ANOREG/PQTA aparece somente como pergunta, respondida com negativa explícita.
 - Linter do banco: nenhuma ocorrência nova; permanece apenas a proteção contra senhas vazadas desativada no Auth.
