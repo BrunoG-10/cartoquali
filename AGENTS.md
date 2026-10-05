@@ -38,3 +38,4 @@
 - Treat privacy retention as tenant configuration with no automatic deletion until legally and contractually approved periods exist.
 - Rate-limit public evaluation submissions by an ephemeral browser-session token, never by network address, so shared registry networks do not block unrelated visitors.
 - Provision registries through the persistent eight-step onboarding RPC boundary; keep test evaluations isolated and require a complete checklist before activation.
+- Keep the commercial landing page on `/` data-free except for its server-validated lead submission; product visuals must use static illustrative data and never query tenant operations.

@@ -206,10 +206,12 @@ Status: **APROVADA COM RESSALVAS OPERACIONAIS**. Matriz A–H concluída com 16 
 
 # Landing page comercial
 
-- [ ] Substituir o redirecionamento inicial por uma landing page comercial pública em `/`
-- [ ] Criar representações estáticas e fiéis do produto sem consultar dados privados
-- [ ] Implementar navegação, seções comerciais, objeções e CTAs para demonstração
-- [ ] Implementar formulário de lead separado das avaliações, com validação, proteção e persistência segura
-- [ ] Revisar copy, SEO, acessibilidade, performance e segurança
-- [ ] Validar conversão e responsividade em desktop, tablet e 320/360/390/430 px
-- [ ] Documentar integrações, testes, pendências e classificação final sem iniciar outra etapa
+- [x] Substituir o redirecionamento inicial por uma landing page comercial pública em `/`
+- [x] Criar representações estáticas e fiéis do produto sem consultar dados privados
+- [x] Implementar navegação, seções comerciais, objeções e CTAs para demonstração
+- [x] Implementar formulário de lead separado das avaliações, com validação, proteção e persistência segura
+- [x] Revisar copy, SEO, acessibilidade, performance e segurança
+- [x] Validar conversão e responsividade em desktop, tablet e 320/360/390/430 px
+- [x] Documentar integrações, testes, pendências e classificação final sem iniciar outra etapa
+
+Status: **VALIDADA COM RESSALVAS OPERACIONAIS**. O formulário persiste contatos comerciais de forma isolada no Supabase externo, mas notificações e integração com CRM/WhatsApp permanecem pendentes. Os mockups e números são explicitamente ilustrativos, sem uso de dados privados. A proteção contra senhas vazadas continua desativada no provedor de autenticação, condição preexistente e não causada pela landing page.
