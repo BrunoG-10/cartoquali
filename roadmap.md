@@ -203,3 +203,13 @@ Status: **APROVADA COM RESSALVAS OPERACIONAIS**. A origem HTTPS de produção ai
 - [x] Validar contratos TypeScript, segurança do banco e matriz técnica da Etapa 15
 
 Status: **APROVADA COM RESSALVAS OPERACIONAIS**. Matriz A–H concluída com 16 verificações aprovadas e limpeza integral dos dados temporários. A origem HTTPS definitiva ainda precisa ser configurada em `VITE_PUBLIC_APP_URL`; o envio real do convite depende de e-mail institucional válido e a entrega física do QR depende da implantação local. A proteção contra senhas vazadas permanece desativada no provedor de autenticação. A Etapa 16 não foi iniciada.
+
+# Landing page comercial
+
+- [ ] Substituir o redirecionamento inicial por uma landing page comercial pública em `/`
+- [ ] Criar representações estáticas e fiéis do produto sem consultar dados privados
+- [ ] Implementar navegação, seções comerciais, objeções e CTAs para demonstração
+- [ ] Implementar formulário de lead separado das avaliações, com validação, proteção e persistência segura
+- [ ] Revisar copy, SEO, acessibilidade, performance e segurança
+- [ ] Validar conversão e responsividade em desktop, tablet e 320/360/390/430 px
+- [ ] Documentar integrações, testes, pendências e classificação final sem iniciar outra etapa
