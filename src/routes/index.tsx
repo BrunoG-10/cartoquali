@@ -1,17 +1,18 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { LandingPage } from "@/components/cartoquali/landing-page";
 
 export const Route = createFileRoute("/")({
-  beforeLoad: () => {
-    throw redirect({ to: "/login" });
-  },
   head: () => ({
     meta: [
-      { title: "CartoQuali — Gestão de qualidade" },
-      { name: "description", content: "Acesso administrativo ao CartoQuali." },
-      { property: "og:title", content: "CartoQuali — Gestão de qualidade" },
-      { property: "og:description", content: "Acesso administrativo ao CartoQuali." },
+      { title: "CartoQuali | Plataforma de Qualidade para Cartórios" },
+      { name: "description", content: "Acompanhe a satisfação dos usuários, indicadores de qualidade e oportunidades de melhoria do seu cartório com o CartoQuali." },
+      { property: "og:title", content: "CartoQuali | Plataforma de Qualidade para Cartórios" },
+      { property: "og:description", content: "Transforme avaliações dos usuários em indicadores e ações de melhoria contínua para o seu cartório." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "/" }],
   }),
+  component: LandingPage,
 });
