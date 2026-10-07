@@ -8,6 +8,7 @@ export type RealDashboardFilters = {
   period: DashboardPeriod;
   pointId?: string | undefined;
   surveyId?: string | undefined;
+  serviceId?: string | undefined;
   startDate?: string | undefined;
   endDate?: string | undefined;
 };
@@ -80,9 +81,12 @@ export function useRealDashboard(filters: RealDashboardFilters) {
   return useQuery({
     queryKey: ["dashboard-indicators", filters, range],
     queryFn: () => {
-      const data: typeof range & { pointId?: string; surveyId?: string } = { ...range };
+      const data: typeof range & { pointId?: string; surveyId?: string; serviceId?: string } = {
+        ...range,
+      };
       if (filters.pointId) data.pointId = filters.pointId;
       if (filters.surveyId) data.surveyId = filters.surveyId;
+      if (filters.serviceId) data.serviceId = filters.serviceId;
       return fetchIndicators({ data });
     },
     staleTime: 30_000,

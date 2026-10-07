@@ -236,7 +236,7 @@ export function ReviewsPage() {
                   {[
                     "Data",
                     "Nota",
-                    "Ponto",
+                    "Serviço",
                     "Pesquisa",
                     "Classificação",
                     "Comentário",
@@ -263,7 +263,11 @@ export function ReviewsPage() {
                     <td className="px-4 py-4">
                       <Stars value={item.rating} size="sm" />
                     </td>
-                    <td className="px-4 py-4 font-medium">{item.pointName}</td>
+                    <td className="px-4 py-4 font-medium">
+                      {item.serviceName ?? (
+                        <span className="font-normal text-muted-foreground">Não informado</span>
+                      )}
+                    </td>
                     <td className="px-4 py-4">{item.surveyName}</td>
                     <td className="px-4 py-4">
                       <StatusBadge tone={item.rating >= 4 ? "positive" : "danger"}>
@@ -296,7 +300,7 @@ export function ReviewsPage() {
                   </span>
                   <span className="mt-3 block font-medium">{item.comment || "Sem comentário"}</span>
                   <span className="mt-2 block text-xs text-muted-foreground">
-                    {item.pointName} · {formatDate(item.createdAt)}
+                    {item.serviceName ?? "Serviço não informado"} · {formatDate(item.createdAt)}
                   </span>
                 </span>
               </Button>
@@ -406,7 +410,7 @@ function EvaluationDialogContent({
             Avaliação {evaluation.id.slice(0, 8)}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {formatDate(evaluation.createdAt)} · {evaluation.pointName}
+            {formatDate(evaluation.createdAt)} · {evaluation.serviceName ?? "Serviço não informado"}
           </p>
         </div>
         <Button variant="ghost" size="sm" onClick={onClose}>

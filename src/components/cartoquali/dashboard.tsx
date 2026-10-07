@@ -4,7 +4,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   Filter,
-  MapPin,
+  ListChecks,
   MessageSquareText,
   Minus,
   RefreshCw,
@@ -26,13 +26,13 @@ const number = (value: number | null, digits = 1) =>
 
 export function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>("30 dias");
-  const [pointId, setPointId] = useState("");
+  const [serviceId, setServiceId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [mobileFilters, setMobileFilters] = useState(false);
   const query = useRealDashboard({
     period,
-    pointId: pointId || undefined,
+    serviceId: serviceId || undefined,
     startDate: startDate || undefined,
     endDate: endDate || undefined,
   });
@@ -52,21 +52,23 @@ export function DashboardPage() {
             </Button>
           ))}
         </div>
-        <label className="lg:ml-auto">
-          <span className="sr-only">Ponto de avaliação</span>
-          <select
-            className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm"
-            value={pointId}
-            onChange={(event) => setPointId(event.target.value)}
-          >
-            <option value="">Todos os pontos</option>
-            {data?.filters.points.map((point) => (
-              <option key={point.id} value={point.id}>
-                {point.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        {(data?.filters.services?.length ?? 0) > 0 && (
+          <label className="lg:ml-auto">
+            <span className="sr-only">Serviço</span>
+            <select
+              className="h-9 max-w-full rounded-md border border-input bg-glass-strong px-3 text-sm"
+              value={serviceId}
+              onChange={(event) => setServiceId(event.target.value)}
+            >
+              <option value="">Todos os serviços</option>
+              {data?.filters.services?.map((service) => (
+                <option key={service.id} value={service.id}>
+                  {service.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
       {period === "Personalizado" && (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -357,11 +359,16 @@ function DashboardContent({
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <GlassPanel>
           <h2 className="flex items-center gap-2 font-display text-lg font-bold">
-            <MapPin className="size-5 text-primary" aria-hidden="true" />
-            Desempenho por ponto
+            <ListChecks className="size-5 text-primary" aria-hidden="true" />
+            {data.services ? "Desempenho por serviço" : "Desempenho por ponto"}
           </h2>
+          {data.services && !data.services.length && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Sem avaliações no período. Os serviços aparecem aqui conforme o cidadão os informa.
+            </p>
+          )}
           <ul className="mt-4 space-y-4">
-            {data.points.map((item) => (
+            {(data.services ?? data.points).map((item) => (
               <li key={item.id}>
                 <div className="flex justify-between gap-3 text-sm">
                   <span className="min-w-0 truncate">{item.name}</span>
@@ -371,6 +378,9 @@ function DashboardContent({
                         <strong>{number(item.average)}</strong>{" "}
                         <span className="text-muted-foreground">
                           · {item.total} {item.total === 1 ? "avaliação" : "avaliações"}
+                          {item.negative_rate
+                            ? ` · ${number(item.negative_rate, 0)}% negativas`
+                            : ""}
                         </span>
                       </>
                     ) : (
@@ -401,7 +411,7 @@ function DashboardContent({
                 <div className="flex items-center justify-between gap-3">
                   <Stars value={review.rating} size="sm" />
                   <span className="truncate text-xs text-muted-foreground">
-                    {review.point_name} ·{" "}
+                    {review.service_name ?? review.point_name} ·{" "}
                     {new Date(review.created_at).toLocaleDateString("pt-BR", {
                       timeZone: "America/Sao_Paulo",
                     })}
