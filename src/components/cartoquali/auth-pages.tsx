@@ -5,22 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/components/cartoquali/auth-provider";
 import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
+import { AuthShowcase, AuthShowcaseCompact } from "./auth-scene";
 
 function AuthFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="grid min-h-screen place-items-center bg-background p-4">
-      <main className="w-full max-w-md">
-        <div className="mb-7 flex items-center justify-center gap-3">
-          <LogoMark size={44} />
-          <div>
-            <Wordmark className="block text-2xl leading-tight" />
-            <small className="text-muted-foreground">Gestão de qualidade</small>
+    <div className="flex min-h-screen flex-col bg-background lg:grid lg:grid-cols-[1fr_1.1fr]">
+      <AuthShowcaseCompact />
+      <div className="grid flex-1 place-items-center px-4 py-10 sm:px-8">
+        <main className="animate-enter w-full max-w-md">
+          <div className="mb-7 flex items-center justify-center gap-3">
+            <LogoMark size={44} />
+            <div>
+              <Wordmark className="block text-2xl leading-tight" />
+              <small className="text-muted-foreground">Gestão de qualidade</small>
+            </div>
           </div>
-        </div>
-        <section className="rounded-lg border border-glass-border bg-glass p-6 shadow-glass backdrop-blur-xl sm:p-8">
-          {children}
-        </section>
-      </main>
+          <section className="rounded-lg border border-glass-border bg-glass p-6 shadow-glass backdrop-blur-xl sm:p-8">
+            {children}
+          </section>
+        </main>
+      </div>
+      <AuthShowcase />
     </div>
   );
 }
