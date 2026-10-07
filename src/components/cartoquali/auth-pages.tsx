@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/components/cartoquali/auth-provider";
 import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
+import { supabase } from "@/integrations/supabase/client";
+import { recoveryLinkError } from "@/lib/recovery-link";
 import { AuthShowcase, AuthShowcaseCompact } from "./auth-scene";
 
 function AuthFrame({ children }: { children: ReactNode }) {
@@ -145,10 +147,30 @@ export function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const recovery =
-    typeof window !== "undefined" &&
-    (window.location.hash.includes("type=recovery") ||
-      window.location.hash.includes("type=invite"));
+  // The e-mail link signs the user in and Supabase then strips the tokens from the URL, so the
+  // form is enabled by the resulting session, not by the URL.
+  const [link, setLink] = useState<"checking" | "ready" | "expired" | "invalid" | "missing">(
+    "checking",
+  );
+  useEffect(() => {
+    const linkError = recoveryLinkError(window.location.hash, window.location.search);
+    let active = true;
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && ["PASSWORD_RECOVERY", "SIGNED_IN", "INITIAL_SESSION"].includes(event))
+        setLink("ready");
+    });
+    void supabase.auth.getSession().then(({ data: current }) => {
+      if (!active) return;
+      setLink((state) =>
+        state === "ready" || current.session ? "ready" : (linkError ?? "missing"),
+      );
+    });
+    return () => {
+      active = false;
+      data.subscription.unsubscribe();
+    };
+  }, []);
+  const recovery = link === "ready";
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (password.length < 8) {
@@ -176,9 +198,19 @@ export function ResetPasswordPage() {
       <p className="mt-2 text-sm text-muted-foreground">
         Escolha uma nova senha para seu acesso administrativo.
       </p>
-      {!recovery && (
-        <p className="mt-5 rounded-md bg-warning-soft p-3 text-sm text-warning">
-          Abra esta página pelo link recebido no email.
+      {link === "checking" && (
+        <p role="status" className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
+          <LoaderCircle className="size-4 animate-spin" />
+          Validando o link recebido...
+        </p>
+      )}
+      {(link === "expired" || link === "invalid" || link === "missing") && (
+        <p role="alert" className="mt-5 rounded-md bg-warning-soft p-3 text-sm text-warning">
+          {link === "expired"
+            ? "Este link expirou ou já foi usado. Peça um novo em “Esqueci minha senha”."
+            : link === "invalid"
+              ? "Não foi possível validar este link. Peça um novo em “Esqueci minha senha”."
+              : "Abra esta página pelo link mais recente recebido no email."}
         </p>
       )}
       <form className="mt-6 space-y-4" onSubmit={submit}>
