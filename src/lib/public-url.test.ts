@@ -23,7 +23,12 @@ describe("public evaluation URL", () => {
   });
 
   it("rejects origins that would put a wrong address on printed QR codes", async () => {
-    for (const bad of ["http://cartoquali.com.br", "https://cartoquali.com.br/app", "https://cartoquali.com.br?x=1", "not a url"]) {
+    for (const bad of [
+      "http://cartoquali.com.br",
+      "https://cartoquali.com.br/app",
+      "https://cartoquali.com.br?x=1",
+      "not a url",
+    ]) {
       const { getPublicAppBaseUrl } = await loadWith(bad);
       expect(getPublicAppBaseUrl()).toBe("");
     }

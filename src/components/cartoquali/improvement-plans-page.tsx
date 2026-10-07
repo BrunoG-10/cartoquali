@@ -2,53 +2,1029 @@ import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "re
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { CheckCircle2, ChevronLeft, ChevronRight, Clock3, FilterX, Plus, Target, TriangleAlert, X } from "lucide-react";
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  FilterX,
+  Plus,
+  Target,
+  TriangleAlert,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { createImprovementPlan, getImprovementPlanDetail, listImprovementPlans, updateImprovementPlan } from "@/lib/improvement-plans.functions";
+import {
+  createImprovementPlan,
+  getImprovementPlanDetail,
+  listImprovementPlans,
+  updateImprovementPlan,
+} from "@/lib/improvement-plans.functions";
 import { cn } from "@/lib/utils";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
 import { QualityNavigation } from "./quality-navigation";
 
-const labels={status:{planejado:"Planejado",em_andamento:"Em andamento",concluido:"Concluído",cancelado:"Cancelado"},priority:{baixa:"Baixa",media:"Média",alta:"Alta",critica:"Crítica"},dimension:{general:"Geral",service:"Atendimento",time:"Tempo",clarity:"Clareza",resolution:"Resolutividade",structure:"Estrutura"}} as const;
-type Status=keyof typeof labels.status; type Priority=keyof typeof labels.priority; type Dimension=keyof typeof labels.dimension;
-type Plan={id:string;ocorrencia_id:string;ponto_id:string|null;dimensao:string|null;titulo:string;problema:string;objetivo:string;acao:string;responsavel_id:string|null;prioridade:string;prazo:string;status:string;progresso:number;resultado_esperado:string|null;resultado:string|null;observacao_resultado:string|null;indicador_nome:string|null;indicador_antes:number|null;indicador_depois:number|null;concluido_em:string|null;created_at:string;updated_at:string;responsibleName:string|null;occurrenceTitle:string};
-type Filters={status:string;priority:string;responsibleId:string;occurrenceId:string;startDate:string;endDate:string}; const emptyFilters:Filters={status:"",priority:"",responsibleId:"",occurrenceId:"",startDate:"",endDate:""};
-const errorMessage=(error:unknown)=>error instanceof Error?error.message:"Não foi possível concluir a operação.";
-const formatDate=(value:string)=>new Date(`${value.slice(0,10)}T12:00:00`).toLocaleDateString("pt-BR");
-const isOverdue=(plan:Plan)=>!["concluido","cancelado"].includes(plan.status)&&plan.prazo<new Date().toLocaleDateString("en-CA");
+const labels = {
+  status: {
+    planejado: "Planejado",
+    em_andamento: "Em andamento",
+    concluido: "Concluído",
+    cancelado: "Cancelado",
+  },
+  priority: { baixa: "Baixa", media: "Média", alta: "Alta", critica: "Crítica" },
+  dimension: {
+    general: "Geral",
+    service: "Atendimento",
+    time: "Tempo",
+    clarity: "Clareza",
+    resolution: "Resolutividade",
+    structure: "Estrutura",
+  },
+} as const;
+type Status = keyof typeof labels.status;
+type Priority = keyof typeof labels.priority;
+type Dimension = keyof typeof labels.dimension;
+type Plan = {
+  id: string;
+  ocorrencia_id: string;
+  ponto_id: string | null;
+  dimensao: string | null;
+  titulo: string;
+  problema: string;
+  objetivo: string;
+  acao: string;
+  responsavel_id: string | null;
+  prioridade: string;
+  prazo: string;
+  status: string;
+  progresso: number;
+  resultado_esperado: string | null;
+  resultado: string | null;
+  observacao_resultado: string | null;
+  indicador_nome: string | null;
+  indicador_antes: number | null;
+  indicador_depois: number | null;
+  concluido_em: string | null;
+  created_at: string;
+  updated_at: string;
+  responsibleName: string | null;
+  occurrenceTitle: string;
+};
+type Filters = {
+  status: string;
+  priority: string;
+  responsibleId: string;
+  occurrenceId: string;
+  startDate: string;
+  endDate: string;
+};
+const emptyFilters: Filters = {
+  status: "",
+  priority: "",
+  responsibleId: "",
+  occurrenceId: "",
+  startDate: "",
+  endDate: "",
+};
+const errorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Não foi possível concluir a operação.";
+const formatDate = (value: string) =>
+  new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");
+const isOverdue = (plan: Plan) =>
+  !["concluido", "cancelado"].includes(plan.status) &&
+  plan.prazo < new Date().toLocaleDateString("en-CA");
 
-export function ImprovementPlansPage(){
- const searchStr=useRouterState({select:(state)=>state.location.searchStr}); const initialSearch=new URLSearchParams(searchStr); const linkedOccurrence=initialSearch.get("occurrence")??""; const linkedStatus=initialSearch.get("status")??""; const queryClient=useQueryClient();
- const listFn=useServerFn(listImprovementPlans); const detailFn=useServerFn(getImprovementPlanDetail); const createFn=useServerFn(createImprovementPlan); const updateFn=useServerFn(updateImprovementPlan);
- const initialFilters={...emptyFilters,occurrenceId:linkedOccurrence,status:linkedStatus}; const [page,setPage]=useState(1); const [filters,setFilters]=useState<Filters>(initialFilters); const [applied,setApplied]=useState<Filters>(initialFilters); const [selectedId,setSelectedId]=useState<string>(); const [creating,setCreating]=useState(Boolean(linkedOccurrence)); const pageSize=10;
- const params={page,pageSize,...(applied.status?{status:applied.status as Status}:{}),...(applied.priority?{priority:applied.priority as Priority}:{}),...(applied.responsibleId?{responsibleId:applied.responsibleId}:{}),...(applied.occurrenceId?{occurrenceId:applied.occurrenceId}:{}),...(applied.startDate?{startDate:applied.startDate}:{}),...(applied.endDate?{endDate:applied.endDate}:{})};
- const list=useQuery({queryKey:["improvement-plans",params],queryFn:()=>listFn({data:params})}); const detail=useQuery({queryKey:["improvement-plan-detail",selectedId],queryFn:()=>detailFn({data:{id:selectedId??""}}),enabled:Boolean(selectedId)});
- const createMutation=useMutation({mutationFn:createFn,onSuccess:async()=>{await queryClient.invalidateQueries({queryKey:["improvement-plans"]});setCreating(false);toast.success("Plano criado com sucesso");},onError:(error)=>toast.error(errorMessage(error))});
- const updateMutation=useMutation({mutationFn:updateFn,onSuccess:async()=>{await Promise.all([queryClient.invalidateQueries({queryKey:["improvement-plans"]}),queryClient.invalidateQueries({queryKey:["improvement-plan-detail",selectedId]})]);toast.success("Plano atualizado");},onError:(error)=>toast.error(errorMessage(error))});
- useEffect(()=>{if(linkedOccurrence)setCreating(true)},[linkedOccurrence]); const items=(list.data?.items??[]) as Plan[]; const totalPages=Math.max(1,Math.ceil((list.data?.total??0)/pageSize));
- const metrics=useMemo(()=>[["Em andamento",items.filter((p)=>p.status==="em_andamento").length,Clock3],["Concluídos",items.filter((p)=>p.status==="concluido").length,CheckCircle2],["Atrasados",items.filter(isOverdue).length,TriangleAlert],["Progresso médio",`${Math.round(items.reduce((sum,p)=>sum+p.progresso,0)/Math.max(1,items.length))}%`,Target]] as const,[items]);
- const setFilter=(key:keyof Filters,value:string)=>setFilters({...filters,[key]:value}); const clear=()=>{setFilters(emptyFilters);setApplied(emptyFilters);setPage(1)};
- return <div className="animate-enter"><PageHeader eyebrow="Melhoria contínua" title="Planos de melhoria" description="Transforme problemas identificados em ações com responsável, prazo e resultado." action={list.data?.canManage?<Button onClick={()=>setCreating(true)}><Plus/>Novo plano</Button>:undefined}/><QualityNavigation/><div className="grid grid-cols-2 gap-3 xl:grid-cols-4">{metrics.map(([label,value,Icon])=><GlassPanel key={label} className="p-4"><Icon className="size-5 text-primary"/><p className="mt-3 text-xs text-muted-foreground">{label}</p><p className="font-display text-3xl font-bold">{value}</p></GlassPanel>)}</div>
- <GlassPanel className="mt-4"><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><Select label="Status" value={filters.status} onChange={(v)=>setFilter("status",v)} options={["",...Object.keys(labels.status)]} names={{"":"Todos os status",...labels.status}}/><Select label="Prioridade" value={filters.priority} onChange={(v)=>setFilter("priority",v)} options={["",...Object.keys(labels.priority)]} names={{"":"Todas as prioridades",...labels.priority}}/><Select label="Responsável" value={filters.responsibleId} onChange={(v)=>setFilter("responsibleId",v)} options={["",...(list.data?.users??[]).map((u:any)=>u.id)]} names={{"":"Todos os responsáveis",...Object.fromEntries((list.data?.users??[]).map((u:any)=>[u.id,u.nome]))}}/><Select label="Ocorrência" value={filters.occurrenceId} onChange={(v)=>setFilter("occurrenceId",v)} options={["",...(list.data?.occurrences??[]).map((o:any)=>o.id)]} names={{"":"Todas as ocorrências",...Object.fromEntries((list.data?.occurrences??[]).map((o:any)=>[o.id,o.titulo]))}}/><Field label="Prazo de"><Input type="date" value={filters.startDate} onChange={(e)=>setFilter("startDate",e.target.value)}/></Field><Field label="Prazo até"><Input type="date" value={filters.endDate} onChange={(e)=>setFilter("endDate",e.target.value)}/></Field><div className="flex items-end gap-2"><Button onClick={()=>{setApplied(filters);setPage(1)}}>Aplicar</Button><Button size="icon" variant="outline" aria-label="Limpar filtros" title="Limpar filtros" onClick={clear}><FilterX/></Button></div></div></GlassPanel>
- {list.isLoading?<GlassPanel className="mt-4"><InterfaceState kind="loading" title="Carregando planos" description="Buscando as ações do seu cartório."/></GlassPanel>:list.isError?<GlassPanel className="mt-4"><InterfaceState kind="error" title="Não foi possível carregar os planos" description="Sua sessão pode ter expirado ou o serviço está indisponível." action={<Button variant="outline" onClick={()=>void list.refetch()}>Tentar novamente</Button>}/></GlassPanel>:!items.length?<GlassPanel className="mt-4"><InterfaceState kind="empty" title="Nenhum plano encontrado" description="Não há registros para os filtros selecionados." action={<Button variant="outline" onClick={clear}>Limpar filtros</Button>}/></GlassPanel>:<><PlanList items={items} onSelect={setSelectedId}/><div className="mt-4 flex flex-col items-center justify-between gap-3 text-sm sm:flex-row"><p className="text-muted-foreground">{list.data?.total??0} planos · página {page} de {totalPages}</p><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page===1||list.isFetching} onClick={()=>setPage((v)=>v-1)}><ChevronLeft/>Anterior</Button><Button variant="outline" size="sm" disabled={page>=totalPages||list.isFetching} onClick={()=>setPage((v)=>v+1)}>Próxima<ChevronRight/></Button></div></div></>}
- {creating&&list.data&&<PlanForm occurrenceId={linkedOccurrence} occurrences={list.data.occurrences??[]} users={list.data.users??[]} saving={createMutation.isPending} onClose={()=>setCreating(false)} onSubmit={(data)=>createMutation.mutate({data})}/>} {selectedId&&<PlanDetail data={detail.data} loading={detail.isLoading} failed={detail.isError} saving={updateMutation.isPending} users={list.data?.users??[]} onRetry={()=>void detail.refetch()} onClose={()=>setSelectedId(undefined)} onSave={(data)=>updateMutation.mutate({data})}/>}</div>;
+export function ImprovementPlansPage() {
+  const searchStr = useRouterState({ select: (state) => state.location.searchStr });
+  const initialSearch = new URLSearchParams(searchStr);
+  const linkedOccurrence = initialSearch.get("occurrence") ?? "";
+  const linkedStatus = initialSearch.get("status") ?? "";
+  const queryClient = useQueryClient();
+  const listFn = useServerFn(listImprovementPlans);
+  const detailFn = useServerFn(getImprovementPlanDetail);
+  const createFn = useServerFn(createImprovementPlan);
+  const updateFn = useServerFn(updateImprovementPlan);
+  const initialFilters = { ...emptyFilters, occurrenceId: linkedOccurrence, status: linkedStatus };
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<Filters>(initialFilters);
+  const [applied, setApplied] = useState<Filters>(initialFilters);
+  const [selectedId, setSelectedId] = useState<string>();
+  const [creating, setCreating] = useState(Boolean(linkedOccurrence));
+  const pageSize = 10;
+  const params = {
+    page,
+    pageSize,
+    ...(applied.status ? { status: applied.status as Status } : {}),
+    ...(applied.priority ? { priority: applied.priority as Priority } : {}),
+    ...(applied.responsibleId ? { responsibleId: applied.responsibleId } : {}),
+    ...(applied.occurrenceId ? { occurrenceId: applied.occurrenceId } : {}),
+    ...(applied.startDate ? { startDate: applied.startDate } : {}),
+    ...(applied.endDate ? { endDate: applied.endDate } : {}),
+  };
+  const list = useQuery({
+    queryKey: ["improvement-plans", params],
+    queryFn: () => listFn({ data: params }),
+  });
+  const detail = useQuery({
+    queryKey: ["improvement-plan-detail", selectedId],
+    queryFn: () => detailFn({ data: { id: selectedId ?? "" } }),
+    enabled: Boolean(selectedId),
+  });
+  const createMutation = useMutation({
+    mutationFn: createFn,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["improvement-plans"] });
+      setCreating(false);
+      toast.success("Plano criado com sucesso");
+    },
+    onError: (error) => toast.error(errorMessage(error)),
+  });
+  const updateMutation = useMutation({
+    mutationFn: updateFn,
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["improvement-plans"] }),
+        queryClient.invalidateQueries({ queryKey: ["improvement-plan-detail", selectedId] }),
+      ]);
+      toast.success("Plano atualizado");
+    },
+    onError: (error) => toast.error(errorMessage(error)),
+  });
+  useEffect(() => {
+    if (linkedOccurrence) setCreating(true);
+  }, [linkedOccurrence]);
+  const items = (list.data?.items ?? []) as Plan[];
+  const totalPages = Math.max(1, Math.ceil((list.data?.total ?? 0) / pageSize));
+  const metrics = useMemo(
+    () =>
+      [
+        ["Em andamento", items.filter((p) => p.status === "em_andamento").length, Clock3],
+        ["Concluídos", items.filter((p) => p.status === "concluido").length, CheckCircle2],
+        ["Atrasados", items.filter(isOverdue).length, TriangleAlert],
+        [
+          "Progresso médio",
+          `${Math.round(items.reduce((sum, p) => sum + p.progresso, 0) / Math.max(1, items.length))}%`,
+          Target,
+        ],
+      ] as const,
+    [items],
+  );
+  const setFilter = (key: keyof Filters, value: string) => setFilters({ ...filters, [key]: value });
+  const clear = () => {
+    setFilters(emptyFilters);
+    setApplied(emptyFilters);
+    setPage(1);
+  };
+  return (
+    <div className="animate-enter">
+      <PageHeader
+        eyebrow="Melhoria contínua"
+        title="Planos de melhoria"
+        description="Transforme problemas identificados em ações com responsável, prazo e resultado."
+        action={
+          list.data?.canManage ? (
+            <Button onClick={() => setCreating(true)}>
+              <Plus />
+              Novo plano
+            </Button>
+          ) : undefined
+        }
+      />
+      <QualityNavigation />
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {metrics.map(([label, value, Icon]) => (
+          <GlassPanel key={label} className="p-4">
+            <Icon className="size-5 text-primary" />
+            <p className="mt-3 text-xs text-muted-foreground">{label}</p>
+            <p className="font-display text-3xl font-bold">{value}</p>
+          </GlassPanel>
+        ))}
+      </div>
+      <GlassPanel className="mt-4">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Select
+            label="Status"
+            value={filters.status}
+            onChange={(v) => setFilter("status", v)}
+            options={["", ...Object.keys(labels.status)]}
+            names={{ "": "Todos os status", ...labels.status }}
+          />
+          <Select
+            label="Prioridade"
+            value={filters.priority}
+            onChange={(v) => setFilter("priority", v)}
+            options={["", ...Object.keys(labels.priority)]}
+            names={{ "": "Todas as prioridades", ...labels.priority }}
+          />
+          <Select
+            label="Responsável"
+            value={filters.responsibleId}
+            onChange={(v) => setFilter("responsibleId", v)}
+            options={["", ...(list.data?.users ?? []).map((u: any) => u.id)]}
+            names={{
+              "": "Todos os responsáveis",
+              ...Object.fromEntries((list.data?.users ?? []).map((u: any) => [u.id, u.nome])),
+            }}
+          />
+          <Select
+            label="Ocorrência"
+            value={filters.occurrenceId}
+            onChange={(v) => setFilter("occurrenceId", v)}
+            options={["", ...(list.data?.occurrences ?? []).map((o: any) => o.id)]}
+            names={{
+              "": "Todas as ocorrências",
+              ...Object.fromEntries(
+                (list.data?.occurrences ?? []).map((o: any) => [o.id, o.titulo]),
+              ),
+            }}
+          />
+          <Field label="Prazo de">
+            <Input
+              type="date"
+              value={filters.startDate}
+              onChange={(e) => setFilter("startDate", e.target.value)}
+            />
+          </Field>
+          <Field label="Prazo até">
+            <Input
+              type="date"
+              value={filters.endDate}
+              onChange={(e) => setFilter("endDate", e.target.value)}
+            />
+          </Field>
+          <div className="flex items-end gap-2">
+            <Button
+              onClick={() => {
+                setApplied(filters);
+                setPage(1);
+              }}
+            >
+              Aplicar
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              aria-label="Limpar filtros"
+              title="Limpar filtros"
+              onClick={clear}
+            >
+              <FilterX />
+            </Button>
+          </div>
+        </div>
+      </GlassPanel>
+      {list.isLoading ? (
+        <GlassPanel className="mt-4">
+          <InterfaceState
+            kind="loading"
+            title="Carregando planos"
+            description="Buscando as ações do seu cartório."
+          />
+        </GlassPanel>
+      ) : list.isError ? (
+        <GlassPanel className="mt-4">
+          <InterfaceState
+            kind="error"
+            title="Não foi possível carregar os planos"
+            description="Sua sessão pode ter expirado ou o serviço está indisponível."
+            action={
+              <Button variant="outline" onClick={() => void list.refetch()}>
+                Tentar novamente
+              </Button>
+            }
+          />
+        </GlassPanel>
+      ) : !items.length ? (
+        <GlassPanel className="mt-4">
+          <InterfaceState
+            kind="empty"
+            title="Nenhum plano encontrado"
+            description="Não há registros para os filtros selecionados."
+            action={
+              <Button variant="outline" onClick={clear}>
+                Limpar filtros
+              </Button>
+            }
+          />
+        </GlassPanel>
+      ) : (
+        <>
+          <PlanList items={items} onSelect={setSelectedId} />
+          <div className="mt-4 flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">
+            <p className="text-muted-foreground">
+              {list.data?.total ?? 0} planos · página {page} de {totalPages}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1 || list.isFetching}
+                onClick={() => setPage((v) => v - 1)}
+              >
+                <ChevronLeft />
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages || list.isFetching}
+                onClick={() => setPage((v) => v + 1)}
+              >
+                Próxima
+                <ChevronRight />
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+      {creating && list.data && (
+        <PlanForm
+          occurrenceId={linkedOccurrence}
+          occurrences={list.data.occurrences ?? []}
+          users={list.data.users ?? []}
+          saving={createMutation.isPending}
+          onClose={() => setCreating(false)}
+          onSubmit={(data) => createMutation.mutate({ data })}
+        />
+      )}{" "}
+      {selectedId && (
+        <PlanDetail
+          data={detail.data}
+          loading={detail.isLoading}
+          failed={detail.isError}
+          saving={updateMutation.isPending}
+          users={list.data?.users ?? []}
+          onRetry={() => void detail.refetch()}
+          onClose={() => setSelectedId(undefined)}
+          onSave={(data) => updateMutation.mutate({ data })}
+        />
+      )}
+    </div>
+  );
 }
 
-function PlanList({items,onSelect}:{items:Plan[];onSelect:(id:string)=>void}){return <><div className="mt-4 hidden overflow-x-auto rounded-lg border border-glass-border bg-glass shadow-glass md:block"><table className="w-full min-w-[900px] text-left text-sm"><thead className="border-b border-glass-border bg-glass-strong text-xs text-muted-foreground"><tr>{["Plano","Ocorrência","Responsável","Prazo","Progresso","Status"].map((x)=><th key={x} className="px-4 py-3">{x}</th>)}</tr></thead><tbody>{items.map((p)=><tr key={p.id} className="cursor-pointer border-b border-glass-border last:border-0 hover:bg-glass-strong" onClick={()=>onSelect(p.id)}><td className="max-w-72 px-4 py-4"><p className="font-medium">{p.titulo}</p><p className="truncate text-xs text-muted-foreground">{p.id.slice(0,8)} · {p.problema}</p></td><td className="px-4 py-4">{p.occurrenceTitle}</td><td className="px-4 py-4">{p.responsibleName??"Não definido"}</td><td className="px-4 py-4">{formatDate(p.prazo)}</td><td className="px-4 py-4"><Progress value={p.progresso}/></td><td className="px-4 py-4"><PlanStatus plan={p}/></td></tr>)}</tbody></table></div><div className="mt-4 grid gap-3 md:hidden">{items.map((p)=><Button key={p.id} variant="outline" className="h-auto justify-start whitespace-normal p-4 text-left" onClick={()=>onSelect(p.id)}><span className="w-full"><span className="flex items-start justify-between gap-3"><strong>{p.titulo}</strong><PlanStatus plan={p}/></span><span className="mt-2 block text-sm text-muted-foreground">{p.problema}</span><span className="mt-4 block"><Progress value={p.progresso}/></span><span className="mt-3 flex justify-between text-xs"><span>{p.responsibleName??"Não definido"}</span><span>{formatDate(p.prazo)}</span></span></span></Button>)}</div></>}
+function PlanList({ items, onSelect }: { items: Plan[]; onSelect: (id: string) => void }) {
+  return (
+    <>
+      <div className="mt-4 hidden overflow-x-auto rounded-lg border border-glass-border bg-glass shadow-glass md:block">
+        <table className="w-full min-w-[900px] text-left text-sm">
+          <thead className="border-b border-glass-border bg-glass-strong text-xs text-muted-foreground">
+            <tr>
+              {["Plano", "Ocorrência", "Responsável", "Prazo", "Progresso", "Status"].map((x) => (
+                <th key={x} className="px-4 py-3">
+                  {x}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((p) => (
+              <tr
+                key={p.id}
+                className="cursor-pointer border-b border-glass-border last:border-0 hover:bg-glass-strong"
+                onClick={() => onSelect(p.id)}
+              >
+                <td className="max-w-72 px-4 py-4">
+                  <p className="font-medium">{p.titulo}</p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {p.id.slice(0, 8)} · {p.problema}
+                  </p>
+                </td>
+                <td className="px-4 py-4">{p.occurrenceTitle}</td>
+                <td className="px-4 py-4">{p.responsibleName ?? "Não definido"}</td>
+                <td className="px-4 py-4">{formatDate(p.prazo)}</td>
+                <td className="px-4 py-4">
+                  <Progress value={p.progresso} />
+                </td>
+                <td className="px-4 py-4">
+                  <PlanStatus plan={p} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="mt-4 grid gap-3 md:hidden">
+        {items.map((p) => (
+          <Button
+            key={p.id}
+            variant="outline"
+            className="h-auto justify-start whitespace-normal p-4 text-left"
+            onClick={() => onSelect(p.id)}
+          >
+            <span className="w-full">
+              <span className="flex items-start justify-between gap-3">
+                <strong>{p.titulo}</strong>
+                <PlanStatus plan={p} />
+              </span>
+              <span className="mt-2 block text-sm text-muted-foreground">{p.problema}</span>
+              <span className="mt-4 block">
+                <Progress value={p.progresso} />
+              </span>
+              <span className="mt-3 flex justify-between text-xs">
+                <span>{p.responsibleName ?? "Não definido"}</span>
+                <span>{formatDate(p.prazo)}</span>
+              </span>
+            </span>
+          </Button>
+        ))}
+      </div>
+    </>
+  );
+}
 
-function PlanForm({occurrenceId,occurrences,users,saving,onClose,onSubmit}:{occurrenceId:string;occurrences:any[];users:any[];saving:boolean;onClose():void;onSubmit:(data:any)=>void}){const linked=occurrences.find((o)=>o.id===occurrenceId);const [requestId]=useState(()=>crypto.randomUUID());const [form,setForm]=useState({occurrenceId,title:linked?`Plano para ${linked.titulo}`:"",problem:linked?.descricao??"",objective:"",action:"",responsibleId:"",priority:(linked?.prioridade??"media") as Priority,dueDate:"",expectedResult:"",dimension:""});const set=(key:string,value:string)=>setForm((f)=>({...f,[key]:value}));const submit=(e:FormEvent)=>{e.preventDefault();onSubmit({requestId,...form,dimension:form.dimension||undefined,expectedResult:form.expectedResult||undefined})};return <Overlay title="Novo plano de melhoria" onClose={onClose}><form onSubmit={submit} className="grid gap-4 sm:grid-cols-2"><Select label="Ocorrência relacionada *" value={form.occurrenceId} onChange={(v)=>{const o=occurrences.find((x)=>x.id===v);setForm((f)=>({...f,occurrenceId:v,title:f.title||`Plano para ${o?.titulo??""}`,problem:f.problem||(o?.descricao??""),priority:(o?.prioridade??f.priority) as Priority}))}} options={["",...occurrences.map((o)=>o.id)]} names={{"":"Selecione",...Object.fromEntries(occurrences.map((o)=>[o.id,o.titulo]))}}/><Select label="Prioridade *" value={form.priority} onChange={(v)=>set("priority",v)} options={Object.keys(labels.priority)} names={labels.priority}/><Field label="Título *"><Input required maxLength={160} value={form.title} onChange={(e)=>set("title",e.target.value)}/></Field><Select label="Responsável *" value={form.responsibleId} onChange={(v)=>set("responsibleId",v)} options={["",...users.map((u)=>u.id)]} names={{"":"Selecione",...Object.fromEntries(users.map((u)=>[u.id,u.nome]))}}/><Field label="Problema identificado *" wide><Textarea required maxLength={4000} value={form.problem} onChange={(e)=>set("problem",e.target.value)}/></Field><Field label="Objetivo *" wide><Textarea required maxLength={4000} value={form.objective} onChange={(e)=>set("objective",e.target.value)}/></Field><Field label="Ação de melhoria *" wide><Textarea required maxLength={4000} value={form.action} onChange={(e)=>set("action",e.target.value)}/></Field><Field label="Prazo *"><Input required type="date" min={new Date().toLocaleDateString("en-CA")} value={form.dueDate} onChange={(e)=>set("dueDate",e.target.value)}/></Field><Select label="Dimensão" value={form.dimension} onChange={(v)=>set("dimension",v)} options={["",...Object.keys(labels.dimension)]} names={{"":"Nenhuma",...labels.dimension}}/><Field label="Resultado esperado" wide><Textarea maxLength={4000} value={form.expectedResult} onChange={(e)=>set("expectedResult",e.target.value)}/></Field><div className="flex justify-end gap-2 sm:col-span-2"><Button type="button" variant="outline" onClick={onClose}>Cancelar</Button><Button type="submit" disabled={saving||!form.occurrenceId||!form.responsibleId}>{saving?"Salvando…":"Criar plano"}</Button></div></form></Overlay>}
+function PlanForm({
+  occurrenceId,
+  occurrences,
+  users,
+  saving,
+  onClose,
+  onSubmit,
+}: {
+  occurrenceId: string;
+  occurrences: any[];
+  users: any[];
+  saving: boolean;
+  onClose(): void;
+  onSubmit: (data: any) => void;
+}) {
+  const linked = occurrences.find((o) => o.id === occurrenceId);
+  const [requestId] = useState(() => crypto.randomUUID());
+  const [form, setForm] = useState({
+    occurrenceId,
+    title: linked ? `Plano para ${linked.titulo}` : "",
+    problem: linked?.descricao ?? "",
+    objective: "",
+    action: "",
+    responsibleId: "",
+    priority: (linked?.prioridade ?? "media") as Priority,
+    dueDate: "",
+    expectedResult: "",
+    dimension: "",
+  });
+  const set = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }));
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      requestId,
+      ...form,
+      dimension: form.dimension || undefined,
+      expectedResult: form.expectedResult || undefined,
+    });
+  };
+  return (
+    <Overlay title="Novo plano de melhoria" onClose={onClose}>
+      <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
+        <Select
+          label="Ocorrência relacionada *"
+          value={form.occurrenceId}
+          onChange={(v) => {
+            const o = occurrences.find((x) => x.id === v);
+            setForm((f) => ({
+              ...f,
+              occurrenceId: v,
+              title: f.title || `Plano para ${o?.titulo ?? ""}`,
+              problem: f.problem || (o?.descricao ?? ""),
+              priority: (o?.prioridade ?? f.priority) as Priority,
+            }));
+          }}
+          options={["", ...occurrences.map((o) => o.id)]}
+          names={{
+            "": "Selecione",
+            ...Object.fromEntries(occurrences.map((o) => [o.id, o.titulo])),
+          }}
+        />
+        <Select
+          label="Prioridade *"
+          value={form.priority}
+          onChange={(v) => set("priority", v)}
+          options={Object.keys(labels.priority)}
+          names={labels.priority}
+        />
+        <Field label="Título *">
+          <Input
+            required
+            maxLength={160}
+            value={form.title}
+            onChange={(e) => set("title", e.target.value)}
+          />
+        </Field>
+        <Select
+          label="Responsável *"
+          value={form.responsibleId}
+          onChange={(v) => set("responsibleId", v)}
+          options={["", ...users.map((u) => u.id)]}
+          names={{ "": "Selecione", ...Object.fromEntries(users.map((u) => [u.id, u.nome])) }}
+        />
+        <Field label="Problema identificado *" wide>
+          <Textarea
+            required
+            maxLength={4000}
+            value={form.problem}
+            onChange={(e) => set("problem", e.target.value)}
+          />
+        </Field>
+        <Field label="Objetivo *" wide>
+          <Textarea
+            required
+            maxLength={4000}
+            value={form.objective}
+            onChange={(e) => set("objective", e.target.value)}
+          />
+        </Field>
+        <Field label="Ação de melhoria *" wide>
+          <Textarea
+            required
+            maxLength={4000}
+            value={form.action}
+            onChange={(e) => set("action", e.target.value)}
+          />
+        </Field>
+        <Field label="Prazo *">
+          <Input
+            required
+            type="date"
+            min={new Date().toLocaleDateString("en-CA")}
+            value={form.dueDate}
+            onChange={(e) => set("dueDate", e.target.value)}
+          />
+        </Field>
+        <Select
+          label="Dimensão"
+          value={form.dimension}
+          onChange={(v) => set("dimension", v)}
+          options={["", ...Object.keys(labels.dimension)]}
+          names={{ "": "Nenhuma", ...labels.dimension }}
+        />
+        <Field label="Resultado esperado" wide>
+          <Textarea
+            maxLength={4000}
+            value={form.expectedResult}
+            onChange={(e) => set("expectedResult", e.target.value)}
+          />
+        </Field>
+        <div className="flex justify-end gap-2 sm:col-span-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={saving || !form.occurrenceId || !form.responsibleId}>
+            {saving ? "Salvando…" : "Criar plano"}
+          </Button>
+        </div>
+      </form>
+    </Overlay>
+  );
+}
 
-function PlanDetail({data,loading,failed,saving,users,onRetry,onClose,onSave}:{data:any;loading:boolean;failed:boolean;saving:boolean;users:any[];onRetry():void;onClose():void;onSave:(data:any)=>void}){if(loading)return <Overlay title="Plano de melhoria" onClose={onClose}><InterfaceState kind="loading" title="Carregando plano" description="Buscando ações, resultados e histórico."/></Overlay>;if(failed)return <Overlay title="Plano de melhoria" onClose={onClose}><InterfaceState kind="error" title="Não foi possível abrir o plano" description="Tente novamente." action={<Button variant="outline" onClick={onRetry}>Tentar novamente</Button>}/></Overlay>;if(!data)return <Overlay title="Plano de melhoria" onClose={onClose}><InterfaceState kind="empty" title="Plano não encontrado" description="O registro não existe ou não pertence ao seu cartório."/></Overlay>;return <PlanEditor key={data.updated_at} data={data} saving={saving} users={users} onClose={onClose} onSave={onSave}/>}
-function PlanEditor({data,saving,users,onClose,onSave}:{data:any;saving:boolean;users:any[];onClose():void;onSave:(data:any)=>void}){const [editing,setEditing]=useState(false);const [form,setForm]=useState({title:data.titulo,problem:data.problema,objective:data.objetivo,action:data.acao,responsibleId:data.responsavel_id??"",priority:data.prioridade as Priority,dueDate:data.prazo,status:data.status as Status,progress:data.progresso as 0|25|50|75|100,expectedResult:data.resultado_esperado??"",result:data.resultado??"",resultObservation:data.observacao_resultado??"",indicatorName:data.indicador_nome??"",indicatorBefore:data.indicador_antes?.toString()??"",indicatorAfter:data.indicador_depois?.toString()??""});const set=(k:string,v:string|number)=>setForm((f)=>({...f,[k]:v}));const save=()=>onSave({id:data.id,expectedUpdatedAt:data.updated_at,title:form.title,problem:form.problem,objective:form.objective,action:form.action,responsibleId:form.responsibleId||null,priority:form.priority,dueDate:form.dueDate,status:form.status,progress:form.progress,expectedResult:form.expectedResult||null,result:form.result||null,resultObservation:form.resultObservation||null,indicatorName:form.indicatorName||null,indicatorBefore:form.indicatorBefore===""?null:Number(form.indicatorBefore),indicatorAfter:form.indicatorAfter===""?null:Number(form.indicatorAfter)});const terminal=["concluido","cancelado"].includes(data.status);return <Overlay title={`${data.id.slice(0,8)} · ${data.titulo}`} onClose={onClose}><div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]"><div className="space-y-4"><div className="flex flex-wrap gap-2"><PlanStatus plan={data}/><StatusBadge>{labels.priority[data.prioridade as Priority]}</StatusBadge><StatusBadge>{data.occurrence?.titulo??"Ocorrência indisponível"}</StatusBadge></div>{editing?<div className="grid gap-3 sm:grid-cols-2"><Field label="Título"><Input value={form.title} onChange={(e)=>set("title",e.target.value)}/></Field><Select label="Prioridade" value={form.priority} onChange={(v)=>set("priority",v)} options={Object.keys(labels.priority)} names={labels.priority}/><Field label="Problema" wide><Textarea value={form.problem} onChange={(e)=>set("problem",e.target.value)}/></Field><Field label="Objetivo" wide><Textarea value={form.objective} onChange={(e)=>set("objective",e.target.value)}/></Field><Field label="Ação" wide><Textarea value={form.action} onChange={(e)=>set("action",e.target.value)}/></Field><Select label="Responsável" value={form.responsibleId} onChange={(v)=>set("responsibleId",v)} options={["",...users.map((u)=>u.id)]} names={{"":"Não definido",...Object.fromEntries(users.map((u)=>[u.id,u.nome]))}}/><Field label="Prazo"><Input type="date" value={form.dueDate} onChange={(e)=>set("dueDate",e.target.value)}/></Field><Select label="Status" value={form.status} onChange={(v)=>set("status",v)} options={allowedStatuses(data.status)} names={labels.status}/><Select label="Progresso" value={String(form.progress)} onChange={(v)=>set("progress",Number(v))} options={["0","25","50","75","100"]} names={{"0":"0%","25":"25%","50":"50%","75":"75%","100":"100%"}}/><Field label="Resultado esperado"><Textarea value={form.expectedResult} onChange={(e)=>set("expectedResult",e.target.value)}/></Field>{form.status==="concluido"&&<><Field label="Resultado obtido *" wide><Textarea required value={form.result} onChange={(e)=>set("result",e.target.value)}/></Field><Field label="Observação do resultado *" wide><Textarea required value={form.resultObservation} onChange={(e)=>set("resultObservation",e.target.value)}/></Field><Field label="Indicador"><Input value={form.indicatorName} onChange={(e)=>set("indicatorName",e.target.value)}/></Field><div className="grid grid-cols-2 gap-2"><Field label="Antes"><Input type="number" min="0" max="100" value={form.indicatorBefore} onChange={(e)=>set("indicatorBefore",e.target.value)}/></Field><Field label="Depois"><Input type="number" min="0" max="100" value={form.indicatorAfter} onChange={(e)=>set("indicatorAfter",e.target.value)}/></Field></div></>}<div className="flex gap-2 sm:col-span-2"><Button disabled={saving} onClick={save}>{saving?"Salvando…":"Salvar alterações"}</Button><Button variant="outline" onClick={()=>setEditing(false)}>Cancelar</Button></div></div>:<><Section label="Problema" value={data.problema}/><Section label="Objetivo" value={data.objetivo}/><Section label="Ação" value={data.acao}/><div className="grid gap-3 sm:grid-cols-2"><Info label="Responsável" value={data.responsibleName??"Não definido"}/><Info label="Prazo" value={formatDate(data.prazo)}/><Info label="Progresso" value={`${data.progresso}%`}/><Info label="Criado por" value={data.creatorName??"Sistema"}/><Info label="Resultado esperado" value={data.resultado_esperado??"Não informado"}/><Info label="Concluído por" value={data.closerName??"—"}/></div>{data.resultado&&<GlassPanel><h3 className="font-display font-bold">Resultado obtido</h3><p className="mt-2 text-sm">{data.resultado}</p>{data.observacao_resultado&&<p className="mt-2 text-sm text-muted-foreground">{data.observacao_resultado}</p>}</GlassPanel>}{data.canManage&&!terminal?<Button variant="outline" onClick={()=>setEditing(true)}>Editar plano</Button>:terminal?<p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">Este plano está encerrado e preservado para histórico.</p>:<p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">Seu perfil possui acesso somente para consulta.</p>}</>}</div><div><h3 className="font-display font-bold">Histórico do plano</h3><ol className="mt-4 border-l-2 border-primary/25 pl-5">{data.history.map((event:any)=><li key={event.id} className="relative pb-6 before:absolute before:-left-[27px] before:top-1 before:size-3 before:rounded-full before:bg-primary"><p className="text-xs text-muted-foreground">{new Intl.DateTimeFormat("pt-BR",{dateStyle:"short",timeStyle:"short"}).format(new Date(event.createdAt))} · {event.userName}</p><p className="font-semibold">{historyLabel(event.action)}</p></li>)}</ol></div></div></Overlay>}
-function allowedStatuses(current:Status):Status[]{if(current==="planejado")return["planejado","em_andamento","cancelado"];if(current==="em_andamento")return["em_andamento","concluido","cancelado"];return[current]}
-function historyLabel(action:string){return({improvement_plan_created:"Plano criado",improvement_plan_completed:"Plano concluído",improvement_plan_status_changed:"Status alterado",improvement_plan_assigned:"Responsável alterado",improvement_plan_due_date_changed:"Prazo alterado",improvement_plan_updated:"Plano atualizado"} as Record<string,string>)[action]??action}
-function PlanStatus({plan}:{plan:Plan}){const overdue=isOverdue(plan);const text=overdue?"Atrasado":labels.status[plan.status as Status]??plan.status;return <StatusBadge tone={plan.status==="concluido"?"positive":overdue?"danger":plan.status==="em_andamento"?"warning":"neutral"}>{text}</StatusBadge>}
-function Progress({value}:{value:number}){return <div><div className="h-2 min-w-24 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{width:`${value}%`}}/></div><p className="mt-1 text-xs text-muted-foreground">{value}%</p></div>}
-function Field({label,children,wide=false}:{label:string;children:ReactNode;wide?:boolean}){return <label className={cn("grid gap-1.5 text-sm font-medium",wide&&"sm:col-span-2")}>{label}{children}</label>}
-function Select({label,value,onChange,options,names}:{label:string;value:string;onChange:(v:string)=>void;options:readonly string[];names:Record<string,string>}){return <Field label={label}><select className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm" value={value} onChange={(e)=>onChange(e.target.value)}>{options.map((o)=><option key={o||"empty"} value={o}>{names[o]??o}</option>)}</select></Field>}
-function Section({label,value}:{label:string;value:string}){return <div><h3 className="text-xs font-semibold uppercase text-muted-foreground">{label}</h3><p className="mt-1 text-sm font-medium">{value}</p></div>}
-function Info({label,value}:{label:string;value:string}){return <div className="rounded-md bg-muted p-3"><p className="text-xs text-muted-foreground">{label}</p><p className="mt-1 font-semibold">{value}</p></div>}
-function Overlay({title,children,onClose}:{title:string;children:ReactNode;onClose():void}){return <div className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4" role="dialog" aria-modal="true" aria-label={title} onMouseDown={onClose}><div className="mx-auto my-6 w-full max-w-5xl rounded-lg border border-glass-border bg-background p-5 shadow-xl" onMouseDown={(e)=>e.stopPropagation()}><div className="mb-5 flex items-start justify-between gap-3"><h2 className="font-display text-xl font-bold">{title}</h2><Button size="icon" variant="ghost" aria-label="Fechar" onClick={onClose}><X/></Button></div>{children}</div></div>}
+function PlanDetail({
+  data,
+  loading,
+  failed,
+  saving,
+  users,
+  onRetry,
+  onClose,
+  onSave,
+}: {
+  data: any;
+  loading: boolean;
+  failed: boolean;
+  saving: boolean;
+  users: any[];
+  onRetry(): void;
+  onClose(): void;
+  onSave: (data: any) => void;
+}) {
+  if (loading)
+    return (
+      <Overlay title="Plano de melhoria" onClose={onClose}>
+        <InterfaceState
+          kind="loading"
+          title="Carregando plano"
+          description="Buscando ações, resultados e histórico."
+        />
+      </Overlay>
+    );
+  if (failed)
+    return (
+      <Overlay title="Plano de melhoria" onClose={onClose}>
+        <InterfaceState
+          kind="error"
+          title="Não foi possível abrir o plano"
+          description="Tente novamente."
+          action={
+            <Button variant="outline" onClick={onRetry}>
+              Tentar novamente
+            </Button>
+          }
+        />
+      </Overlay>
+    );
+  if (!data)
+    return (
+      <Overlay title="Plano de melhoria" onClose={onClose}>
+        <InterfaceState
+          kind="empty"
+          title="Plano não encontrado"
+          description="O registro não existe ou não pertence ao seu cartório."
+        />
+      </Overlay>
+    );
+  return (
+    <PlanEditor
+      key={data.updated_at}
+      data={data}
+      saving={saving}
+      users={users}
+      onClose={onClose}
+      onSave={onSave}
+    />
+  );
+}
+function PlanEditor({
+  data,
+  saving,
+  users,
+  onClose,
+  onSave,
+}: {
+  data: any;
+  saving: boolean;
+  users: any[];
+  onClose(): void;
+  onSave: (data: any) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({
+    title: data.titulo,
+    problem: data.problema,
+    objective: data.objetivo,
+    action: data.acao,
+    responsibleId: data.responsavel_id ?? "",
+    priority: data.prioridade as Priority,
+    dueDate: data.prazo,
+    status: data.status as Status,
+    progress: data.progresso as 0 | 25 | 50 | 75 | 100,
+    expectedResult: data.resultado_esperado ?? "",
+    result: data.resultado ?? "",
+    resultObservation: data.observacao_resultado ?? "",
+    indicatorName: data.indicador_nome ?? "",
+    indicatorBefore: data.indicador_antes?.toString() ?? "",
+    indicatorAfter: data.indicador_depois?.toString() ?? "",
+  });
+  const set = (k: string, v: string | number) => setForm((f) => ({ ...f, [k]: v }));
+  const save = () =>
+    onSave({
+      id: data.id,
+      expectedUpdatedAt: data.updated_at,
+      title: form.title,
+      problem: form.problem,
+      objective: form.objective,
+      action: form.action,
+      responsibleId: form.responsibleId || null,
+      priority: form.priority,
+      dueDate: form.dueDate,
+      status: form.status,
+      progress: form.progress,
+      expectedResult: form.expectedResult || null,
+      result: form.result || null,
+      resultObservation: form.resultObservation || null,
+      indicatorName: form.indicatorName || null,
+      indicatorBefore: form.indicatorBefore === "" ? null : Number(form.indicatorBefore),
+      indicatorAfter: form.indicatorAfter === "" ? null : Number(form.indicatorAfter),
+    });
+  const terminal = ["concluido", "cancelado"].includes(data.status);
+  return (
+    <Overlay title={`${data.id.slice(0, 8)} · ${data.titulo}`} onClose={onClose}>
+      <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <PlanStatus plan={data} />
+            <StatusBadge>{labels.priority[data.prioridade as Priority]}</StatusBadge>
+            <StatusBadge>{data.occurrence?.titulo ?? "Ocorrência indisponível"}</StatusBadge>
+          </div>
+          {editing ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="Título">
+                <Input value={form.title} onChange={(e) => set("title", e.target.value)} />
+              </Field>
+              <Select
+                label="Prioridade"
+                value={form.priority}
+                onChange={(v) => set("priority", v)}
+                options={Object.keys(labels.priority)}
+                names={labels.priority}
+              />
+              <Field label="Problema" wide>
+                <Textarea value={form.problem} onChange={(e) => set("problem", e.target.value)} />
+              </Field>
+              <Field label="Objetivo" wide>
+                <Textarea
+                  value={form.objective}
+                  onChange={(e) => set("objective", e.target.value)}
+                />
+              </Field>
+              <Field label="Ação" wide>
+                <Textarea value={form.action} onChange={(e) => set("action", e.target.value)} />
+              </Field>
+              <Select
+                label="Responsável"
+                value={form.responsibleId}
+                onChange={(v) => set("responsibleId", v)}
+                options={["", ...users.map((u) => u.id)]}
+                names={{
+                  "": "Não definido",
+                  ...Object.fromEntries(users.map((u) => [u.id, u.nome])),
+                }}
+              />
+              <Field label="Prazo">
+                <Input
+                  type="date"
+                  value={form.dueDate}
+                  onChange={(e) => set("dueDate", e.target.value)}
+                />
+              </Field>
+              <Select
+                label="Status"
+                value={form.status}
+                onChange={(v) => set("status", v)}
+                options={allowedStatuses(data.status)}
+                names={labels.status}
+              />
+              <Select
+                label="Progresso"
+                value={String(form.progress)}
+                onChange={(v) => set("progress", Number(v))}
+                options={["0", "25", "50", "75", "100"]}
+                names={{ "0": "0%", "25": "25%", "50": "50%", "75": "75%", "100": "100%" }}
+              />
+              <Field label="Resultado esperado">
+                <Textarea
+                  value={form.expectedResult}
+                  onChange={(e) => set("expectedResult", e.target.value)}
+                />
+              </Field>
+              {form.status === "concluido" && (
+                <>
+                  <Field label="Resultado obtido *" wide>
+                    <Textarea
+                      required
+                      value={form.result}
+                      onChange={(e) => set("result", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Observação do resultado *" wide>
+                    <Textarea
+                      required
+                      value={form.resultObservation}
+                      onChange={(e) => set("resultObservation", e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Indicador">
+                    <Input
+                      value={form.indicatorName}
+                      onChange={(e) => set("indicatorName", e.target.value)}
+                    />
+                  </Field>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Field label="Antes">
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={form.indicatorBefore}
+                        onChange={(e) => set("indicatorBefore", e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Depois">
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={form.indicatorAfter}
+                        onChange={(e) => set("indicatorAfter", e.target.value)}
+                      />
+                    </Field>
+                  </div>
+                </>
+              )}
+              <div className="flex gap-2 sm:col-span-2">
+                <Button disabled={saving} onClick={save}>
+                  {saving ? "Salvando…" : "Salvar alterações"}
+                </Button>
+                <Button variant="outline" onClick={() => setEditing(false)}>
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Section label="Problema" value={data.problema} />
+              <Section label="Objetivo" value={data.objetivo} />
+              <Section label="Ação" value={data.acao} />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Info label="Responsável" value={data.responsibleName ?? "Não definido"} />
+                <Info label="Prazo" value={formatDate(data.prazo)} />
+                <Info label="Progresso" value={`${data.progresso}%`} />
+                <Info label="Criado por" value={data.creatorName ?? "Sistema"} />
+                <Info
+                  label="Resultado esperado"
+                  value={data.resultado_esperado ?? "Não informado"}
+                />
+                <Info label="Concluído por" value={data.closerName ?? "—"} />
+              </div>
+              {data.resultado && (
+                <GlassPanel>
+                  <h3 className="font-display font-bold">Resultado obtido</h3>
+                  <p className="mt-2 text-sm">{data.resultado}</p>
+                  {data.observacao_resultado && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {data.observacao_resultado}
+                    </p>
+                  )}
+                </GlassPanel>
+              )}
+              {data.canManage && !terminal ? (
+                <Button variant="outline" onClick={() => setEditing(true)}>
+                  Editar plano
+                </Button>
+              ) : terminal ? (
+                <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                  Este plano está encerrado e preservado para histórico.
+                </p>
+              ) : (
+                <p className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+                  Seu perfil possui acesso somente para consulta.
+                </p>
+              )}
+            </>
+          )}
+        </div>
+        <div>
+          <h3 className="font-display font-bold">Histórico do plano</h3>
+          <ol className="mt-4 border-l-2 border-primary/25 pl-5">
+            {data.history.map((event: any) => (
+              <li
+                key={event.id}
+                className="relative pb-6 before:absolute before:-left-[27px] before:top-1 before:size-3 before:rounded-full before:bg-primary"
+              >
+                <p className="text-xs text-muted-foreground">
+                  {new Intl.DateTimeFormat("pt-BR", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  }).format(new Date(event.createdAt))}{" "}
+                  · {event.userName}
+                </p>
+                <p className="font-semibold">{historyLabel(event.action)}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </div>
+    </Overlay>
+  );
+}
+function allowedStatuses(current: Status): Status[] {
+  if (current === "planejado") return ["planejado", "em_andamento", "cancelado"];
+  if (current === "em_andamento") return ["em_andamento", "concluido", "cancelado"];
+  return [current];
+}
+function historyLabel(action: string) {
+  return (
+    (
+      {
+        improvement_plan_created: "Plano criado",
+        improvement_plan_completed: "Plano concluído",
+        improvement_plan_status_changed: "Status alterado",
+        improvement_plan_assigned: "Responsável alterado",
+        improvement_plan_due_date_changed: "Prazo alterado",
+        improvement_plan_updated: "Plano atualizado",
+      } as Record<string, string>
+    )[action] ?? action
+  );
+}
+function PlanStatus({ plan }: { plan: Plan }) {
+  const overdue = isOverdue(plan);
+  const text = overdue ? "Atrasado" : (labels.status[plan.status as Status] ?? plan.status);
+  return (
+    <StatusBadge
+      tone={
+        plan.status === "concluido"
+          ? "positive"
+          : overdue
+            ? "danger"
+            : plan.status === "em_andamento"
+              ? "warning"
+              : "neutral"
+      }
+    >
+      {text}
+    </StatusBadge>
+  );
+}
+function Progress({ value }: { value: number }) {
+  return (
+    <div>
+      <div className="h-2 min-w-24 overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-primary" style={{ width: `${value}%` }} />
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">{value}%</p>
+    </div>
+  );
+}
+function Field({
+  label,
+  children,
+  wide = false,
+}: {
+  label: string;
+  children: ReactNode;
+  wide?: boolean;
+}) {
+  return (
+    <label className={cn("grid gap-1.5 text-sm font-medium", wide && "sm:col-span-2")}>
+      {label}
+      {children}
+    </label>
+  );
+}
+function Select({
+  label,
+  value,
+  onChange,
+  options,
+  names,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  options: readonly string[];
+  names: Record<string, string>;
+}) {
+  return (
+    <Field label={label}>
+      <select
+        className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      >
+        {options.map((o) => (
+          <option key={o || "empty"} value={o}>
+            {names[o] ?? o}
+          </option>
+        ))}
+      </select>
+    </Field>
+  );
+}
+function Section({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <h3 className="text-xs font-semibold uppercase text-muted-foreground">{label}</h3>
+      <p className="mt-1 text-sm font-medium">{value}</p>
+    </div>
+  );
+}
+function Info({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md bg-muted p-3">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 font-semibold">{value}</p>
+    </div>
+  );
+}
+function Overlay({
+  title,
+  children,
+  onClose,
+}: {
+  title: string;
+  children: ReactNode;
+  onClose(): void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+      onMouseDown={onClose}
+    >
+      <div
+        className="mx-auto my-6 w-full max-w-5xl rounded-lg border border-glass-border bg-background p-5 shadow-xl"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        <div className="mb-5 flex items-start justify-between gap-3">
+          <h2 className="font-display text-xl font-bold">{title}</h2>
+          <Button size="icon" variant="ghost" aria-label="Fechar" onClick={onClose}>
+            <X />
+          </Button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}

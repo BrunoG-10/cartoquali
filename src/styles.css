@@ -70,11 +70,13 @@
   --color-warning-soft: var(--warning-soft);
   --color-danger-soft: var(--danger-soft);
   --color-rating: var(--rating);
-  --color-brand-navy: #16294A;
-  --color-brand-gold: #B08D57;
-  --color-brand-gold-dark: #9A7A45;
-  --color-brand-paper: #F7F5F0;
-  --shadow-glass: 0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent), 0 12px 32px -20px color-mix(in oklab, var(--foreground) 22%, transparent);
+  --color-brand-navy: #16294a;
+  --color-brand-gold: #b08d57;
+  --color-brand-gold-dark: #9a7a45;
+  --color-brand-paper: #f7f5f0;
+  --shadow-glass:
+    0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
+    0 12px 32px -20px color-mix(in oklab, var(--foreground) 22%, transparent);
 }
 
 /*
@@ -174,7 +176,13 @@
     min-width: 320px;
     letter-spacing: 0;
   }
-  button, a, input, select, textarea { letter-spacing: 0; }
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    letter-spacing: 0;
+  }
 
   html {
     scroll-behavior: smooth;
@@ -183,32 +191,101 @@
 
 .landing-grid {
   background-image:
-    linear-gradient(to right, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklab, var(--primary) 8%, transparent) 1px, transparent 1px);
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--primary) 8%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--primary) 8%, transparent) 1px,
+      transparent 1px
+    );
   background-size: 44px 44px;
   mask-image: linear-gradient(to bottom, black, transparent 88%);
 }
 
-@keyframes enter-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@utility animate-enter { animation: enter-up 420ms ease-out both; }
+@keyframes enter-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@utility animate-enter {
+  animation: enter-up 420ms ease-out both;
+}
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .animate-enter { animation: none; }
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-enter {
+    animation: none;
+  }
 }
 
 @media print {
-  @page { margin: 14mm; size: A4 portrait; }
-  body { background: white; color: black; }
-  aside, .print-hidden, body > div > div > div > div > div.sticky { display: none !important; }
-  main { padding: 0 !important; }
-  .report-page { width: 100%; }
-  .report-page section { break-inside: avoid; box-shadow: none; backdrop-filter: none; background: white; border-color: currentColor; }
-  .report-page h1, .report-page h2, .report-page h3 { break-after: avoid; }
-  .report-page table, .report-page blockquote { break-inside: avoid; }
-  .report-page table { font-size: 9pt; }
-  .report-page .report-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .report-page .report-identification { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  body:has(.point-qr-sheet) * { visibility: hidden; }
-  body:has(.point-qr-sheet) .point-qr-sheet, body:has(.point-qr-sheet) .point-qr-sheet * { visibility: visible; }
-  body:has(.point-qr-sheet) .point-qr-sheet { position: fixed; inset: 0; width: 100%; max-width: none; min-height: 100vh; padding: 16mm; }
+  @page {
+    margin: 14mm;
+    size: A4 portrait;
+  }
+  body {
+    background: white;
+    color: black;
+  }
+  aside,
+  .print-hidden,
+  body > div > div > div > div > div.sticky {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .report-page {
+    width: 100%;
+  }
+  .report-page section {
+    break-inside: avoid;
+    box-shadow: none;
+    backdrop-filter: none;
+    background: white;
+    border-color: currentColor;
+  }
+  .report-page h1,
+  .report-page h2,
+  .report-page h3 {
+    break-after: avoid;
+  }
+  .report-page table,
+  .report-page blockquote {
+    break-inside: avoid;
+  }
+  .report-page table {
+    font-size: 9pt;
+  }
+  .report-page .report-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .report-page .report-identification {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  body:has(.point-qr-sheet) * {
+    visibility: hidden;
+  }
+  body:has(.point-qr-sheet) .point-qr-sheet,
+  body:has(.point-qr-sheet) .point-qr-sheet * {
+    visibility: visible;
+  }
+  body:has(.point-qr-sheet) .point-qr-sheet {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    min-height: 100vh;
+    padding: 16mm;
+  }
 }
