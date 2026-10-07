@@ -79,7 +79,7 @@ declare
   _active_services integer;
 begin
   if _code is null or length(trim(_code))<3 or length(trim(_code))>80 or _idempotency_key is null or _source_hash is null or length(_source_hash)<>64 then raise exception 'invalid_request' using errcode='22023'; end if;
-  if _answers is null or jsonb_typeof(_answers)<>'object' or jsonb_object_length(_answers)>50 or pg_column_size(_answers)>32768 or pg_column_size(_contact)>4096 then raise exception 'invalid_request' using errcode='22023'; end if;
+  if _answers is null or jsonb_typeof(_answers)<>'object' or (select count(*) from jsonb_object_keys(_answers))>50 or pg_column_size(_answers)>32768 or pg_column_size(_contact)>4096 then raise exception 'invalid_request' using errcode='22023'; end if;
   if exists(select 1 from cartoquali_private.public_submission_guards where idempotency_key=_idempotency_key) then return jsonb_build_object('ok',true,'duplicate',true); end if;
   if (select count(*) from cartoquali_private.public_submission_guards where source_hash=_source_hash and created_at>now()-interval '10 minutes')>=8 then raise exception 'rate_limited' using errcode='P0001'; end if;
   select * into _point from public.pontos_avaliacao where public_slug=lower(trim(_code)) or lower(codigo)=lower(trim(_code)) order by case when lower(codigo)=lower(trim(_code)) then 0 else 1 end limit 1;
