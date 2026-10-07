@@ -220,3 +220,30 @@ Status: **VALIDADA COM RESSALVAS OPERACIONAIS**. O formulário persiste contatos
 
 - [x] Direcionar CTAs, contato e formulário para o WhatsApp (86) 98184-6766
 - [x] Validar abertura da conversa no celular e desktop
+
+# Revisão técnica e visual — outubro de 2026
+
+Desenvolvimento passou a ser feito via Claude Code, com o GitHub como fonte oficial e PRs para a `main`.
+
+## Correções e segurança
+- [x] Papel efetivo do usuário com vários papéis (`primaryDbRole` em `src/lib/roles.ts`) no login e na listagem (PRs #1)
+- [x] Rollback correto na criação de usuário (PR #1)
+- [x] Administrador da plataforma protegido na tela de usuários e na função `update_registry_user` (PR #4, migração `20261007010000`)
+- [x] Domínio de produção `cartoquali.com.br` em `VITE_PUBLIC_APP_URL` para links e QR Codes (PR #1)
+- [x] Camada de dados mock removida; `AGENTS.md` e `ARCHITECTURE.md` atualizados (PR #3)
+- [x] 22 testes automatizados (Vitest) e verificação automática no GitHub Actions (PR #2)
+
+## Revisão visual
+- [x] Identidade "selo de conformidade": logo, ícones, paleta institucional e títulos em serifa (PR #5)
+- [x] Menu lateral agrupado; botão "Sair" sempre acessível, inclusive no celular (PR #6)
+- [x] Página inicial reduzida de 18 para 8 seções, com contexto do PQTA/ANOREG e aviso de independência (PR #7)
+- [x] Painel com comparação ao período anterior e gráficos nas cores da marca; menu fixo ao rolar (PR #8)
+- [x] Avaliação pública destacando o cartório (PR #9)
+- [x] Dados do DEMO: avaliações de testes marcadas como `is_test`; textos de pesquisa e pontos realistas
+
+## Pendências
+- [ ] Captcha (Cloudflare Turnstile) na avaliação pública — aguarda chaves
+- [ ] SMTP próprio, URLs de redirecionamento, cadastro aberto desligado e proteção contra senhas vazadas no Supabase Auth
+- [ ] Troca da secret key do Supabase (também nos secrets da Lovable)
+- [ ] Validação de ponta a ponta: convite, primeiro acesso, avaliação real no painel e logout
+- [ ] Formatação geral com Prettier
