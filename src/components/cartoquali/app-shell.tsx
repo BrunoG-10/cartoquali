@@ -70,7 +70,8 @@ function UserCard() {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-  return <div className="relative min-h-screen overflow-x-hidden bg-background">
+  // overflow-x-clip (not hidden): "hidden" would turn this div into a scroll container and break the sticky sidebar.
+  return <div className="relative min-h-screen overflow-x-clip bg-background">
     <div className="relative mx-auto flex min-h-screen max-w-[1600px]">
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-card p-4 lg:flex"><Brand/><Navigation/><UserCard/></aside>
       {mobileOpen && <div className="fixed inset-0 z-50 lg:hidden"><button aria-label="Fechar menu" className="absolute inset-0 bg-foreground/30" onClick={() => setMobileOpen(false)} /><aside className="relative flex h-full w-[280px] flex-col border-r border-border bg-card p-4 shadow-xl"><div className="flex items-center justify-between"><Brand/><Button variant="ghost" size="icon" aria-label="Fechar menu" onClick={() => setMobileOpen(false)}><X/></Button></div><Navigation onNavigate={() => setMobileOpen(false)} /><UserCard/></aside></div>}
