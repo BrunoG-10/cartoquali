@@ -316,7 +316,7 @@ export const createOccurrence = createServerFn({ method: "POST" })
       ...(data.dueDate ? { _due_date: data.dueDate } : {}),
       ...(data.observation ? { _observation: data.observation } : {}),
     };
-    const callRpc = context.supabase.rpc as unknown as (
+    const callRpc = context.supabase.rpc.bind(context.supabase) as unknown as (
       name: string,
       args: Record<string, unknown>,
     ) => Promise<{ data: Json | null; error: { message: string } | null }>;
@@ -348,7 +348,7 @@ export const updateOccurrence = createServerFn({ method: "POST" })
       _due_date: data.dueDate,
       _observation: data.observation,
     };
-    const callRpc = context.supabase.rpc as unknown as (
+    const callRpc = context.supabase.rpc.bind(context.supabase) as unknown as (
       name: string,
       args: Record<string, unknown>,
     ) => Promise<{ data: Json | null; error: { message: string } | null }>;

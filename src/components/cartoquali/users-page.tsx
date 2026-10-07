@@ -69,7 +69,7 @@ function Modal({ children, onClose }: { children: ReactNode; onClose(): void }) 
 
 export function UsersPage() {
   const { currentRole, usuario } = useAuth();
-  const canManage = currentRole === "registry_admin" || currentRole === "platform_admin";
+  const canManage = can(currentRole, "users", "manage");
   const listUsers = useServerFn(listRegistryUsers);
   const createUser = useServerFn(createRegistryUser);
   const updateUser = useServerFn(updateRegistryUser);

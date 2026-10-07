@@ -13,6 +13,7 @@ import {
 import { RegistryAttributions } from "@/components/cartoquali/registry-attributions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { can } from "@/lib/permissions";
 import { getMyRegistry, updateMyRegistry } from "@/lib/registry.functions";
 import type { Registry } from "@/types/cartoquali";
 import { firstValidationError, registrySchema } from "@/utils/cartoquali-validation";
@@ -43,7 +44,7 @@ function Field({
 
 export function RegistryPage() {
   const { currentRole } = useAuth();
-  const canEdit = currentRole === "registry_admin";
+  const canEdit = can(currentRole, "registry", "manage");
   const fetchRegistry = useServerFn(getMyRegistry);
   const saveRegistry = useServerFn(updateMyRegistry);
   const queryClient = useQueryClient();

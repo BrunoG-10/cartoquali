@@ -149,7 +149,7 @@ export const minimizeEvaluationData = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => minimizeInput.parse(input))
   .handler(async ({ context, data }) => {
     await requirePrivacyAdmin(context);
-    const rpc = context.supabase.rpc as unknown as (
+    const rpc = context.supabase.rpc.bind(context.supabase) as unknown as (
       name: string,
       args: Record<string, unknown>,
     ) => Promise<{ data: Json | null; error: { message: string } | null }>;

@@ -13,6 +13,7 @@ import {
   Star,
   X,
 } from "lucide-react";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DASHBOARD_PERIODS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
@@ -44,7 +45,19 @@ const delta = (current: number | null, previous: number | null) =>
   current === null || previous === null ? null : current - previous;
 
 export function QualityDashboard() {
-  const [section, setSection] = useState<Section>("Visão Geral");
+  // The section lives in the URL (?section=) so the tabs below and the QualityNavigation links
+  // above stay in sync.
+  const navigate = useNavigate();
+  const urlSection = useRouterState({
+    select: (state) => (state.location.search as { section?: string }).section,
+  });
+  const section: Section = sections.find((item) => item === urlSection) ?? "Visão Geral";
+  const setSection = (next: Section) =>
+    void navigate({
+      to: "/qualidade",
+      search: next === "Visão Geral" ? {} : { section: next },
+      replace: true,
+    });
   const [filters, setFilters] = useState<QualityFilters>({ period: "30 dias" });
   const [mobileFilters, setMobileFilters] = useState(false);
   const [metric, setMetric] = useState<Metric>("average");

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/cartoquali/app-shell";
 import { ReportViewer } from "@/components/cartoquali/report-pages";
 
 export const Route = createFileRoute("/_authenticated/visao-executiva")({
@@ -20,5 +21,9 @@ export const Route = createFileRoute("/_authenticated/visao-executiva")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: () => <ReportViewer kind="executivo" />,
+  component: () => (
+    <AppShell>
+      <ReportViewer kind="executivo" />
+    </AppShell>
+  ),
 });
