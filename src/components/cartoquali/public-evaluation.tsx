@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { getPublicEvaluation, submitPublicEvaluation } from "@/lib/public-evaluation.functions";
 import { validateContact } from "@/utils/cartoquali-validation";
+import { resolveServiceStep } from "@/lib/service-step";
+import { ServicePicker, type ServiceChoice } from "./service-picker";
 import { SurveyQuestionnaire, type SurveyAnswers } from "./survey-questionnaire";
 import type { SurveyQuestion } from "@/types/cartoquali";
 
@@ -23,6 +25,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     retry: 1,
   });
   const [started, setStarted] = useState(false);
+  const [serviceChoice, setServiceChoice] = useState<ServiceChoice>();
   const [answers, setAnswers] = useState<SurveyAnswers>();
   const [contactRequested, setContactRequested] = useState(false);
   const [name, setName] = useState("");
@@ -43,7 +46,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     );
   if (query.isLoading)
     return (
-      <Screen registryName="CartoQuali" pointName="Carregando">
+      <Screen registryName="CartoQuali" subtitle="Carregando">
         <div role="status" className="py-8">
           <LoaderCircle className="mx-auto size-9 animate-spin text-primary" />
           <h1 className="mt-4 font-display text-2xl font-bold">Carregando pesquisa</h1>
@@ -103,12 +106,19 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     options: question.options.map((option) => option.label),
     ...(question.condition ? { condition: question.condition } : {}),
   }));
+  const serviceStep = resolveServiceStep(context.services);
+  const header = {
+    registryName: context.registryOfficialName,
+    tradeName: context.registryTradeName,
+    subtitle: "Avaliação do atendimento",
+  };
   const allowContact = context.settings.allowContactRequest;
   const thankYouMessage =
     context.settings.thankYouMessage ?? "Obrigado por ajudar este cartório a melhorar.";
 
   const reset = () => {
     setStarted(false);
+    setServiceChoice(undefined);
     setAnswers(undefined);
     setContactRequested(false);
     setName("");
@@ -147,6 +157,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     setSending(true);
     setError(undefined);
     setValidationError(undefined);
+    const serviceId = serviceStep.show ? serviceChoice?.serviceId : serviceStep.autoServiceId;
     try {
       await submitEvaluation({
         data: {
@@ -162,6 +173,8 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
                 ...(email.trim() ? { email: email.trim() } : {}),
               }
             : { requested: false },
+          ...(serviceId ? { serviceId } : {}),
+          ...(serviceStep.show && serviceChoice?.serviceOther ? { serviceOther: true } : {}),
           ...(testToken ? { testToken } : {}),
         },
       });
@@ -180,16 +193,13 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
 
   if (done)
     return (
-      <Screen registryName={context.registryName} pointName={context.pointName}>
+      <Screen {...header}>
         <div className="mx-auto grid size-16 place-items-center rounded-full bg-success-soft text-success">
           <Check className="size-8" />
         </div>
         <h1 className="mt-6 font-display text-3xl font-bold">Obrigado pela sua avaliação.</h1>
         <p className="mx-auto mt-3 max-w-sm text-muted-foreground">{thankYouMessage}</p>
-        <p className="mt-6 text-sm font-medium">
-          Avaliação realizada em: <strong>{context.pointName}</strong>
-        </p>
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-6 text-xs text-muted-foreground">
           A resposta foi registrada sem vínculo com uma conta de usuário. Caso tenha solicitado
           contato, esses dados ficam separados e restritos.
         </p>
@@ -201,7 +211,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     );
   if (!started)
     return (
-      <Screen registryName={context.registryName} pointName={context.pointName}>
+      <Screen {...header}>
         <h1 className="font-display text-3xl font-bold">Como foi sua experiência hoje?</h1>
         <p className="mx-auto mt-3 max-w-sm text-muted-foreground">
           {context.surveyDescription ?? "Sua resposta é rápida e ajuda a melhorar o atendimento."}
@@ -217,14 +227,20 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
         </Button>
       </Screen>
     );
+  if (serviceStep.show && !serviceChoice)
+    return (
+      <Screen {...header}>
+        <ServicePicker groups={serviceStep.groups} onChoose={setServiceChoice} />
+      </Screen>
+    );
   if (!answers)
     return (
-      <Screen registryName={context.registryName} pointName={context.pointName}>
+      <Screen {...header}>
         <SurveyQuestionnaire questions={surveyQuestions} onComplete={setAnswers} />
       </Screen>
     );
   return (
-    <Screen registryName={context.registryName} pointName={context.pointName}>
+    <Screen {...header}>
       <h1 className="font-display text-2xl font-bold">Finalizar avaliação</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         O contato é opcional. Sem ele, a avaliação é registrada sem identificação no cadastro do
@@ -354,7 +370,7 @@ function Unavailable({
   action?: ReactNode;
 }) {
   return (
-    <Screen registryName="CartoQuali" pointName="Avaliação">
+    <Screen registryName="CartoQuali" subtitle="Avaliação">
       <h1 className="font-display text-2xl font-bold">{title}</h1>
       <p className="mt-3 text-muted-foreground">{description}</p>
       {action && <div className="mt-6">{action}</div>}
@@ -364,11 +380,14 @@ function Unavailable({
 
 function Screen({
   registryName,
-  pointName,
+  tradeName,
+  subtitle,
   children,
 }: {
+  /** Razão social; "CartoQuali" for loading and error screens. */
   registryName: string;
-  pointName: string;
+  tradeName?: string | null;
+  subtitle: string;
   children: ReactNode;
 }) {
   return (
@@ -380,13 +399,18 @@ function Screen({
             <LogoMark size={40} />
             <div className="min-w-0 text-left">
               <Wordmark className="block text-lg leading-tight" />
-              <small className="block truncate text-muted-foreground">{pointName}</small>
+              <small className="block truncate text-muted-foreground">{subtitle}</small>
             </div>
           </div>
         ) : (
           <div className="mb-7 border-b border-border pb-5">
             <p className="font-display text-xl font-bold leading-snug">{registryName}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{pointName}</p>
+            {tradeName && tradeName !== registryName && (
+              <p className="mt-1 text-sm text-muted-foreground">{tradeName}</p>
+            )}
+            <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary">
+              {subtitle}
+            </p>
           </div>
         )}
         {children}

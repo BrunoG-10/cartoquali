@@ -9,6 +9,9 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { QUESTION_TYPE_LABELS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
 import { ESSENTIAL_LABELS } from "@/lib/attributions";
+import { getRegistryServices } from "@/lib/registry-services.functions";
+import { resolveServiceStep } from "@/lib/service-step";
+import { ServicePicker } from "./service-picker";
 import {
   deactivateSurveyQuestion,
   listSurveys,
@@ -62,6 +65,16 @@ export function SurveysPage() {
   const [surveyEditor, setSurveyEditor] = useState<Survey | "new">();
   const [questionEditor, setQuestionEditor] = useState<SurveyQuestion | "new">();
   const [preview, setPreview] = useState(false);
+  const [previewServiceDone, setPreviewServiceDone] = useState(false);
+  const loadServices = useServerFn(getRegistryServices);
+  const servicesQuery = useQuery({
+    queryKey: ["registry", "services"],
+    queryFn: () => loadServices(),
+    enabled: preview,
+  });
+  const previewServiceStep = resolveServiceStep(
+    (servicesQuery.data?.services ?? []).filter((service) => service.active),
+  );
   const [surveyForm, setSurveyForm] = useState({ name: "", description: "", version: "1.0" });
   const [questionForm, setQuestionForm] = useState({
     text: "",
@@ -347,15 +360,35 @@ export function SurveysPage() {
         />
       )}{" "}
       {preview && (
-        <Modal wide onClose={() => setPreview(false)}>
+        <Modal
+          wide
+          onClose={() => {
+            setPreview(false);
+            setPreviewServiceDone(false);
+          }}
+        >
           <div className="rounded-lg bg-primary/10 px-3 py-2 text-center text-sm font-semibold text-primary">
             Modo de visualização · respostas não serão registradas
           </div>
           <div className="mt-8">
-            <SurveyQuestionnaire questions={questions} preview />
+            {previewServiceStep.show && !previewServiceDone ? (
+              <ServicePicker
+                groups={previewServiceStep.groups}
+                onChoose={() => setPreviewServiceDone(true)}
+              />
+            ) : (
+              <SurveyQuestionnaire questions={questions} preview />
+            )}
           </div>
           <div className="mt-7 flex justify-end">
-            <Button onClick={() => setPreview(false)}>Fechar prévia</Button>
+            <Button
+              onClick={() => {
+                setPreview(false);
+                setPreviewServiceDone(false);
+              }}
+            >
+              Fechar prévia
+            </Button>
           </div>
         </Modal>
       )}
