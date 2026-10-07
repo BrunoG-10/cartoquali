@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      # --frozen-lockfile fails if package.json and bun.lock drift apart.
+      - run: bun install --frozen-lockfile
+      - name: Type check
+        run: bunx tsc --noEmit -p .
+      - name: Unit tests
+        run: bun run test
