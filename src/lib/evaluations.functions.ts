@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
+import { untypedDb } from "@/lib/untyped-db";
 
 const statusLabels = { nova: "Nova", em_analise: "Em análise", respondida: "Respondida" } as const;
 const resolutionLabels = { sim: "Sim", parcialmente: "Parcialmente", nao: "Não" } as const;
@@ -53,6 +54,28 @@ function summary(row: EvaluationRow, pointName: string, surveyName: string) {
   };
 }
 
+// Service chosen by the citizen (QR Code único). "Outro serviço" when flagged; null when skipped.
+async function loadServiceNames(client: unknown, evaluationIds: string[]) {
+  const names = new Map<string, string>();
+  if (!evaluationIds.length) return names;
+  const db = untypedDb(client);
+  const { data } = await db
+    .from("avaliacoes")
+    .select("id, servico_id, servico_outro")
+    .in("id", evaluationIds);
+  const serviceIds = [...new Set((data ?? []).map((row) => row.servico_id).filter(Boolean))];
+  const { data: services } = serviceIds.length
+    ? await db.from("servicos_cartorio").select("id, nome").in("id", serviceIds)
+    : { data: [] };
+  const serviceMap = new Map((services ?? []).map((item) => [item.id, String(item.nome)]));
+  for (const row of data ?? []) {
+    if (row.servico_id && serviceMap.has(row.servico_id))
+      names.set(row.id, serviceMap.get(row.servico_id)!);
+    else if (row.servico_outro) names.set(row.id, "Outro serviço");
+  }
+  return names;
+}
+
 export const listEvaluations = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => listInput.parse(input))
@@ -95,14 +118,19 @@ export const listEvaluations = createServerFn({ method: "POST" })
       ]);
     const pointMap = new Map((points ?? []).map((item) => [item.id, item.nome]));
     const surveyMap = new Map((surveys ?? []).map((item) => [item.id, item.nome]));
+    const serviceNames = await loadServiceNames(
+      context.supabase,
+      (rows ?? []).map((row) => row.id),
+    );
     return {
-      items: (rows ?? []).map((row) =>
-        summary(
+      items: (rows ?? []).map((row) => ({
+        ...summary(
           row,
           pointMap.get(row.ponto_id) ?? "Ponto indisponível",
           surveyMap.get(row.pesquisa_id) ?? "Pesquisa indisponível",
         ),
-      ),
+        serviceName: serviceNames.get(row.id) ?? null,
+      })),
       total: count ?? 0,
       page: data.page,
       pageSize: data.pageSize,
@@ -188,8 +216,10 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
         _entity_id: row.id,
         _metadata: { surface: "evaluation_detail" },
       });
+    const serviceNames = await loadServiceNames(context.supabase, [row.id]);
     return {
       ...summary(row, point?.nome ?? "Ponto indisponível", survey?.nome ?? "Pesquisa indisponível"),
+      serviceName: serviceNames.get(row.id) ?? null,
       resolution: row.atendimento_resolvido
         ? (resolutionLabels[row.atendimento_resolvido as keyof typeof resolutionLabels] ??
           row.atendimento_resolvido)

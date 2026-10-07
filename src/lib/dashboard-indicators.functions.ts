@@ -9,6 +9,7 @@ const inputSchema = z.object({
   previousEnd: z.string().datetime(),
   pointId: z.string().uuid().optional(),
   surveyId: z.string().uuid().optional(),
+  serviceId: z.string().uuid().optional(),
   granularity: z.enum(["day", "week", "month"]),
 });
 
@@ -43,6 +44,14 @@ export type DashboardIndicatorsData = {
     satisfaction: number | null;
     negative_rate: number | null;
   }>;
+  /** Por serviço; ids "outro" e "nao_informado" agrupam "Outro serviço" e quem pulou a pergunta. */
+  services?: Array<{
+    id: string;
+    name: string;
+    total: number;
+    average: number | null;
+    negative_rate: number | null;
+  }>;
   dimensions: Array<{
     key: string;
     label: string;
@@ -57,10 +66,12 @@ export type DashboardIndicatorsData = {
     comment: string | null;
     created_at: string;
     point_name: string;
+    service_name?: string | null;
   }>;
   filters: {
     points: Array<{ id: string; name: string }>;
     surveys: Array<{ id: string; name: string }>;
+    services?: Array<{ id: string; name: string; attribution: string }>;
   };
 };
 
@@ -76,6 +87,7 @@ export const getDashboardIndicators = createServerFn({ method: "POST" })
       _granularity: "day" | "week" | "month";
       _point_id?: string;
       _survey_id?: string;
+      _servico_id?: string;
     } = {
       _current_start: data.currentStart,
       _current_end: data.currentEnd,
@@ -85,6 +97,7 @@ export const getDashboardIndicators = createServerFn({ method: "POST" })
     };
     if (data.pointId) params._point_id = data.pointId;
     if (data.surveyId) params._survey_id = data.surveyId;
+    if (data.serviceId) params._servico_id = data.serviceId;
     const { data: result, error } = await context.supabase.rpc("get_dashboard_indicators", params);
     if (error) {
       console.error("dashboard indicators query failed", error.code);

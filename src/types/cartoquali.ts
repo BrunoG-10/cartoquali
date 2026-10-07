@@ -124,6 +124,8 @@ export type SurveyQuestion = {
   active: boolean;
   options?: string[];
   condition?: QuestionCondition;
+  /** Set on the six essential questions; only their text may be edited. */
+  essentialKey?: import("@/lib/attributions").EssentialKey;
 };
 export type AnswerOption = {
   id: string;

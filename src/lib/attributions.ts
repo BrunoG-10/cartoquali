@@ -2,6 +2,8 @@
 // The same catalog is seeded in supabase/migrations/20261008010000_qr_unico_atribuicoes_schema.sql;
 // keep both in sync.
 
+import { z } from "zod";
+
 export type AttributionKey =
   "notas" | "protesto" | "imoveis" | "rtd_pj" | "civil_pn" | "maritimo" | "distribuicao";
 
@@ -18,6 +20,16 @@ export const ATTRIBUTIONS: ReadonlyArray<{ key: AttributionKey; label: string }>
 export const ATTRIBUTION_LABELS = Object.fromEntries(
   ATTRIBUTIONS.map((item) => [item.key, item.label]),
 ) as Record<AttributionKey, string>;
+
+export const attributionKeySchema = z.enum([
+  "notas",
+  "protesto",
+  "imoveis",
+  "rtd_pj",
+  "civil_pn",
+  "maritimo",
+  "distribuicao",
+] as const satisfies readonly AttributionKey[]);
 
 export const SERVICE_CATALOG: ReadonlyArray<{
   key: string;

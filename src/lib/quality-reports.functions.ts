@@ -85,6 +85,7 @@ export type QualityReportData = {
     status: string;
     point_id: string;
     point_name: string;
+    service_name?: string | null;
     survey_id: string;
     survey_name: string;
   }>;
@@ -223,9 +224,10 @@ export const exportQualityReportCsv = createServerFn({ method: "POST" })
       _entity_id: null,
       _metadata: { current_start: data.currentStart, current_end: data.currentEnd },
     });
-    const header = ["data", "ponto", "pesquisa", "nota", "status", "comentario"];
+    const header = ["data", "servico", "ponto", "pesquisa", "nota", "status", "comentario"];
     const rows = report.evaluations.map((item) => [
       item.created_at,
+      item.service_name ?? "",
       item.point_name,
       item.survey_name,
       item.rating,

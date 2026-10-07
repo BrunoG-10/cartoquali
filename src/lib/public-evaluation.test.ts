@@ -109,3 +109,51 @@ describe("public survey context parsing", () => {
     expect(() => parseContext(null)).toThrow();
   });
 });
+
+describe("service selection (QR Code único)", () => {
+  const ready = {
+    status: "ready",
+    registryName: "Cartório Modelo",
+    pointName: "Balcão",
+    questions: [
+      {
+        key: uuid(10),
+        text: "Como foi?",
+        type: "stars",
+        order: 1,
+        required: true,
+        dimension: "overall",
+      },
+    ],
+  };
+
+  it("accepts an optional service id or the 'other service' flag", () => {
+    expect(submissionSchema.safeParse({ ...validSubmission, serviceId: uuid(50) }).success).toBe(
+      true,
+    );
+    expect(submissionSchema.safeParse({ ...validSubmission, serviceOther: true }).success).toBe(
+      true,
+    );
+    expect(submissionSchema.safeParse({ ...validSubmission, serviceId: "x" }).success).toBe(false);
+  });
+
+  it("defaults to no services and falls back to the trade name when the server omits them", () => {
+    const parsed = parseContext(ready);
+    if (parsed.status !== "ready") throw new Error("expected ready");
+    expect(parsed.services).toEqual([]);
+    expect(parsed.registryOfficialName).toBe("Cartório Modelo");
+    expect(parsed.registryTradeName).toBe("Cartório Modelo");
+  });
+
+  it("reads the official name and the active services", () => {
+    const parsed = parseContext({
+      ...ready,
+      registryOfficialName: "2º Tabelionato de Notas de Teresina",
+      registryTradeName: "Cartório Modelo",
+      services: [{ id: uuid(50), name: "Escritura", attribution: "notas" }, { bad: true }],
+    });
+    if (parsed.status !== "ready") throw new Error("expected ready");
+    expect(parsed.registryOfficialName).toBe("2º Tabelionato de Notas de Teresina");
+    expect(parsed.services).toEqual([{ id: uuid(50), name: "Escritura", attribution: "notas" }]);
+  });
+});

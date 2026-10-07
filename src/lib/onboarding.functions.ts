@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { attributionKeySchema } from "@/lib/attributions";
 
 const registryInput = z.object({
   clientRequestId: z.string().uuid(),
@@ -13,6 +14,7 @@ const registryInput = z.object({
   manager: z.string().trim().min(1).max(160),
   email: z.string().trim().email().max(255).or(z.literal("")),
   phone: z.string().trim().max(30),
+  attributions: z.array(attributionKeySchema).min(1).max(7),
 });
 const idInput = z.object({ registryId: z.string().uuid() });
 const surveyInput = idInput.extend({
@@ -231,6 +233,15 @@ export const createOnboardingRegistry = createServerFn({ method: "POST" })
       },
     );
     if (error || !result) throw new Error(friendly(error, "Não foi possível criar o cartório."));
+    const { error: attributionsError } = await privateRpc(
+      context.supabase,
+      "set_onboarding_attributions",
+      { _cartorio_id: result.id, _atribuicoes: data.attributions },
+    );
+    if (attributionsError)
+      throw new Error(
+        "Cartório criado, mas não foi possível salvar as atribuições. Tente novamente.",
+      );
     return result;
   });
 

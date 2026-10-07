@@ -82,6 +82,7 @@ const mapQuestion = (row: any): SurveyQuestion => ({
     .sort((a: any, b: any) => a.ordem - b.ordem)
     .map((item: any) => item.texto),
   ...(row.condicao ? { condition: row.condicao } : {}),
+  ...(row.chave_essencial ? { essentialKey: row.chave_essencial } : {}),
 });
 
 export const listSurveys = createServerFn({ method: "GET" })
@@ -157,6 +158,22 @@ export const saveSurveyQuestion = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const permission = await access(context);
     if (!permission.canManage) throw new Error("Você não possui permissão para alterar perguntas.");
+    if (data.id) {
+      // Essential questions keep their structure and options; only the text can change.
+      const { data: current } = await context.supabase
+        .from("perguntas")
+        .select("*")
+        .eq("id", data.id)
+        .maybeSingle();
+      if ((current as { chave_essencial?: string | null } | null)?.chave_essencial) {
+        const { error } = await context.supabase
+          .from("perguntas")
+          .update({ texto: data.text })
+          .eq("id", data.id);
+        if (error) throw new Error("Não foi possível salvar a pergunta.");
+        return { id: data.id };
+      }
+    }
     const payload = {
       pesquisa_id: data.surveyId,
       texto: data.text,
@@ -208,6 +225,11 @@ export const deactivateSurveyQuestion = createServerFn({ method: "POST" })
       .from("perguntas")
       .update({ ativa: false })
       .eq("id", data.id);
-    if (error) throw new Error("Não foi possível desativar a pergunta.");
+    if (error)
+      throw new Error(
+        error.message.includes("essential_question_locked")
+          ? "Esta pergunta é essencial para os indicadores e não pode ser desativada."
+          : "Não foi possível desativar a pergunta.",
+      );
     return { ok: true };
   });
