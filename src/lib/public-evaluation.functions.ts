@@ -148,13 +148,18 @@ export function parseContext(value: unknown): PublicEvaluationContext {
 }
 
 export const getPublicEvaluation = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) => z.object({ code: codeSchema, testToken: z.string().uuid().optional() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ code: codeSchema, testToken: z.string().uuid().optional() }).parse(input),
+  )
   .handler(async ({ data }) => {
     setResponseHeader("Cache-Control", "private, no-store, max-age=0");
     setResponseHeader("X-Content-Type-Options", "nosniff");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: result, error } = data.testToken
-      ? await supabaseAdmin.rpc("get_onboarding_test_context", { _code: data.code, _test_token: data.testToken })
+      ? await supabaseAdmin.rpc("get_onboarding_test_context", {
+          _code: data.code,
+          _test_token: data.testToken,
+        })
       : await supabaseAdmin.rpc("get_public_evaluation_context", { _code: data.code });
     if (error) {
       console.error("[public-evaluation] context lookup failed", error.code);
@@ -176,8 +181,20 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
     ).join("");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const response = data.testToken
-      ? await supabaseAdmin.rpc("submit_onboarding_test_evaluation", { _code:data.code,_test_token:data.testToken,_idempotency_key:data.idempotencyKey,_source_hash:sourceHash,_answers:data.answers })
-      : await supabaseAdmin.rpc("submit_public_evaluation", { _code:data.code,_idempotency_key:data.idempotencyKey,_source_hash:sourceHash,_answers:data.answers,_contact:data.contact });
+      ? await supabaseAdmin.rpc("submit_onboarding_test_evaluation", {
+          _code: data.code,
+          _test_token: data.testToken,
+          _idempotency_key: data.idempotencyKey,
+          _source_hash: sourceHash,
+          _answers: data.answers,
+        })
+      : await supabaseAdmin.rpc("submit_public_evaluation", {
+          _code: data.code,
+          _idempotency_key: data.idempotencyKey,
+          _source_hash: sourceHash,
+          _answers: data.answers,
+          _contact: data.contact,
+        });
     const { data: result, error } = response;
     if (error) {
       const safeMessages: Record<string, string> = {

@@ -27,11 +27,41 @@ export type DashboardIndicatorsData = {
   summary: DashboardSummary;
   previousSummary: DashboardSummary;
   distribution: Array<{ rating: number; count: number }>;
-  series: Array<{ bucket: string; total: number; average: number; satisfaction: number; negative_rate: number; resolution: number | null }>;
-  points: Array<{ id: string; name: string; total: number; average: number | null; satisfaction: number | null; negative_rate: number | null }>;
-  dimensions: Array<{ key: string; label: string; responses: number; index: number | null; previous_responses: number; previous_index: number | null }>;
-  recent: Array<{ id: string; rating: number; comment: string | null; created_at: string; point_name: string }>;
-  filters: { points: Array<{ id: string; name: string }>; surveys: Array<{ id: string; name: string }> };
+  series: Array<{
+    bucket: string;
+    total: number;
+    average: number;
+    satisfaction: number;
+    negative_rate: number;
+    resolution: number | null;
+  }>;
+  points: Array<{
+    id: string;
+    name: string;
+    total: number;
+    average: number | null;
+    satisfaction: number | null;
+    negative_rate: number | null;
+  }>;
+  dimensions: Array<{
+    key: string;
+    label: string;
+    responses: number;
+    index: number | null;
+    previous_responses: number;
+    previous_index: number | null;
+  }>;
+  recent: Array<{
+    id: string;
+    rating: number;
+    comment: string | null;
+    created_at: string;
+    point_name: string;
+  }>;
+  filters: {
+    points: Array<{ id: string; name: string }>;
+    surveys: Array<{ id: string; name: string }>;
+  };
 };
 
 export const getDashboardIndicators = createServerFn({ method: "POST" })
@@ -39,8 +69,13 @@ export const getDashboardIndicators = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ context, data }) => {
     const params: {
-      _current_start: string; _current_end: string; _previous_start: string; _previous_end: string;
-      _granularity: "day" | "week" | "month"; _point_id?: string; _survey_id?: string;
+      _current_start: string;
+      _current_end: string;
+      _previous_start: string;
+      _previous_end: string;
+      _granularity: "day" | "week" | "month";
+      _point_id?: string;
+      _survey_id?: string;
     } = {
       _current_start: data.currentStart,
       _current_end: data.currentEnd,

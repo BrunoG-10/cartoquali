@@ -9,7 +9,12 @@ export const commercialLeadSchema = z.object({
   registryName: z.string().trim().min(2, "Informe o cartório.").max(160),
   cityState: z.string().trim().min(2, "Informe a cidade e o estado.").max(120),
   roleTitle: z.string().trim().min(2, "Informe seu cargo.").max(100),
-  whatsapp: z.string().trim().min(8, "Informe um WhatsApp válido.").max(30).regex(/^[+()\-\s\d]+$/, "Informe um WhatsApp válido."),
+  whatsapp: z
+    .string()
+    .trim()
+    .min(8, "Informe um WhatsApp válido.")
+    .max(30)
+    .regex(/^[+()\-\s\d]+$/, "Informe um WhatsApp válido."),
   email: z.string().trim().email("Informe um e-mail válido.").max(255),
   website: z.string().max(0).optional(),
 });
@@ -26,7 +31,9 @@ export const submitCommercialLead = createServerFn({ method: "POST" })
     const secret = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
     const sourceBytes = new TextEncoder().encode(`${secret}:commercial:${data.submissionSession}`);
     const digest = await crypto.subtle.digest("SHA-256", sourceBytes);
-    const sourceHash = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+    const sourceHash = Array.from(new Uint8Array(digest), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
@@ -36,7 +43,8 @@ export const submitCommercialLead = createServerFn({ method: "POST" })
       .eq("source_hash", sourceHash)
       .gte("created_at", since);
     if (countError) throw new Error("Não foi possível enviar sua solicitação agora.");
-    if ((count ?? 0) >= 5) throw new Error("Muitas solicitações foram enviadas nesta sessão. Aguarde alguns minutos.");
+    if ((count ?? 0) >= 5)
+      throw new Error("Muitas solicitações foram enviadas nesta sessão. Aguarde alguns minutos.");
 
     const { error } = await supabaseAdmin.from("commercial_leads").insert({
       client_request_id: data.clientRequestId,
