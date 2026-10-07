@@ -136,8 +136,18 @@ Fluxo: boas-vindas → serviço (opcional) → 6 essenciais → extras → comen
 
 ## 11. Página inicial
 
-- **Indicadores:** sai "Exemplos de pontos de atendimento"; entra "Um QR Code para todo o cartório. O cidadão avalia em um só lugar e informa, se quiser, o serviço que utilizou. Você acompanha os resultados por serviço, conforme as atribuições da sua serventia."
-- **Feito para cartórios:** acrescenta "A Lei nº 13.460/2017, aplicável de forma subsidiária aos serviços públicos prestados por particulares, prevê a avaliação continuada da satisfação dos usuários, com pesquisa ao menos anual." O trecho do PQTA e o aviso de independência permanecem.
+Reorganizada com as funções novas, mantendo as 8 seções atuais.
+
+- **Como funciona:** passo 1 vira "O cidadão aponta a câmera para o QR Code do cartório e, se quiser, informa o serviço que utilizou"; passo 2 cita os indicadores essenciais (cordialidade, clareza, tempo, instalações e resolução).
+- **Indicadores:** sai "Exemplos de pontos de atendimento"; entram dois blocos:
+  - "Um QR Code para todo o cartório. O cidadão avalia em um só lugar e informa, se quiser, o serviço que utilizou. Você acompanha os resultados por serviço."
+  - "Configurado para a sua serventia. Marque as atribuições (Notas, Protesto, Imóveis, Registro Civil…) e os serviços aparecem na avaliação. Seis perguntas essenciais garantem indicadores comparáveis, e você pode acrescentar perguntas próprias."
+- **Feito para cartórios** (melhoria contínua), três referências, sem afirmar conformidade legal:
+  - "O Código Nacional de Normas do CNJ, com a redação dada pelo Provimento nº 229/2026, adota a melhoria contínua da experiência do usuário como princípio dos serviços eletrônicos de registro."
+  - "A Lei nº 13.460/2017, aplicável de forma subsidiária aos serviços públicos prestados por particulares, prevê a avaliação continuada da satisfação dos usuários, com pesquisa ao menos anual."
+  - O trecho do PQTA (ANOREG/BR) e o aviso de independência permanecem.
+- **Perguntas frequentes:** "Posso ter vários pontos de avaliação?" vira "Preciso de um QR Code para cada setor?" ("Não. Um único QR Code atende todo o cartório; o cidadão informa o serviço, se quiser."); nova pergunta "Posso personalizar as perguntas?" ("Sim. As seis perguntas essenciais podem ter o texto ajustado, e você pode acrescentar perguntas próprias.").
+- **Ilustrações:** a dimensão "Atendimento" dos mockups passa a se chamar "Cordialidade".
 
 ## 12. Dados do DEMO (script aprovado à parte, não migração)
 
