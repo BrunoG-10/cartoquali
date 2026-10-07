@@ -372,18 +372,24 @@ function Screen({
 }) {
   return (
     <div className="grid min-h-screen place-items-center overflow-x-hidden bg-background p-3 sm:p-4">
-      <main className="min-w-0 w-full max-w-lg rounded-xl border border-glass-border bg-glass p-5 text-center shadow-glass backdrop-blur-xl sm:p-9">
-        <div className="mb-7 flex min-w-0 items-center justify-center gap-3">
-          <LogoMark size={40} />
-          <div className="min-w-0 text-left">
-            <Wordmark className="block text-lg leading-tight" />
-            <small className="block truncate text-muted-foreground">
-              {registryName} · {pointName}
-            </small>
+      <main className="min-w-0 w-full max-w-lg rounded-xl border border-border bg-card p-5 text-center shadow-glass sm:p-9">
+        {/* The citizen is evaluating the registry, so its name leads; CartoQuali signs below. */}
+        {registryName === "CartoQuali" ? (
+          <div className="mb-7 flex min-w-0 items-center justify-center gap-3">
+            <LogoMark size={40} />
+            <div className="min-w-0 text-left">
+              <Wordmark className="block text-lg leading-tight" />
+              <small className="block truncate text-muted-foreground">{pointName}</small>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mb-7 border-b border-border pb-5">
+            <p className="font-display text-xl font-bold leading-snug">{registryName}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{pointName}</p>
+          </div>
+        )}
         {children}
-        <p className="mt-7 text-[11px] text-muted-foreground">
+        <p className="mt-7 text-xs text-muted-foreground">
           Sem conta · identificação opcional somente para retorno
         </p>
         <div className="mt-1 flex flex-wrap justify-center gap-1">
@@ -394,6 +400,11 @@ function Screen({
             <Link to="/termos">Termos de uso</Link>
           </Button>
         </div>
+        {registryName !== "CartoQuali" && (
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+            Tecnologia <LogoMark size={16} /> <Wordmark className="text-sm" />
+          </p>
+        )}
       </main>
     </div>
   );
