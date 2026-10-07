@@ -233,7 +233,12 @@ export function ReportViewer({ kind }: { kind: ReportKind }) {
               <RefreshCw className={cn(report.isFetching && "animate-spin")} />
               Atualizar
             </Button>
-            <Button variant="outline" onClick={() => window.print()}>
+            <Button
+              variant="outline"
+              onClick={() => window.print()}
+              disabled={report.isFetching}
+              title={report.isFetching ? "Aguarde a atualização do relatório" : undefined}
+            >
               <Printer />
               Imprimir
             </Button>
@@ -251,6 +256,9 @@ export function ReportViewer({ kind }: { kind: ReportKind }) {
         <Info label="Cartório" value={data.registry.official_name} />
         <Info label="Período" value={periodLabel(filters)} />
         <Info label="Gerado em" value={new Date().toLocaleString("pt-BR")} />
+        <div className="sm:col-span-3">
+          <Info label="Filtros aplicados" value={filtersLabel(filters, data)} />
+        </div>
       </div>
       <FilterBar
         kind={kind}
@@ -331,8 +339,13 @@ function FilterBar({
 }) {
   const [draft, setDraft] = useState(filters);
   useEffect(() => setDraft(filters), [filters]);
-  const update = <K extends keyof RealReportFilters>(key: K, value: RealReportFilters[K]) =>
-    setDraft((current) => ({ ...current, [key]: value }));
+  // Filters apply as soon as they change, so what is on screen (and printed) always matches the
+  // selection. A custom period waits until both dates are filled.
+  const update = <K extends keyof RealReportFilters>(key: K, value: RealReportFilters[K]) => {
+    const next = { ...draft, [key]: value };
+    setDraft(next);
+    if (next.period !== "Personalizado" || (next.startDate && next.endDate)) onApply(next);
+  };
   return (
     <GlassPanel className="print-hidden">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -387,12 +400,7 @@ function FilterBar({
             options={["", ...Object.keys(planLabels)]}
             labels={{ "": "Todas", ...planLabels }}
           />
-        ) : (
-          <div />
-        )}
-        <Button className="self-end" onClick={() => onApply(draft)}>
-          Aplicar filtros
-        </Button>
+        ) : null}
       </div>
       {draft.period === "Personalizado" && (
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -920,6 +928,20 @@ function periodLabel(filters: RealReportFilters) {
   if (filters.period === "Personalizado")
     return `${filters.startDate ?? "—"} a ${filters.endDate ?? "—"}`;
   return periods.find((x) => x === filters.period) ?? filters.period;
+}
+// Printed with the report, since the filter bar itself is hidden on paper.
+function filtersLabel(filters: RealReportFilters, data: QualityReportData) {
+  const parts = [
+    `Ponto: ${filters.pointId ? (data.filters.points.find((x) => x.id === filters.pointId)?.name ?? "—") : "Todos"}`,
+    `Pesquisa: ${filters.surveyId ? (data.filters.surveys.find((x) => x.id === filters.surveyId)?.name ?? "—") : "Todas"}`,
+  ];
+  if (filters.occurrenceStatus)
+    parts.push(
+      `Ocorrências: ${occurrenceLabels[filters.occurrenceStatus] ?? filters.occurrenceStatus}`,
+    );
+  if (filters.planStatus)
+    parts.push(`Planos: ${planLabels[filters.planStatus] ?? filters.planStatus}`);
+  return parts.join(" · ");
 }
 function formatDate(value: string) {
   return new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");

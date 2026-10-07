@@ -214,7 +214,8 @@ export const exportQualityReportCsv = createServerFn({ method: "POST" })
       )
     )
       throw new Error("Você não possui permissão para exportar relatórios.");
-    const privacyRpc = context.supabase.rpc as unknown as (
+    // bind: an unbound supabase.rpc loses `this` and throws, which aborted every export.
+    const privacyRpc = context.supabase.rpc.bind(context.supabase) as unknown as (
       name: string,
       args: Record<string, unknown>,
     ) => Promise<{ error: { message: string } | null }>;
