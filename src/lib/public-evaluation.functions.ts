@@ -19,7 +19,7 @@ const answersSchema = z.record(z.string().uuid(), answerValue).superRefine((answ
       message: "As respostas excedem o limite permitido.",
     });
 });
-const submissionSchema = z.object({
+export const submissionSchema = z.object({
   code: codeSchema,
   idempotencyKey: z.string().uuid(),
   submissionSession: z.string().uuid(),
@@ -68,7 +68,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function parseContext(value: unknown): PublicEvaluationContext {
+export function parseContext(value: unknown): PublicEvaluationContext {
   if (!isRecord(value)) throw new Error("Não foi possível carregar esta pesquisa.");
   const status = value["status"];
   if (status === "not_found" || status === "inactive" || status === "unavailable")
