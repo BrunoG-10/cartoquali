@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { primaryDbRole } from "@/lib/roles";
 
 const roleMap = {
   PLATFORM_ADMIN: "platform_admin",
@@ -27,8 +28,7 @@ export const getCurrentAuthContext = createServerFn({ method: "GET" })
     if (!cartorio) return { status: "missing_registry" as const };
     if (usuario.status !== "ativo") return { status: "inactive_user" as const };
     if (cartorio.status !== "ativo") return { status: "inactive_registry" as const };
-    // A user may hold several roles; the session uses the most privileged one (roleMap order).
-    const dbRole = (Object.keys(roleMap) as (keyof typeof roleMap)[]).find((role) => roles?.some((item) => item.role === role));
+    const dbRole = primaryDbRole(roles);
     if (!dbRole || !roleMap[dbRole]) return { status: "missing_role" as const };
     return {
       status: "active" as const,
