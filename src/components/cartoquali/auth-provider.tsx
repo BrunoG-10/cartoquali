@@ -57,8 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCartorio(null);
     setCurrentRole(null);
   }, []);
+  // Background re-checks (tab focus, timer, auth events) keep the current screen while they run;
+  // only the first check shows the "Verificando acesso" state.
   const refresh = useCallback(async () => {
-    setStatus("loading");
+    setStatus((current) => (current === "authenticated" ? current : "loading"));
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) {
       clear();
@@ -80,7 +82,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus(result.status);
       }
     } catch {
-      setStatus("error");
+      // A transient network failure during a background re-check must not log the user out.
+      setStatus((current) => (current === "authenticated" ? current : "error"));
     }
   }, [clear, fetchContext]);
   useEffect(() => {

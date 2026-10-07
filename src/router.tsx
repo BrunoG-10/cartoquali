@@ -9,6 +9,8 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Start loading a page's code (and run its guard) when the pointer hovers its link.
+    defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
   });
 
