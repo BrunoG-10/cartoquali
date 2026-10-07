@@ -1,2 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router"; import { AppShell } from "@/components/cartoquali/app-shell"; import { SurveysPage } from "@/components/cartoquali/surveys-page";
-export const Route=createFileRoute("/_authenticated/pesquisas")({head:()=>({meta:[{title:"Pesquisas — CartoQuali"},{name:"description",content:"Configure a pesquisa de satisfação do cartório."},{property:"og:title",content:"Pesquisas — CartoQuali"},{property:"og:description",content:"Configure a pesquisa de satisfação do cartório."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <AppShell><SurveysPage/></AppShell>});
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/cartoquali/app-shell";
+import { SurveysPage } from "@/components/cartoquali/surveys-page";
+export const Route = createFileRoute("/_authenticated/pesquisas")({
+  head: () => ({
+    meta: [
+      { title: "Pesquisas — CartoQuali" },
+      { name: "description", content: "Configure a pesquisa de satisfação do cartório." },
+      { property: "og:title", content: "Pesquisas — CartoQuali" },
+      { property: "og:description", content: "Configure a pesquisa de satisfação do cartório." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: () => (
+    <AppShell>
+      <SurveysPage />
+    </AppShell>
+  ),
+});

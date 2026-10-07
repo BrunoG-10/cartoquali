@@ -3,7 +3,9 @@ import { primaryDbRole } from "./roles";
 
 describe("primaryDbRole", () => {
   it("returns the most privileged role regardless of database order", () => {
-    expect(primaryDbRole([{ role: "CARTORIO_ADMIN" }, { role: "PLATFORM_ADMIN" }])).toBe("PLATFORM_ADMIN");
+    expect(primaryDbRole([{ role: "CARTORIO_ADMIN" }, { role: "PLATFORM_ADMIN" }])).toBe(
+      "PLATFORM_ADMIN",
+    );
     expect(primaryDbRole([{ role: "OPERADOR" }, { role: "GESTOR" }])).toBe("GESTOR");
   });
 

@@ -1,17 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import {
-  Copy,
-  ExternalLink,
-  LoaderCircle,
-  MapPin,
-  Pencil,
-  Plus,
-  Power,
-  QrCode,
-  Save,
-} from "lucide-react";
+import { Copy, ExternalLink, LoaderCircle, Pencil, Plus, Power, QrCode, Save } from "lucide-react";
 import { toast } from "sonner";
 import { PointQrDialog } from "@/components/cartoquali/point-qr-dialog";
 import {
@@ -24,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { listEvaluationPoints, saveEvaluationPoint } from "@/lib/points.functions";
+import { getMyRegistry } from "@/lib/registry.functions";
+import { pickMainPoint } from "@/lib/main-point";
 import { getEvaluationUrl } from "@/lib/public-url";
 import type { EvaluationPoint } from "@/types/cartoquali";
 import { firstValidationError, pointSchema } from "@/utils/cartoquali-validation";
@@ -62,7 +54,12 @@ export function PointsPage() {
   const fetchPoints = useServerFn(listEvaluationPoints);
   const savePoint = useServerFn(saveEvaluationPoint);
   const queryClient = useQueryClient();
+  const fetchRegistry = useServerFn(getMyRegistry);
   const query = useQuery({ queryKey: ["evaluation-points"], queryFn: () => fetchPoints() });
+  const registryQuery = useQuery({
+    queryKey: ["registry", "current"],
+    queryFn: () => fetchRegistry(),
+  });
   const [selected, setSelected] = useState<EvaluationPoint>();
   const [qrPoint, setQrPoint] = useState<EvaluationPoint>();
   const [open, setOpen] = useState(false);
@@ -148,17 +145,20 @@ export function PointsPage() {
     }
   };
 
+  const mainPoint = query.data ? pickMainPoint(query.data.points) : undefined;
+  const registry = registryQuery.data?.registry;
+
   return (
     <div className="animate-enter">
       <PageHeader
         eyebrow="Coleta de feedback"
-        title="Pontos de avaliação"
-        description="Gerencie os locais vinculados às pesquisas do seu cartório."
+        title="QR Code do cartório"
+        description="Um único QR Code para todo o atendimento. O cidadão informa o serviço utilizado na própria avaliação."
         action={
-          query.data?.canManage ? (
+          query.data?.canManage && !query.data.points.length ? (
             <Button disabled={!query.data?.surveys.length} onClick={() => setOpen(true)}>
               <Plus />
-              Novo ponto
+              Criar QR Code
             </Button>
           ) : undefined
         }
@@ -192,22 +192,23 @@ export function PointsPage() {
             description="Crie uma pesquisa ativa antes de cadastrar um ponto de avaliação."
           />
         </GlassPanel>
-      ) : query.data.points.length ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {query.data.points.map((point) => (
+      ) : mainPoint ? (
+        <div className="grid max-w-2xl gap-4">
+          {[mainPoint].map((point) => (
             <GlassPanel key={point.id} className="flex flex-col">
               <div className="flex items-start justify-between">
                 <div className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
-                  <MapPin />
+                  <QrCode />
                 </div>
                 <StatusBadge tone={point.status === "Ativo" ? "positive" : "neutral"}>
                   {point.status}
                 </StatusBadge>
               </div>
-              <h2 className="mt-4 font-display text-xl font-bold">{point.name}</h2>
-              <p className="text-sm text-muted-foreground">{point.location}</p>
-              {point.description && (
-                <p className="mt-3 text-sm text-muted-foreground">{point.description}</p>
+              <h2 className="mt-4 font-display text-xl font-bold">
+                {registry?.officialName || point.name}
+              </h2>
+              {registry?.tradeName && registry.tradeName !== registry.officialName && (
+                <p className="text-sm text-muted-foreground">{registry.tradeName}</p>
               )}
               <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                 <div>
@@ -216,7 +217,7 @@ export function PointsPage() {
                 </div>
                 <div>
                   <dt className="text-xs text-muted-foreground">Coleta</dt>
-                  <dd className="font-medium">Link, QR e NFC</dd>
+                  <dd className="font-medium">Link e QR Code</dd>
                 </div>
                 <div className="col-span-2">
                   <dt className="text-xs text-muted-foreground">Pesquisa ativa</dt>
@@ -239,9 +240,9 @@ export function PointsPage() {
                     Abrir
                   </a>
                 </Button>
-                <Button className="col-span-2" variant="outline" onClick={() => setQrPoint(point)}>
+                <Button className="col-span-2" onClick={() => setQrPoint(point)}>
                   <QrCode />
-                  Ver QR Code
+                  Ver QR Code e imprimir cartaz
                 </Button>
               </div>
               {query.data.canManage && (
@@ -267,11 +268,11 @@ export function PointsPage() {
         <GlassPanel>
           <InterfaceState
             kind="empty"
-            title="Nenhum ponto cadastrado"
+            title="QR Code ainda não criado"
             description={
               query.data?.canManage
-                ? "Cadastre o primeiro local de coleta do seu cartório."
-                : "Ainda não há pontos disponíveis para consulta."
+                ? "Crie o QR Code do cartório para começar a receber avaliações."
+                : "O administrador do cartório ainda não criou o QR Code."
             }
           />
         </GlassPanel>
@@ -279,7 +280,7 @@ export function PointsPage() {
       {open && (
         <Modal onClose={close}>
           <h2 className="font-display text-lg font-bold">
-            {selected ? "Editar ponto de avaliação" : "Novo ponto de avaliação"}
+            {selected ? "Editar QR Code" : "Criar QR Code do cartório"}
           </h2>
           <div className="mt-5 grid gap-4">
             <label className="block text-sm font-medium">
@@ -369,6 +370,8 @@ export function PointsPage() {
       )}
       <PointQrDialog
         point={qrPoint}
+        officialName={registry?.officialName}
+        tradeName={registry?.tradeName}
         open={Boolean(qrPoint)}
         onOpenChange={(next) => {
           if (!next) setQrPoint(undefined);

@@ -67,7 +67,8 @@ function toRegistry(row: RegistryRow): Registry {
   };
 }
 
-const registryColumns = "id, razao_social, nome_fantasia, cnpj, tipo, telefone, email, cep, endereco, numero, complemento, bairro, cidade, estado, responsavel, status, plano, data_renovacao, created_at";
+const registryColumns =
+  "id, razao_social, nome_fantasia, cnpj, tipo, telefone, email, cep, endereco, numero, complemento, bairro, cidade, estado, responsavel, status, plano, data_renovacao, created_at";
 
 export const getMyRegistry = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -87,7 +88,10 @@ export const getMyRegistry = createServerFn({ method: "GET" })
       .maybeSingle();
     if (error) throw new Error("Não foi possível carregar os dados do cartório.");
     if (!data) return { status: "missing_registry" as const, registry: null };
-    return { status: data.status === "ativo" ? "active" as const : "inactive" as const, registry: toRegistry(data) };
+    return {
+      status: data.status === "ativo" ? ("active" as const) : ("inactive" as const),
+      registry: toRegistry(data),
+    };
   });
 
 export const updateMyRegistry = createServerFn({ method: "POST" })
@@ -122,7 +126,13 @@ export const updateMyRegistry = createServerFn({ method: "POST" })
       .eq("id", profile.cartorio_id)
       .select(registryColumns)
       .maybeSingle();
-    if (error) throw new Error(error.code === "42501" ? "Você não possui permissão para editar o cartório." : "Não foi possível salvar os dados do cartório.");
-    if (!updated) throw new Error("O cartório não foi encontrado ou você não possui permissão para editá-lo.");
+    if (error)
+      throw new Error(
+        error.code === "42501"
+          ? "Você não possui permissão para editar o cartório."
+          : "Não foi possível salvar os dados do cartório.",
+      );
+    if (!updated)
+      throw new Error("O cartório não foi encontrado ou você não possui permissão para editá-lo.");
     return toRegistry(updated);
   });

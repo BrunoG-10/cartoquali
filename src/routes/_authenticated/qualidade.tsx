@@ -1,2 +1,26 @@
-import { createFileRoute } from "@tanstack/react-router"; import { AppShell } from "@/components/cartoquali/app-shell"; import { QualityDashboard } from "@/components/cartoquali/quality-dashboard";
-export const Route=createFileRoute("/_authenticated/qualidade")({head:()=>({meta:[{title:"Qualidade e indicadores — CartoQuali"},{name:"description",content:"Analise satisfação, resolutividade, dimensões e oportunidades de melhoria."},{property:"og:title",content:"Qualidade e indicadores — CartoQuali"},{property:"og:description",content:"Analise satisfação, resolutividade, dimensões e oportunidades de melhoria."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <AppShell><QualityDashboard/></AppShell>});
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/cartoquali/app-shell";
+import { QualityDashboard } from "@/components/cartoquali/quality-dashboard";
+export const Route = createFileRoute("/_authenticated/qualidade")({
+  head: () => ({
+    meta: [
+      { title: "Qualidade e indicadores — CartoQuali" },
+      {
+        name: "description",
+        content: "Analise satisfação, resolutividade, dimensões e oportunidades de melhoria.",
+      },
+      { property: "og:title", content: "Qualidade e indicadores — CartoQuali" },
+      {
+        property: "og:description",
+        content: "Analise satisfação, resolutividade, dimensões e oportunidades de melhoria.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: () => (
+    <AppShell>
+      <QualityDashboard />
+    </AppShell>
+  ),
+});

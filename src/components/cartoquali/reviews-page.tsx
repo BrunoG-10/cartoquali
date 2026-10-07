@@ -2,14 +2,30 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
-import { AlertCircle, ChevronLeft, ChevronRight, FilterX, LockKeyhole, Search, UserRound } from "lucide-react";
+import {
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  FilterX,
+  LockKeyhole,
+  Search,
+  UserRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getEvaluationDetail, listEvaluations } from "@/lib/evaluations.functions";
 import { GlassPanel, InterfaceState, PageHeader, Stars, StatusBadge } from "./primitives";
 
-const statusTone = (status: string) => status === "Nova" ? "warning" as const : status === "Respondida" ? "positive" as const : "neutral" as const;
-const formatDate = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+const statusTone = (status: string) =>
+  status === "Nova"
+    ? ("warning" as const)
+    : status === "Respondida"
+      ? ("positive" as const)
+      : ("neutral" as const);
+const formatDate = (value: string) =>
+  new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
+    new Date(value),
+  );
 
 export function ReviewsPage() {
   const navigate = useNavigate();
@@ -29,34 +45,456 @@ export function ReviewsPage() {
   const [endDate, setEndDate] = useState(initialSearch.get("end") ?? "");
   const [selectedId, setSelectedId] = useState<string>();
   const pageSize = 10;
-  useEffect(() => { const timer = window.setTimeout(() => { setSearch(draftSearch.trim()); setPage(1); }, 350); return () => window.clearTimeout(timer); }, [draftSearch]);
-  const filters = { page, pageSize, search, ...(pointId ? { pointId } : {}), ...(surveyId ? { surveyId } : {}), ...(rating ? { rating: Number(rating) } : {}), ...(status ? { status: status as "nova" | "em_analise" | "respondida" } : {}), ...(classification ? { classification: classification as "satisfeita" | "atencao" } : {}), ...(startDate ? { startDate: new Date(`${startDate}T00:00:00`).toISOString() } : {}), ...(endDate ? { endDate: new Date(`${endDate}T23:59:59.999`).toISOString() } : {}) };
-  const list = useQuery({ queryKey: ["evaluations", filters], queryFn: () => fetchList({ data: filters }) });
-  const detail = useQuery({ queryKey: ["evaluation-detail", selectedId], queryFn: () => fetchDetail({ data: { id: selectedId ?? "" } }), enabled: Boolean(selectedId) });
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setSearch(draftSearch.trim());
+      setPage(1);
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [draftSearch]);
+  const filters = {
+    page,
+    pageSize,
+    search,
+    ...(pointId ? { pointId } : {}),
+    ...(surveyId ? { surveyId } : {}),
+    ...(rating ? { rating: Number(rating) } : {}),
+    ...(status ? { status: status as "nova" | "em_analise" | "respondida" } : {}),
+    ...(classification ? { classification: classification as "satisfeita" | "atencao" } : {}),
+    ...(startDate ? { startDate: new Date(`${startDate}T00:00:00`).toISOString() } : {}),
+    ...(endDate ? { endDate: new Date(`${endDate}T23:59:59.999`).toISOString() } : {}),
+  };
+  const list = useQuery({
+    queryKey: ["evaluations", filters],
+    queryFn: () => fetchList({ data: filters }),
+  });
+  const detail = useQuery({
+    queryKey: ["evaluation-detail", selectedId],
+    queryFn: () => fetchDetail({ data: { id: selectedId ?? "" } }),
+    enabled: Boolean(selectedId),
+  });
   const totalPages = Math.max(1, Math.ceil((list.data?.total ?? 0) / pageSize));
-  const reset = () => { setDraftSearch(""); setSearch(""); setPointId(""); setSurveyId(""); setRating(""); setStatus(""); setClassification(""); setStartDate(""); setEndDate(""); setPage(1); };
-  const update = (setter: (value: string) => void, value: string) => { setter(value); setPage(1); };
-  return <div className="animate-enter">
-    <PageHeader eyebrow="Experiência do usuário" title="Avaliações" description="Consulte avaliações e respostas registradas no seu cartório." />
-    <GlassPanel className="mb-4"><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-      <label className="relative"><span className="sr-only">Buscar comentário</span><Search className="absolute left-3 top-2.5 size-4 text-muted-foreground"/><Input className="bg-glass-strong pl-9" placeholder="Buscar comentário" value={draftSearch} onChange={(event) => setDraftSearch(event.target.value)} /></label>
-      <select aria-label="Filtrar por ponto" className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm" value={pointId} onChange={(event) => update(setPointId, event.target.value)}><option value="">Todos os pontos</option>{list.data?.points.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</select>
-      <select aria-label="Filtrar por pesquisa" className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm" value={surveyId} onChange={(event) => update(setSurveyId, event.target.value)}><option value="">Todas as pesquisas</option>{list.data?.surveys.map((item) => <option key={item.id} value={item.id}>{item.nome}</option>)}</select>
-      <select aria-label="Filtrar por nota" className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm" value={rating} onChange={(event) => update(setRating, event.target.value)}><option value="">Todas as notas</option>{[5,4,3,2,1].map((value) => <option key={value} value={value}>{value} estrelas</option>)}</select>
-      <select aria-label="Filtrar por classificação" className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm" value={classification} onChange={(event) => update(setClassification, event.target.value)}><option value="">Todas as classificações</option><option value="satisfeita">Satisfeita</option><option value="atencao">Atenção</option></select>
-      <select aria-label="Filtrar por status" className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm" value={status} onChange={(event) => update(setStatus, event.target.value)}><option value="">Todos os status</option><option value="nova">Nova</option><option value="em_analise">Em análise</option><option value="respondida">Respondida</option></select>
-      <label className="grid grid-cols-[auto_1fr] items-center gap-2 text-xs text-muted-foreground">De<Input type="date" value={startDate} onChange={(event) => update(setStartDate, event.target.value)} /></label>
-      <label className="grid grid-cols-[auto_1fr] items-center gap-2 text-xs text-muted-foreground">Até<Input type="date" value={endDate} onChange={(event) => update(setEndDate, event.target.value)} /></label>
-    </div><div className="mt-3 flex justify-end"><Button variant="outline" onClick={reset}><FilterX/>Limpar filtros</Button></div></GlassPanel>
-    {list.isLoading ? <GlassPanel><InterfaceState kind="loading" title="Carregando avaliações" description="Buscando os registros do seu cartório." /></GlassPanel> : list.isError ? <GlassPanel><InterfaceState kind="error" title="Não foi possível carregar as avaliações" description="Sua sessão pode ter expirado ou o serviço está indisponível." action={<Button variant="outline" onClick={() => void list.refetch()}>Tentar novamente</Button>} /></GlassPanel> : !list.data?.items.length ? <GlassPanel><InterfaceState kind="empty" title="Nenhuma avaliação encontrada" description="Não há avaliações para os filtros selecionados." action={<Button variant="outline" onClick={reset}>Limpar filtros</Button>} /></GlassPanel> : <>
-      <div className="hidden overflow-hidden rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-xl md:block"><table className="w-full text-left text-sm"><thead className="border-b border-glass-border bg-glass-strong text-xs text-muted-foreground"><tr>{["Data", "Nota", "Ponto", "Pesquisa", "Classificação", "Comentário", "Status"].map((heading) => <th className="px-4 py-3 font-semibold" key={heading}>{heading}</th>)}</tr></thead><tbody>{list.data.items.map((item) => <tr key={item.id} tabIndex={0} className="cursor-pointer border-b border-glass-border transition-colors last:border-0 hover:bg-glass-strong" onClick={() => setSelectedId(item.id)} onKeyDown={(event) => event.key === "Enter" && setSelectedId(item.id)}><td className="whitespace-nowrap px-4 py-4 text-xs">{formatDate(item.createdAt)}</td><td className="px-4 py-4"><Stars value={item.rating} size="sm"/></td><td className="px-4 py-4 font-medium">{item.pointName}</td><td className="px-4 py-4">{item.surveyName}</td><td className="px-4 py-4"><StatusBadge tone={item.rating >= 4 ? "positive" : "danger"}>{item.classification}</StatusBadge></td><td className="max-w-56 truncate px-4 py-4">{item.comment || "Sem comentário"}</td><td className="px-4 py-4"><StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge></td></tr>)}</tbody></table></div>
-      <div className="grid gap-3 md:hidden">{list.data.items.map((item) => <Button key={item.id} variant="outline" onClick={() => setSelectedId(item.id)} className="h-auto justify-start whitespace-normal p-4 text-left"><span className="w-full"><span className="flex justify-between gap-2"><Stars value={item.rating} size="sm"/><StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge></span><span className="mt-3 block font-medium">{item.comment || "Sem comentário"}</span><span className="mt-2 block text-xs text-muted-foreground">{item.pointName} · {formatDate(item.createdAt)}</span></span></Button>)}</div>
-      <div className="mt-4 flex flex-col items-center justify-between gap-3 text-sm sm:flex-row"><p className="text-muted-foreground">{list.data.total} avaliações · página {page} de {totalPages}</p><div className="flex gap-2"><Button variant="outline" size="sm" disabled={page === 1 || list.isFetching} onClick={() => setPage((current) => current - 1)}><ChevronLeft/>Anterior</Button><Button variant="outline" size="sm" disabled={page >= totalPages || list.isFetching} onClick={() => setPage((current) => current + 1)}>Próxima<ChevronRight/></Button></div></div>
-    </>}
-    {selectedId && <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/20 p-4" role="dialog" aria-modal="true" aria-labelledby="evaluation-title" onMouseDown={() => setSelectedId(undefined)}><div className="my-4 w-full max-w-2xl rounded-xl border border-glass-border bg-background p-6 shadow-xl" onMouseDown={(event) => event.stopPropagation()}>{detail.isLoading ? <InterfaceState kind="loading" title="Carregando avaliação" description="Buscando respostas e informações relacionadas."/> : detail.isError ? <InterfaceState kind="error" title="Não foi possível abrir a avaliação" description="Tente novamente ou feche esta janela." action={<Button variant="outline" onClick={() => void detail.refetch()}>Tentar novamente</Button>}/> : !detail.data ? <InterfaceState kind="empty" title="Avaliação não encontrada" description="O registro não existe ou não pertence ao seu cartório."/> : <EvaluationDialogContent evaluation={detail.data} onClose={()=>setSelectedId(undefined)} onCreateOccurrence={(evaluationId)=>void navigate({to:"/ocorrencias",search:{review:evaluationId}})}/>}</div></div>}
-  </div>;
+  const reset = () => {
+    setDraftSearch("");
+    setSearch("");
+    setPointId("");
+    setSurveyId("");
+    setRating("");
+    setStatus("");
+    setClassification("");
+    setStartDate("");
+    setEndDate("");
+    setPage(1);
+  };
+  const update = (setter: (value: string) => void, value: string) => {
+    setter(value);
+    setPage(1);
+  };
+  return (
+    <div className="animate-enter">
+      <PageHeader
+        eyebrow="Experiência do usuário"
+        title="Avaliações"
+        description="Consulte avaliações e respostas registradas no seu cartório."
+      />
+      <GlassPanel className="mb-4">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <label className="relative">
+            <span className="sr-only">Buscar comentário</span>
+            <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+            <Input
+              className="bg-glass-strong pl-9"
+              placeholder="Buscar comentário"
+              value={draftSearch}
+              onChange={(event) => setDraftSearch(event.target.value)}
+            />
+          </label>
+          <select
+            aria-label="Filtrar por ponto"
+            className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm"
+            value={pointId}
+            onChange={(event) => update(setPointId, event.target.value)}
+          >
+            <option value="">Todos os pontos</option>
+            {list.data?.points.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.nome}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar por pesquisa"
+            className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm"
+            value={surveyId}
+            onChange={(event) => update(setSurveyId, event.target.value)}
+          >
+            <option value="">Todas as pesquisas</option>
+            {list.data?.surveys.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.nome}
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar por nota"
+            className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm"
+            value={rating}
+            onChange={(event) => update(setRating, event.target.value)}
+          >
+            <option value="">Todas as notas</option>
+            {[5, 4, 3, 2, 1].map((value) => (
+              <option key={value} value={value}>
+                {value} estrelas
+              </option>
+            ))}
+          </select>
+          <select
+            aria-label="Filtrar por classificação"
+            className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm"
+            value={classification}
+            onChange={(event) => update(setClassification, event.target.value)}
+          >
+            <option value="">Todas as classificações</option>
+            <option value="satisfeita">Satisfeita</option>
+            <option value="atencao">Atenção</option>
+          </select>
+          <select
+            aria-label="Filtrar por status"
+            className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm"
+            value={status}
+            onChange={(event) => update(setStatus, event.target.value)}
+          >
+            <option value="">Todos os status</option>
+            <option value="nova">Nova</option>
+            <option value="em_analise">Em análise</option>
+            <option value="respondida">Respondida</option>
+          </select>
+          <label className="grid grid-cols-[auto_1fr] items-center gap-2 text-xs text-muted-foreground">
+            De
+            <Input
+              type="date"
+              value={startDate}
+              onChange={(event) => update(setStartDate, event.target.value)}
+            />
+          </label>
+          <label className="grid grid-cols-[auto_1fr] items-center gap-2 text-xs text-muted-foreground">
+            Até
+            <Input
+              type="date"
+              value={endDate}
+              onChange={(event) => update(setEndDate, event.target.value)}
+            />
+          </label>
+        </div>
+        <div className="mt-3 flex justify-end">
+          <Button variant="outline" onClick={reset}>
+            <FilterX />
+            Limpar filtros
+          </Button>
+        </div>
+      </GlassPanel>
+      {list.isLoading ? (
+        <GlassPanel>
+          <InterfaceState
+            kind="loading"
+            title="Carregando avaliações"
+            description="Buscando os registros do seu cartório."
+          />
+        </GlassPanel>
+      ) : list.isError ? (
+        <GlassPanel>
+          <InterfaceState
+            kind="error"
+            title="Não foi possível carregar as avaliações"
+            description="Sua sessão pode ter expirado ou o serviço está indisponível."
+            action={
+              <Button variant="outline" onClick={() => void list.refetch()}>
+                Tentar novamente
+              </Button>
+            }
+          />
+        </GlassPanel>
+      ) : !list.data?.items.length ? (
+        <GlassPanel>
+          <InterfaceState
+            kind="empty"
+            title="Nenhuma avaliação encontrada"
+            description="Não há avaliações para os filtros selecionados."
+            action={
+              <Button variant="outline" onClick={reset}>
+                Limpar filtros
+              </Button>
+            }
+          />
+        </GlassPanel>
+      ) : (
+        <>
+          <div className="hidden overflow-hidden rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-xl md:block">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-glass-border bg-glass-strong text-xs text-muted-foreground">
+                <tr>
+                  {[
+                    "Data",
+                    "Nota",
+                    "Serviço",
+                    "Pesquisa",
+                    "Classificação",
+                    "Comentário",
+                    "Status",
+                  ].map((heading) => (
+                    <th className="px-4 py-3 font-semibold" key={heading}>
+                      {heading}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {list.data.items.map((item) => (
+                  <tr
+                    key={item.id}
+                    tabIndex={0}
+                    className="cursor-pointer border-b border-glass-border transition-colors last:border-0 hover:bg-glass-strong"
+                    onClick={() => setSelectedId(item.id)}
+                    onKeyDown={(event) => event.key === "Enter" && setSelectedId(item.id)}
+                  >
+                    <td className="whitespace-nowrap px-4 py-4 text-xs">
+                      {formatDate(item.createdAt)}
+                    </td>
+                    <td className="px-4 py-4">
+                      <Stars value={item.rating} size="sm" />
+                    </td>
+                    <td className="px-4 py-4 font-medium">
+                      {item.serviceName ?? (
+                        <span className="font-normal text-muted-foreground">Não informado</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-4">{item.surveyName}</td>
+                    <td className="px-4 py-4">
+                      <StatusBadge tone={item.rating >= 4 ? "positive" : "danger"}>
+                        {item.classification}
+                      </StatusBadge>
+                    </td>
+                    <td className="max-w-56 truncate px-4 py-4">
+                      {item.comment || "Sem comentário"}
+                    </td>
+                    <td className="px-4 py-4">
+                      <StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="grid gap-3 md:hidden">
+            {list.data.items.map((item) => (
+              <Button
+                key={item.id}
+                variant="outline"
+                onClick={() => setSelectedId(item.id)}
+                className="h-auto justify-start whitespace-normal p-4 text-left"
+              >
+                <span className="w-full">
+                  <span className="flex justify-between gap-2">
+                    <Stars value={item.rating} size="sm" />
+                    <StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge>
+                  </span>
+                  <span className="mt-3 block font-medium">{item.comment || "Sem comentário"}</span>
+                  <span className="mt-2 block text-xs text-muted-foreground">
+                    {item.serviceName ?? "Serviço não informado"} · {formatDate(item.createdAt)}
+                  </span>
+                </span>
+              </Button>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">
+            <p className="text-muted-foreground">
+              {list.data.total} avaliações · página {page} de {totalPages}
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1 || list.isFetching}
+                onClick={() => setPage((current) => current - 1)}
+              >
+                <ChevronLeft />
+                Anterior
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages || list.isFetching}
+                onClick={() => setPage((current) => current + 1)}
+              >
+                Próxima
+                <ChevronRight />
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+      {selectedId && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/20 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="evaluation-title"
+          onMouseDown={() => setSelectedId(undefined)}
+        >
+          <div
+            className="my-4 w-full max-w-2xl rounded-xl border border-glass-border bg-background p-6 shadow-xl"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            {detail.isLoading ? (
+              <InterfaceState
+                kind="loading"
+                title="Carregando avaliação"
+                description="Buscando respostas e informações relacionadas."
+              />
+            ) : detail.isError ? (
+              <InterfaceState
+                kind="error"
+                title="Não foi possível abrir a avaliação"
+                description="Tente novamente ou feche esta janela."
+                action={
+                  <Button variant="outline" onClick={() => void detail.refetch()}>
+                    Tentar novamente
+                  </Button>
+                }
+              />
+            ) : !detail.data ? (
+              <InterfaceState
+                kind="empty"
+                title="Avaliação não encontrada"
+                description="O registro não existe ou não pertence ao seu cartório."
+              />
+            ) : (
+              <EvaluationDialogContent
+                evaluation={detail.data}
+                onClose={() => setSelectedId(undefined)}
+                onCreateOccurrence={(evaluationId) =>
+                  void navigate({ to: "/ocorrencias", search: { review: evaluationId } })
+                }
+              />
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
-function Info({ label, children }: { label: string; children: React.ReactNode }) { return <div className="rounded-lg bg-muted/70 p-3"><p className="mb-2 text-xs text-muted-foreground">{label}</p>{children}</div>; }
+function Info({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-lg bg-muted/70 p-3">
+      <p className="mb-2 text-xs text-muted-foreground">{label}</p>
+      {children}
+    </div>
+  );
+}
 
-function EvaluationDialogContent({evaluation,onClose,onCreateOccurrence}:{evaluation:any;onClose():void;onCreateOccurrence:(id:string)=>void}) { return <><div className="flex items-start justify-between gap-3"><div><h2 id="evaluation-title" className="font-display text-lg font-semibold">Avaliação {evaluation.id.slice(0,8)}</h2><p className="text-sm text-muted-foreground">{formatDate(evaluation.createdAt)} · {evaluation.pointName}</p></div><Button variant="ghost" size="sm" onClick={onClose}>Fechar</Button></div><div className="mt-5 grid gap-3 sm:grid-cols-3"><Info label="Nota geral"><Stars value={evaluation.rating} size="sm"/></Info><Info label="Classificação"><StatusBadge tone={evaluation.rating>=4?"positive":"danger"}>{evaluation.classification}</StatusBadge></Info><Info label="Status"><StatusBadge tone={statusTone(evaluation.status)}>{evaluation.status}</StatusBadge></Info></div><dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2"><div><dt className="text-xs text-muted-foreground">Pesquisa</dt><dd className="font-medium">{evaluation.surveyName}</dd></div><div><dt className="text-xs text-muted-foreground">Resolutividade</dt><dd className="font-medium">{evaluation.resolution??"Não informada"}</dd></div></dl><h3 className="mt-6 font-display font-bold">Respostas</h3>{evaluation.answers.length?<div className="mt-2 divide-y divide-glass-border rounded-lg border">{evaluation.answers.map((answer:any)=><div key={answer.id} className="p-4"><p className="text-sm font-medium">{answer.question}</p><p className="mt-1 text-sm text-muted-foreground">{answer.text||answer.value.join(" · ")||"Sem resposta"}</p></div>)}</div>:<p className="mt-2 text-sm text-muted-foreground">Nenhuma resposta detalhada foi registrada.</p>}{evaluation.comment&&<><h3 className="mt-6 font-display font-bold">Comentário</h3><blockquote className="mt-2 rounded-lg border border-glass-border bg-glass p-4 text-sm">“{evaluation.comment}”</blockquote></>}{evaluation.dissatisfactionReason&&<p className="mt-3 text-sm"><strong>Motivo de insatisfação:</strong> {evaluation.dissatisfactionReason}</p>}{evaluation.contact&&<div className="mt-5 rounded-lg bg-muted p-4 text-sm"><div className="flex items-center gap-2 font-bold"><UserRound className="size-4"/>Contato solicitado</div><p className="mt-2">{[evaluation.contact.name,evaluation.contact.phone,evaluation.contact.email].filter(Boolean).join(" · ")||"Dados não informados"}</p></div>}{evaluation.contactRestricted&&<div className="mt-5 flex items-center gap-2 rounded-lg bg-muted p-4 text-sm text-muted-foreground"><LockKeyhole className="size-4"/>Os dados de contato são restritos a administradores e gestores.</div>}<div className="mt-6 flex justify-end"><Button onClick={()=>onCreateOccurrence(evaluation.id)}><AlertCircle/>Criar ocorrência</Button></div></>; }
+function EvaluationDialogContent({
+  evaluation,
+  onClose,
+  onCreateOccurrence,
+}: {
+  evaluation: any;
+  onClose(): void;
+  onCreateOccurrence: (id: string) => void;
+}) {
+  return (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 id="evaluation-title" className="font-display text-lg font-semibold">
+            Avaliação {evaluation.id.slice(0, 8)}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {formatDate(evaluation.createdAt)} · {evaluation.serviceName ?? "Serviço não informado"}
+          </p>
+        </div>
+        <Button variant="ghost" size="sm" onClick={onClose}>
+          Fechar
+        </Button>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <Info label="Nota geral">
+          <Stars value={evaluation.rating} size="sm" />
+        </Info>
+        <Info label="Classificação">
+          <StatusBadge tone={evaluation.rating >= 4 ? "positive" : "danger"}>
+            {evaluation.classification}
+          </StatusBadge>
+        </Info>
+        <Info label="Status">
+          <StatusBadge tone={statusTone(evaluation.status)}>{evaluation.status}</StatusBadge>
+        </Info>
+      </div>
+      <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
+        <div>
+          <dt className="text-xs text-muted-foreground">Pesquisa</dt>
+          <dd className="font-medium">{evaluation.surveyName}</dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted-foreground">Resolutividade</dt>
+          <dd className="font-medium">{evaluation.resolution ?? "Não informada"}</dd>
+        </div>
+      </dl>
+      <h3 className="mt-6 font-display font-bold">Respostas</h3>
+      {evaluation.answers.length ? (
+        <div className="mt-2 divide-y divide-glass-border rounded-lg border">
+          {evaluation.answers.map((answer: any) => (
+            <div key={answer.id} className="p-4">
+              <p className="text-sm font-medium">{answer.question}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {answer.text || answer.value.join(" · ") || "Sem resposta"}
+              </p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-muted-foreground">
+          Nenhuma resposta detalhada foi registrada.
+        </p>
+      )}
+      {evaluation.comment && (
+        <>
+          <h3 className="mt-6 font-display font-bold">Comentário</h3>
+          <blockquote className="mt-2 rounded-lg border border-glass-border bg-glass p-4 text-sm">
+            “{evaluation.comment}”
+          </blockquote>
+        </>
+      )}
+      {evaluation.dissatisfactionReason && (
+        <p className="mt-3 text-sm">
+          <strong>Motivo de insatisfação:</strong> {evaluation.dissatisfactionReason}
+        </p>
+      )}
+      {evaluation.contact && (
+        <div className="mt-5 rounded-lg bg-muted p-4 text-sm">
+          <div className="flex items-center gap-2 font-bold">
+            <UserRound className="size-4" />
+            Contato solicitado
+          </div>
+          <p className="mt-2">
+            {[evaluation.contact.name, evaluation.contact.phone, evaluation.contact.email]
+              .filter(Boolean)
+              .join(" · ") || "Dados não informados"}
+          </p>
+        </div>
+      )}
+      {evaluation.contactRestricted && (
+        <div className="mt-5 flex items-center gap-2 rounded-lg bg-muted p-4 text-sm text-muted-foreground">
+          <LockKeyhole className="size-4" />
+          Os dados de contato são restritos a administradores e gestores.
+        </div>
+      )}
+      <div className="mt-6 flex justify-end">
+        <Button onClick={() => onCreateOccurrence(evaluation.id)}>
+          <AlertCircle />
+          Criar ocorrência
+        </Button>
+      </div>
+    </>
+  );
+}

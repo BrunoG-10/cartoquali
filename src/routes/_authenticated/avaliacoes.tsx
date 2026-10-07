@@ -1,2 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router"; import { AppShell } from "@/components/cartoquali/app-shell"; import { ReviewsPage } from "@/components/cartoquali/reviews-page";
-export const Route=createFileRoute("/_authenticated/avaliacoes")({head:()=>({meta:[{title:"Avaliações — CartoQuali"},{name:"description",content:"Consulte notas e comentários recebidos."},{property:"og:title",content:"Avaliações — CartoQuali"},{property:"og:description",content:"Consulte notas e comentários recebidos."},{property:"og:type",content:"website"},{name:"twitter:card",content:"summary_large_image"}]}),component:()=> <AppShell><ReviewsPage/></AppShell>});
+import { createFileRoute } from "@tanstack/react-router";
+import { AppShell } from "@/components/cartoquali/app-shell";
+import { ReviewsPage } from "@/components/cartoquali/reviews-page";
+export const Route = createFileRoute("/_authenticated/avaliacoes")({
+  head: () => ({
+    meta: [
+      { title: "Avaliações — CartoQuali" },
+      { name: "description", content: "Consulte notas e comentários recebidos." },
+      { property: "og:title", content: "Avaliações — CartoQuali" },
+      { property: "og:description", content: "Consulte notas e comentários recebidos." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: () => (
+    <AppShell>
+      <ReviewsPage />
+    </AppShell>
+  ),
+});

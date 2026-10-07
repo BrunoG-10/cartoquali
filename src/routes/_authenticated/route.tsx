@@ -15,4 +15,7 @@ export const Route = createFileRoute("/_authenticated")({
   component: ProtectedOutlet,
 });
 
-function ProtectedOutlet(){const {status}=useAuth();return status==="authenticated"?<Outlet/>:<AuthAccessState/>;}
+function ProtectedOutlet() {
+  const { status } = useAuth();
+  return status === "authenticated" ? <Outlet /> : <AuthAccessState />;
+}

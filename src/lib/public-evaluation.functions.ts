@@ -31,7 +31,11 @@ export const submissionSchema = z.object({
     email: z.string().trim().email().max(255).optional(),
   }),
   testToken: z.string().uuid().optional(),
+  serviceId: z.string().uuid().optional(),
+  serviceOther: z.boolean().optional(),
 });
+
+export type PublicService = { id: string; name: string; attribution: string };
 
 export type PublicQuestion = {
   key: string;
@@ -53,6 +57,9 @@ export type PublicEvaluationContext =
   | {
       status: "ready";
       registryName: string;
+      registryOfficialName: string;
+      registryTradeName: string | null;
+      services: PublicService[];
       pointName: string;
       surveyName: string;
       surveyDescription: string | null;
@@ -126,9 +133,29 @@ export function parseContext(value: unknown): PublicEvaluationContext {
     };
   });
   const rawSettings = isRecord(value["settings"]) ? value["settings"] : {};
+  const services: PublicService[] = Array.isArray(value["services"])
+    ? value["services"]
+        .filter(isRecord)
+        .filter((raw) => typeof raw["id"] === "string" && typeof raw["name"] === "string")
+        .map((raw) => ({
+          id: raw["id"] as string,
+          name: raw["name"] as string,
+          attribution: String(raw["attribution"] ?? ""),
+        }))
+    : [];
+  const officialName =
+    typeof value["registryOfficialName"] === "string" && value["registryOfficialName"].trim()
+      ? value["registryOfficialName"]
+      : value["registryName"];
   return {
     status: "ready",
     registryName: value["registryName"],
+    registryOfficialName: officialName,
+    registryTradeName:
+      typeof value["registryTradeName"] === "string"
+        ? value["registryTradeName"]
+        : value["registryName"],
+    services,
     pointName: value["pointName"],
     surveyName:
       typeof value["surveyName"] === "string" ? value["surveyName"] : "Pesquisa de atendimento",
@@ -148,13 +175,18 @@ export function parseContext(value: unknown): PublicEvaluationContext {
 }
 
 export const getPublicEvaluation = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) => z.object({ code: codeSchema, testToken: z.string().uuid().optional() }).parse(input))
+  .inputValidator((input: unknown) =>
+    z.object({ code: codeSchema, testToken: z.string().uuid().optional() }).parse(input),
+  )
   .handler(async ({ data }) => {
     setResponseHeader("Cache-Control", "private, no-store, max-age=0");
     setResponseHeader("X-Content-Type-Options", "nosniff");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: result, error } = data.testToken
-      ? await supabaseAdmin.rpc("get_onboarding_test_context", { _code: data.code, _test_token: data.testToken })
+      ? await supabaseAdmin.rpc("get_onboarding_test_context", {
+          _code: data.code,
+          _test_token: data.testToken,
+        })
       : await supabaseAdmin.rpc("get_public_evaluation_context", { _code: data.code });
     if (error) {
       console.error("[public-evaluation] context lookup failed", error.code);
@@ -176,8 +208,22 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
     ).join("");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const response = data.testToken
-      ? await supabaseAdmin.rpc("submit_onboarding_test_evaluation", { _code:data.code,_test_token:data.testToken,_idempotency_key:data.idempotencyKey,_source_hash:sourceHash,_answers:data.answers })
-      : await supabaseAdmin.rpc("submit_public_evaluation", { _code:data.code,_idempotency_key:data.idempotencyKey,_source_hash:sourceHash,_answers:data.answers,_contact:data.contact });
+      ? await supabaseAdmin.rpc("submit_onboarding_test_evaluation", {
+          _code: data.code,
+          _test_token: data.testToken,
+          _idempotency_key: data.idempotencyKey,
+          _source_hash: sourceHash,
+          _answers: data.answers,
+        })
+      : await supabaseAdmin.rpc("submit_public_evaluation", {
+          _code: data.code,
+          _idempotency_key: data.idempotencyKey,
+          _source_hash: sourceHash,
+          _answers: data.answers,
+          _contact: data.contact,
+          ...(data.serviceId ? { _servico_id: data.serviceId } : {}),
+          ...(data.serviceOther ? { _servico_outro: true } : {}),
+        });
     const { data: result, error } = response;
     if (error) {
       const safeMessages: Record<string, string> = {
@@ -187,6 +233,8 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
         rate_limited: "Muitas avaliações foram enviadas nesta sessão. Aguarde alguns minutos.",
         required_answer_missing: "Responda todas as perguntas obrigatórias.",
         invalid_contact: "Confira os dados de contato informados.",
+        service_unavailable:
+          "Este serviço não está disponível para avaliação. Escolha outro ou pule.",
       };
       const key = Object.keys(safeMessages).find((item) => error.message.includes(item));
       console.error("[public-evaluation] submission rejected", error.code, key ?? "validation");
