@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
-import { AlertCircle, ArrowUpRight, CheckCircle2, Filter, MessageSquareText, RefreshCw, Star, X } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Filter, MapPin, MessageSquareText, Minus, RefreshCw, Star, TrendingDown, TrendingUp, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { DASHBOARD_PERIODS } from "@/constants/cartoquali";
 import type { DashboardPeriod } from "@/types/cartoquali";
 import { GlassPanel, PageHeader, Stars } from "./primitives";
@@ -28,24 +29,96 @@ export function DashboardPage() {
   </div>;
 }
 
+type Trend = { text: string; tone: "up" | "down" | "flat" | "none" };
+
+// Compares the current value with the previous period of the same length.
+// "unit" is how the difference is written: percentage points, plain number or count.
+function trend(current: number | null, previous: number | null, previousTotal: number, unit: "pp" | "number" | "count"): Trend {
+  if (current === null || previous === null || previousTotal === 0) return { text: "Sem dados do período anterior", tone: "none" };
+  const diff = current - previous;
+  const rounded = unit === "count" ? Math.round(diff) : Math.round(diff * 10) / 10;
+  if (rounded === 0) return { text: "Estável vs. período anterior", tone: "flat" };
+  const value = Math.abs(rounded).toLocaleString("pt-BR", { maximumFractionDigits: 1 });
+  const suffix = unit === "pp" ? " p.p." : "";
+  return { text: `${rounded > 0 ? "+" : "−"}${value}${suffix} vs. período anterior`, tone: rounded > 0 ? "up" : "down" };
+}
+
+function KpiCard({ label, value, detail, trend: t, positiveIsGood = true }: { label: string; value: string; detail?: ReactNode; trend: Trend; positiveIsGood?: boolean }) {
+  const good = t.tone === "up" ? positiveIsGood : t.tone === "down" ? !positiveIsGood : null;
+  const TrendIcon = t.tone === "up" ? TrendingUp : t.tone === "down" ? TrendingDown : Minus;
+  return <GlassPanel className="min-w-0 p-4">
+    <p className="text-sm font-medium text-muted-foreground">{label}</p>
+    <p className="mt-1 break-words font-display text-3xl font-bold">{value}</p>
+    {detail}
+    <p className={cn("mt-2 flex items-center gap-1 text-xs", good === true && "text-success", good === false && "text-destructive", good === null && "text-muted-foreground")}>
+      {t.tone !== "none" && <TrendIcon className="size-3.5" aria-hidden="true" />}{t.text}
+    </p>
+  </GlassPanel>;
+}
+
+const bucketLabel = (bucket: string) => new Date(bucket).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "short" });
+
 function DashboardContent({ data }: { data: NonNullable<ReturnType<typeof useRealDashboard>["data"]> }) {
   const summary = data.summary;
+  const previous = data.previousSummary;
   const hasData = summary.total > 0;
   const distribution = Object.fromEntries(data.distribution.map((item) => [item.rating, item.count]));
-  const stats = [
-    ["Satisfação geral", hasData ? `${number(summary.satisfaction)}%` : "—"],
-    ["Média de avaliação", hasData ? `${number(summary.average)} / 5` : "—"],
-    ["Avaliações recebidas", String(summary.total)],
-    ["Resolutividade", summary.resolution === null ? "Dados insuficientes" : `${number(summary.resolution)}%`],
-    ["Avaliações negativas", String(summary.negative_count)],
-  ];
-  if (!hasData) return <GlassPanel className="py-14 text-center"><MessageSquareText className="mx-auto size-8 text-muted-foreground"/><h2 className="mt-4 font-display text-xl font-bold">Ainda não existem avaliações suficientes para gerar este indicador</h2><p className="mt-2 text-sm text-muted-foreground">Altere os filtros ou aguarde novas avaliações.</p></GlassPanel>;
+  const maxBucket = Math.max(...data.series.map((entry) => entry.total), 1);
+  if (!hasData) return <GlassPanel className="py-14 text-center"><MessageSquareText className="mx-auto size-8 text-muted-foreground"/><h2 className="mt-4 font-display text-xl font-bold">Ainda não existem avaliações neste período</h2><p className="mt-2 text-sm text-muted-foreground">Altere os filtros ou aguarde novas avaliações.</p></GlassPanel>;
   return <>
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">{stats.map(([label, value]) => <GlassPanel key={label} className="min-w-0 p-4"><p className="text-xs font-medium text-muted-foreground">{label}</p><p className="mt-2 break-words font-display text-2xl font-bold">{value}</p><p className="mt-1 text-xs text-muted-foreground">dados do período selecionado</p></GlassPanel>)}</div>
-    <div className="mt-4 grid gap-4 lg:grid-cols-3"><GlassPanel className="lg:col-span-2"><h2 className="font-display font-bold">Volume ao longo do tempo</h2><p className="text-xs text-muted-foreground">Quantidade real de avaliações por intervalo</p><div className="mt-6 flex h-52 items-end gap-2 sm:gap-4">{data.series.map((item) => { const max = Math.max(...data.series.map((entry) => entry.total), 1); return <div key={item.bucket} className="flex h-full flex-1 flex-col justify-end gap-2"><span className="text-center text-[10px] font-semibold">{item.total}</span><div className="w-full rounded-t-md bg-primary/70" style={{ height: `${Math.max(8, item.total / max * 100)}%` }}/><span className="truncate text-center text-[10px] text-muted-foreground">{new Date(item.bucket).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "short" })}</span></div>; })}</div></GlassPanel>
-      <GlassPanel><h2 className="font-display font-bold">Distribuição das notas</h2><div className="mt-5 space-y-4">{[5,4,3,2,1].map((rating) => { const count = distribution[rating] ?? 0; return <div key={rating}><div className="mb-1 flex justify-between text-xs"><span className="flex items-center gap-1">{rating}<Star className="size-3 fill-current text-rating"/></span><strong>{count} · {(count / summary.total * 100).toFixed(0)}%</strong></div><div className="h-2 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-accent-foreground" style={{ width: `${count / summary.total * 100}%` }}/></div></div>; })}</div></GlassPanel></div>
-    <div className="mt-4 grid gap-4 lg:grid-cols-2"><GlassPanel><h2 className="flex items-center gap-2 font-display font-bold"><CheckCircle2 className="size-5 text-success"/>Desempenho por ponto</h2><div className="mt-4 space-y-3">{data.points.map((item) => <div key={item.id} className="flex justify-between gap-3 text-sm"><span>{item.name}</span><strong>{item.total ? `${number(item.average)} · ${item.total}` : "Sem avaliações"}</strong></div>)}</div></GlassPanel>
-      <GlassPanel><h2 className="flex items-center gap-2 font-display font-bold"><MessageSquareText className="size-5 text-primary"/>Avaliações recentes</h2><div className="mt-4 space-y-4">{data.recent.map((review) => <div key={review.id} className="border-b border-glass-border pb-3 last:border-0"><div className="flex items-center justify-between gap-3"><Stars value={review.rating} size="sm"/><span className="text-[11px] text-muted-foreground">{review.point_name}</span></div><p className="mt-1 line-clamp-1 text-sm">{review.comment || "Sem comentário"}</p></div>)}</div><Button asChild variant="link" className="mt-2 px-0"><Link to="/avaliacoes">Ver todas <ArrowUpRight/></Link></Button></GlassPanel></div>
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <KpiCard label="Satisfação geral" value={`${number(summary.satisfaction)}%`} trend={trend(summary.satisfaction, previous.satisfaction, previous.total, "pp")} />
+      <KpiCard label="Nota média" value={`${number(summary.average)} / 5`} trend={trend(summary.average, previous.average, previous.total, "number")} />
+      <KpiCard
+        label="Avaliações recebidas"
+        value={summary.total.toLocaleString("pt-BR")}
+        detail={<p className={cn("mt-1 text-xs font-medium", summary.negative_count > 0 ? "text-warning" : "text-muted-foreground")}>{summary.negative_count === 1 ? "1 negativa" : `${summary.negative_count} negativas`}</p>}
+        trend={trend(summary.total, previous.total, previous.total, "count")}
+      />
+      <KpiCard label="Resolutividade" value={summary.resolution === null ? "—" : `${number(summary.resolution)}%`} detail={summary.resolution === null ? <p className="mt-1 text-xs text-muted-foreground">Dados insuficientes</p> : undefined} trend={trend(summary.resolution, previous.resolution, previous.total, "pp")} />
+    </div>
+    <div className="mt-4 grid gap-4 lg:grid-cols-3">
+      <GlassPanel className="lg:col-span-2">
+        <h2 className="font-display text-lg font-bold">Volume ao longo do tempo</h2>
+        <p className="text-sm text-muted-foreground">Quantidade de avaliações por intervalo</p>
+        <div className="mt-6 flex h-52 items-end gap-2 sm:gap-4" role="img" aria-label={`Avaliações por intervalo: ${data.series.map((item) => `${bucketLabel(item.bucket)}, ${item.total}`).join("; ")}`}>
+          {data.series.map((item) => <div key={item.bucket} className="flex h-full min-w-0 flex-1 flex-col justify-end gap-2">
+            <span className="text-center text-xs font-semibold">{item.total}</span>
+            <div className="w-full rounded-t-md bg-chart-1" style={{ height: `${Math.max(4, item.total / maxBucket * 100)}%` }} title={`${bucketLabel(item.bucket)}: ${item.total}`} />
+            <span className="truncate text-center text-xs text-muted-foreground">{bucketLabel(item.bucket)}</span>
+          </div>)}
+        </div>
+      </GlassPanel>
+      <GlassPanel>
+        <h2 className="font-display text-lg font-bold">Distribuição das notas</h2>
+        <div className="mt-5 space-y-4">{[5, 4, 3, 2, 1].map((rating) => {
+          const count = distribution[rating] ?? 0;
+          const share = count / summary.total * 100;
+          return <div key={rating}>
+            <div className="mb-1 flex justify-between text-sm"><span className="flex items-center gap-1">{rating}<Star className="size-3.5 fill-current text-rating" aria-hidden="true"/></span><span><strong>{count}</strong> <span className="text-muted-foreground">· {share.toFixed(0)}%</span></span></div>
+            <div className="h-2 overflow-hidden rounded-full bg-muted"><div className={cn("h-full rounded-full", rating <= 3 ? "bg-chart-4" : "bg-rating")} style={{ width: `${share}%` }}/></div>
+          </div>;
+        })}</div>
+        <p className="mt-4 text-xs text-muted-foreground">Notas de 1 a 3 contam como negativas.</p>
+      </GlassPanel>
+    </div>
+    <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <GlassPanel>
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold"><MapPin className="size-5 text-primary" aria-hidden="true"/>Desempenho por ponto</h2>
+        <ul className="mt-4 space-y-4">{data.points.map((item) => <li key={item.id}>
+          <div className="flex justify-between gap-3 text-sm"><span className="min-w-0 truncate">{item.name}</span><span className="shrink-0">{item.total ? <><strong>{number(item.average)}</strong> <span className="text-muted-foreground">· {item.total} {item.total === 1 ? "avaliação" : "avaliações"}</span></> : <span className="text-muted-foreground">Sem avaliações</span>}</span></div>
+          {item.total > 0 && item.average !== null && <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-chart-1" style={{ width: `${item.average / 5 * 100}%` }}/></div>}
+        </li>)}</ul>
+      </GlassPanel>
+      <GlassPanel>
+        <h2 className="flex items-center gap-2 font-display text-lg font-bold"><MessageSquareText className="size-5 text-primary" aria-hidden="true"/>Avaliações recentes</h2>
+        <ul className="mt-4 space-y-4">{data.recent.map((review) => <li key={review.id} className="border-b border-border pb-3 last:border-0">
+          <div className="flex items-center justify-between gap-3"><Stars value={review.rating} size="sm"/><span className="truncate text-xs text-muted-foreground">{review.point_name} · {new Date(review.created_at).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</span></div>
+          <p className={cn("mt-1 line-clamp-2 text-sm", !review.comment && "text-muted-foreground")}>{review.comment || "Sem comentário"}</p>
+        </li>)}</ul>
+        <Button asChild variant="link" className="mt-2 px-0"><Link to="/avaliacoes">Ver todas <ArrowUpRight/></Link></Button>
+      </GlassPanel>
+    </div>
   </>;
 }
-function LoadingPanels() { return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" aria-label="Carregando indicadores">{Array.from({ length: 5 }).map((_, index) => <GlassPanel key={index} className="h-28 animate-pulse bg-muted/40"><span className="sr-only">Carregando</span></GlassPanel>)}</div>; }
+function LoadingPanels() { return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Carregando indicadores">{Array.from({ length: 4 }).map((_, index) => <GlassPanel key={index} className="h-28 animate-pulse bg-muted/40"><span className="sr-only">Carregando</span></GlassPanel>)}</div>; }
