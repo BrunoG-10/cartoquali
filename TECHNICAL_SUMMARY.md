@@ -1,5 +1,7 @@
 # Resumo técnico — preparação para backend externo
 
+> **Histórico.** Este resumo descreve a fase anterior ao backend. A camada mock (`data-provider`, `mock-service`, `session-provider`) foi removida depois que todos os módulos passaram a usar o Supabase. A arquitetura atual está em `ARCHITECTURE.md`.
+
 ## Entregue
 
 - Contratos centrais ampliados com resultados de serviço, erros previsíveis, filtros, auditoria e snapshot da sessão.

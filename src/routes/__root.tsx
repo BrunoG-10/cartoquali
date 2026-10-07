@@ -13,7 +13,6 @@ import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { CartoQualiSessionProvider } from "@/components/cartoquali/session-provider";
 import { AuthProvider } from "@/components/cartoquali/auth-provider";
 
 function NotFoundComponent() {
@@ -122,10 +121,8 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <CartoQualiSessionProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </CartoQualiSessionProvider>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
       </AuthProvider>
       <Toaster position="top-right" />
     </QueryClientProvider>
