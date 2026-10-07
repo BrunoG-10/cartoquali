@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowRight, Check, LoaderCircle, LockKeyhole, RotateCcw } from "lucide-react";
+import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -373,11 +374,9 @@ function Screen({
     <div className="grid min-h-screen place-items-center overflow-x-hidden bg-background p-3 sm:p-4">
       <main className="min-w-0 w-full max-w-lg rounded-xl border border-glass-border bg-glass p-5 text-center shadow-glass backdrop-blur-xl sm:p-9">
         <div className="mb-7 flex min-w-0 items-center justify-center gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary font-display font-bold text-primary-foreground">
-            C
-          </span>
+          <LogoMark size={40} />
           <div className="min-w-0 text-left">
-            <strong className="block font-display">CartoQuali</strong>
+            <Wordmark className="block text-lg leading-tight" />
             <small className="block truncate text-muted-foreground">
               {registryName} · {pointName}
             </small>

@@ -8,6 +8,7 @@ import {
   Sparkles, Star, TrendingUp, UserRound, Users, X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -57,7 +58,7 @@ const createWhatsappUrl = (message = defaultWhatsappMessage) =>
   `https://wa.me/${commercialWhatsappNumber}?text=${encodeURIComponent(message)}`;
 
 function Brand() {
-  return <Link to="/" className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><span className="grid size-10 place-items-center rounded-lg bg-primary font-display text-lg font-bold text-primary-foreground shadow-glass">C</span><span><strong className="block font-display text-base leading-none">CartoQuali</strong><small className="text-[10px] text-muted-foreground">Qualidade para cartórios</small></span></Link>;
+  return <Link to="/" className="flex items-center gap-3 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><LogoMark size={40} /><span><Wordmark className="block text-lg leading-none" /><small className="text-xs text-muted-foreground">Qualidade para cartórios</small></span></Link>;
 }
 
 function SectionTitle({ eyebrow, title, description, center = false }: { eyebrow: string; title: string; description?: string; center?: boolean }) {
