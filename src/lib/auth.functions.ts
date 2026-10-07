@@ -27,7 +27,8 @@ export const getCurrentAuthContext = createServerFn({ method: "GET" })
     if (!cartorio) return { status: "missing_registry" as const };
     if (usuario.status !== "ativo") return { status: "inactive_user" as const };
     if (cartorio.status !== "ativo") return { status: "inactive_registry" as const };
-    const dbRole = roles?.[0]?.role as keyof typeof roleMap | undefined;
+    // A user may hold several roles; the session uses the most privileged one (roleMap order).
+    const dbRole = (Object.keys(roleMap) as (keyof typeof roleMap)[]).find((role) => roles?.some((item) => item.role === role));
     if (!dbRole || !roleMap[dbRole]) return { status: "missing_role" as const };
     return {
       status: "active" as const,
