@@ -117,6 +117,7 @@ export const updateRegistryUser = createServerFn({ method: "POST" })
     if (updateError) {
       if(updateError.message.includes("self_access_change")) throw new Error("Você não pode remover o próprio acesso administrativo.");
       if(updateError.message.includes("last_registry_admin")) throw new Error("O último administrador ativo não pode ser removido.");
+      if(updateError.message.includes("platform_admin_protected")) throw new Error("O perfil de administrador da plataforma não pode ser alterado por esta tela.");
       throw new Error("Não foi possível atualizar o usuário.");
     }
     const { data: updated, error } = await context.supabase.from("usuarios").select("id, cartorio_id, auth_user_id, nome, email, telefone, status, created_at, user_roles(role)").eq("id", data.id).single();
