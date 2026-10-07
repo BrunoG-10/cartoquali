@@ -2,44 +2,37 @@
 
 ## Estado atual
 
-O MVP é uma aplicação frontend em React e TanStack Start. A estrutura do PostgreSQL externo está definida separadamente, mas o frontend ainda não usa banco, autenticação real, API externa ou persistência no navegador. Todo dado alterado na interface existe apenas durante a sessão atual.
+Aplicação TanStack Start (React 19) com dados reais no Supabase externo (PostgreSQL + Auth). Não há camada de dados fictícios: toda tela lê e grava pelo banco.
 
 ## Camadas
 
 ```text
-UI → Rotas → Componentes → Serviços → Data Provider → Mock atual
-                                                   ↘ API futura → Backend → PostgreSQL externo
+Navegador ── rotas e componentes (src/routes, src/components/cartoquali)
+   │  TanStack Query + useServerFn
+   ▼
+Funções de servidor (src/lib/*.functions.ts)
+   │  requireSupabaseAuth: valida o JWT e cria um cliente Supabase em nome do usuário
+   ▼
+Supabase ── RLS por cartorio_id + RPCs security definer + triggers de auditoria
 ```
 
-- `src/types/cartoquali.ts`: contratos do domínio.
-- `src/data/mock-service.ts`: dados relacionais e adaptador mock.
-- `src/services/cartoquali-service.ts`: fronteira tipada de leituras e mutações.
-- `src/services/data-provider.ts`: seleciona explicitamente o provedor `mock`; `api` é apenas um ponto de extensão.
-- `src/services/report-service.ts`: compõe modelos de relatório a partir do domínio da sessão.
-- `src/components/cartoquali/session-provider.tsx`: estado único da sessão e operações usadas pela interface.
-- `src/utils/cartoquali-analytics.ts`: filtros e cálculos puros compartilhados.
-- `src/routes`: rotas públicas e administrativas.
+- `src/lib/*.functions.ts`: regras de negócio e acesso ao banco, sempre no servidor.
+- `src/integrations/supabase/`: clientes Supabase (gerados pelo Lovable). `client.server.ts` usa a chave secreta e só pode ser importado dentro de handlers de servidor.
+- `src/lib/permissions.ts`: matriz de capacidades por papel, espelhada no servidor e no RLS.
+- `src/lib/roles.ts`: papel efetivo do usuário (`primaryDbRole`) quando ele possui vários papéis.
+- `src/lib/public-url.ts`: URL canônica pública (`VITE_PUBLIC_APP_URL`) para links, QR Code e NFC.
+- `supabase/migrations/`: esquema, RLS, funções e triggers do banco.
 
-## Domínio e relações
+## Isolamento entre cartórios
 
-Cada entidade operacional possui `registryId`. O encadeamento principal é:
+Todas as tabelas operacionais têm `cartorio_id`. O cartório da sessão é derivado no banco a partir de `auth.uid()` (`cartoquali_private.current_cartorio_id()`); o cliente nunca escolhe o cartório. Escritas sensíveis passam por RPCs que validam papel e cartório.
 
-```text
-Cartório → Ponto → Pesquisa → Perguntas
-                         ↘ Avaliação → Respostas → Ocorrência → Plano
-```
+## Fluxos públicos
 
-O contexto expõe `currentRegistry`, `currentUser`, permissões, `hasPermission` e o provedor ativo. Listagens e mutações são limitadas ao cartório atual. A rota pública valida os slugs do cartório e do ponto.
+- `/avaliar/{codigo}`: carrega a pesquisa e envia a avaliação por funções de servidor que usam a chave secreta e RPCs restritas, com idempotência e limite por sessão.
+- `/`: landing page sem dados de cartórios; só grava leads comerciais.
 
-## Indicadores e filtros
+## Variáveis de ambiente
 
-Dashboard, Qualidade e Relatórios usam as mesmas funções puras para período, nota média, satisfação, resolutividade, taxa negativa, dimensões e comparação anterior. Filtros incluem período, intervalo personalizado, ponto, pesquisa, nota, categoria e status quando aplicáveis.
-
-## Migração futura
-
-`CartoQualiService` é a fronteira para substituir o mock por uma API. Um adaptador futuro deverá implementar esse contrato, manter o escopo obrigatório por `registryId` e devolver os mesmos tipos. A interface não deve acessar diretamente banco ou detalhes de transporte. O snapshot inicial existe apenas para iniciar a demonstração em memória; mudanças continuam centralizadas no provedor da sessão e são descartadas ao recarregar.
-
-
-## Banco externo — Etapa 1
-
-A migration, o seed DEMO e os testes SQL ficam em `database/`. O modelo usa `cartorio_id` como equivalente persistido de `registryId`. Até a implementação de autenticação e RLS, as tabelas não concedem acesso a `anon` ou `authenticated`; esta etapa não conecta o frontend ao banco.
+- `.env` (versionado): apenas valores públicos — URL e chave publishable do Supabase, `VITE_PUBLIC_APP_URL`.
+- `.env.local` (ignorado): `SUPABASE_SERVICE_ROLE_KEY` local. Em produção, o mesmo segredo fica nos secrets da Lovable.
