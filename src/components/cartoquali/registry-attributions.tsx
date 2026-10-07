@@ -103,6 +103,11 @@ export function RegistryAttributions({ canEdit }: { canEdit: boolean }) {
         )}
       </div>
 
+      {saved.length === 0 && (
+        <p className="mb-4 rounded-lg bg-warning/10 px-3 py-2 text-sm text-warning">
+          Nenhuma atribuição marcada. Enquanto isso, a avaliação funciona sem a pergunta de serviço.
+        </p>
+      )}
       <div className="grid gap-2 sm:grid-cols-2">
         {ATTRIBUTIONS.map((item) => (
           <label

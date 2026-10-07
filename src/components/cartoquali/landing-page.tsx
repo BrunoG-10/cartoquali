@@ -14,6 +14,7 @@ import {
   LockKeyhole,
   Menu,
   QrCode,
+  Settings2,
   ShieldCheck,
   Star,
   UserRound,
@@ -48,12 +49,12 @@ const steps: Array<[LucideIcon, string, string]> = [
   [
     Star,
     "O cidadão avalia",
-    "Depois do atendimento, aponta a câmera para o QR Code e responde pelo celular, sem aplicativo nem cadastro.",
+    "O cidadão aponta a câmera para o QR Code do cartório e, se quiser, informa o serviço que utilizou. Responde pelo celular, sem aplicativo nem cadastro.",
   ],
   [
     ClipboardCheck,
     "O CartoQuali organiza",
-    "As respostas são separadas por ponto de atendimento, período e dimensão: atendimento, tempo, clareza, resolutividade e estrutura.",
+    "As respostas são separadas por serviço, período e pelos indicadores essenciais: cordialidade, clareza, tempo, instalações e resolução.",
   ],
   [BarChart3, "A gestão acompanha", "Indicadores e tendências reunidos em um painel único."],
   [
@@ -66,11 +67,28 @@ const steps: Array<[LucideIcon, string, string]> = [
 const indicatorHighlights = [
   "Satisfação, nota média e resolutividade",
   "Avaliações negativas destacadas",
-  "Leitura por período e por ponto de atendimento",
+  "Leitura por período e por serviço",
   "Relatórios para comparar períodos",
 ];
 
-const servicePoints = ["Recepção", "Balcão", "Reconhecimento de firma", "Escrituras", "Registro"];
+const productHighlights: Array<[LucideIcon, string, string]> = [
+  [
+    QrCode,
+    "Um QR Code para todo o cartório",
+    "O cidadão avalia em um só lugar e informa, se quiser, o serviço que utilizou. Você acompanha os resultados por serviço.",
+  ],
+  [
+    Settings2,
+    "Configurado para a sua serventia",
+    "Marque as atribuições (Notas, Protesto, Imóveis, Registro Civil…) e os serviços aparecem na avaliação. Seis perguntas essenciais garantem indicadores comparáveis, e você pode acrescentar perguntas próprias.",
+  ],
+];
+
+const continuousImprovement = [
+  "O Código Nacional de Normas do CNJ, com a redação dada pelo Provimento nº 229/2026, adota a melhoria contínua da experiência do usuário como princípio dos serviços eletrônicos de registro.",
+  "A Lei nº 13.460/2017, aplicável de forma subsidiária aos serviços públicos prestados por particulares, prevê a avaliação continuada da satisfação dos usuários, com pesquisa ao menos anual.",
+  "O PQTA, Prêmio de Qualidade Total Anoreg promovido pela ANOREG/BR, avalia a gestão dos cartórios com base em requisitos como o controle de indicadores de desempenho e a avaliação da satisfação dos usuários.",
+];
 
 const actionFlow = ["Avaliação", "Ocorrência", "Plano de melhoria", "Resultado"];
 
@@ -99,10 +117,13 @@ const faqs = [
     "O usuário precisa criar uma conta?",
     "Não. Ele avalia sem cadastro e só informa contato se quiser retorno.",
   ],
-  ["Posso utilizar QR Code?", "Sim. Cada ponto de atendimento tem seu próprio QR Code."],
   [
-    "Posso ter vários pontos de avaliação?",
-    "Sim. Os pontos são configuráveis conforme a operação do cartório.",
+    "Preciso de um QR Code para cada setor?",
+    "Não. Um único QR Code atende todo o cartório; o cidadão informa o serviço, se quiser.",
+  ],
+  [
+    "Posso personalizar as perguntas?",
+    "Sim. As seis perguntas essenciais podem ter o texto ajustado, e você pode acrescentar perguntas próprias.",
   ],
   [
     "Consigo acompanhar avaliações negativas?",
@@ -376,7 +397,7 @@ function IndicatorsSection() {
         <SectionTitle
           eyebrow="Indicadores"
           title="Indicadores claros para decidir onde agir"
-          description="Acompanhe a qualidade percebida por período e por ponto de atendimento, do jeito que o seu cartório se organiza. Compare períodos e veja se as ações estão dando resultado."
+          description="Acompanhe a qualidade percebida por período e por serviço, do jeito que o seu cartório se organiza. Compare períodos e veja se as ações estão dando resultado."
         />
         <div className="mt-12 grid items-center gap-10 lg:grid-cols-[1.35fr_0.65fr]">
           <DashboardScene />
@@ -392,18 +413,15 @@ function IndicatorsSection() {
                 </li>
               ))}
             </ul>
-            <p className="mt-8 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Exemplos de pontos de atendimento
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {servicePoints.map((point) => (
-                <span
-                  key={point}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium"
-                >
-                  <QrCode className="size-3.5 text-primary" aria-hidden="true" />
-                  {point}
-                </span>
+            <div className="mt-8 grid gap-3">
+              {productHighlights.map(([Icon, title, text]) => (
+                <div key={title} className="rounded-lg border border-border bg-card p-4">
+                  <h3 className="flex items-center gap-2 font-display font-bold">
+                    <Icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    {title}
+                  </h3>
+                  <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{text}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -497,13 +515,19 @@ function SectorSection() {
         <div>
           <SectionTitle eyebrow="Feito para cartórios" title="Pensado para a rotina do cartório" />
           <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg">
-            O PQTA, Prêmio de Qualidade Total Anoreg promovido pela ANOREG/BR, avalia a gestão dos
-            cartórios com base em requisitos como o controle de indicadores de desempenho e a
-            avaliação da satisfação dos usuários.
+            A melhoria contínua do atendimento aparece em diferentes referências do setor:
           </p>
+          <ul className="mt-4 space-y-3">
+            {continuousImprovement.map((item) => (
+              <li key={item} className="flex gap-2 text-sm leading-6 text-muted-foreground">
+                <CheckCircle2 className="mt-1 size-4 shrink-0 text-success" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
           <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
-            Medir de forma contínua a percepção de quem é atendido ajuda o cartório a cumprir esse
-            requisito no dia a dia, e não só na época da avaliação.
+            Medir de forma contínua a percepção de quem é atendido ajuda o cartório a acompanhar a
+            qualidade no dia a dia, e não só na época de uma avaliação.
           </p>
           <p className="mt-8 border-l-2 border-brand-gold pl-4 text-xs leading-5 text-muted-foreground">
             O CartoQuali é uma plataforma independente, sem vínculo com a ANOREG/BR, o PQTA ou o

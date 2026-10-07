@@ -73,7 +73,7 @@ export function ProductScene() {
           <div className="rounded-lg border border-border bg-background p-3">
             <p className="text-xs font-semibold">Dimensões</p>
             {[
-              ["Atendimento", "94%"],
+              ["Cordialidade", "94%"],
               ["Clareza", "88%"],
               ["Tempo", "81%"],
             ].map(([label, value]) => (
@@ -147,7 +147,7 @@ export function DashboardScene() {
               ["Resolutividade", "89%"],
               ["Tempo", "81%"],
               ["Clareza", "88%"],
-              ["Estrutura", "92%"],
+              ["Instalações", "92%"],
             ].map(([label, value]) => (
               <div
                 key={label}
