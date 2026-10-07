@@ -1,13 +1,14 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Eye, ListPlus, LoaderCircle, Pencil, Plus, Save, Trash2 } from "lucide-react";
+import { Eye, ListPlus, LoaderCircle, Lock, Pencil, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { QUESTION_TYPE_LABELS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
+import { ESSENTIAL_LABELS } from "@/lib/attributions";
 import {
   deactivateSurveyQuestion,
   listSurveys,
@@ -279,9 +280,17 @@ export function SurveysPage() {
                 <span className="text-xs font-semibold uppercase text-primary">
                   Pergunta {index + 1}
                 </span>
-                <StatusBadge tone={question.active ? "positive" : "neutral"}>
-                  {question.active ? "Ativa" : "Inativa"}
-                </StatusBadge>
+                <span className="flex flex-wrap justify-end gap-1.5">
+                  {question.essentialKey && (
+                    <StatusBadge tone="neutral">
+                      <Lock className="size-3" aria-hidden />
+                      Essencial · {ESSENTIAL_LABELS[question.essentialKey]}
+                    </StatusBadge>
+                  )}
+                  <StatusBadge tone={question.active ? "positive" : "neutral"}>
+                    {question.active ? "Ativa" : "Inativa"}
+                  </StatusBadge>
+                </span>
               </div>
               <h2 className="mt-2 font-medium">{question.text}</h2>
               <p className="mt-2 text-xs text-muted-foreground">
@@ -303,15 +312,25 @@ export function SurveysPage() {
                 >
                   <Pencil />
                 </Button>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  aria-label="Desativar pergunta"
-                  disabled={!question.active}
-                  onClick={() => void deactivate({ data: { id: question.id } }).then(refresh)}
-                >
-                  <Trash2 />
-                </Button>
+                {!question.essentialKey && (
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Desativar pergunta"
+                    disabled={!question.active}
+                    onClick={() =>
+                      void deactivate({ data: { id: question.id } })
+                        .then(refresh)
+                        .catch((error) =>
+                          toast.error(
+                            error instanceof Error ? error.message : "Não foi possível desativar.",
+                          ),
+                        )
+                    }
+                  >
+                    <Trash2 />
+                  </Button>
+                )}
               </div>
             )}
           </GlassPanel>
@@ -319,6 +338,7 @@ export function SurveysPage() {
       </div>
       {questionEditor && (
         <QuestionModal
+          essential={questionEditor !== "new" && Boolean(questionEditor.essentialKey)}
           form={questionForm}
           setForm={setQuestionForm}
           saving={questionMutation.isPending}
@@ -397,12 +417,14 @@ function SurveyModal({
   );
 }
 function QuestionModal({
+  essential,
   form,
   setForm,
   saving,
   onSave,
   onClose,
 }: {
+  essential: boolean;
   form: {
     text: string;
     type: QuestionType;
@@ -419,6 +441,13 @@ function QuestionModal({
   return (
     <Modal onClose={onClose}>
       <h2 className="font-display text-xl font-bold">Pergunta</h2>
+      {essential && (
+        <p className="mt-3 flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
+          <Lock className="mt-0.5 size-4 shrink-0" aria-hidden />
+          Pergunta essencial: alimenta os indicadores do painel. Você pode ajustar o texto; tipo,
+          dimensão e situação são fixos.
+        </p>
+      )}
       <div className="mt-5 grid gap-4">
         <label className="text-sm font-medium">
           Texto
@@ -432,7 +461,8 @@ function QuestionModal({
           <label className="text-sm font-medium">
             Tipo
             <select
-              className="mt-1.5 h-9 w-full rounded-md border bg-background px-3"
+              className="mt-1.5 h-9 w-full rounded-md border bg-background px-3 disabled:opacity-60"
+              disabled={essential}
               value={form.type}
               onChange={(e) => setForm({ ...form, type: e.target.value as QuestionType })}
             >
@@ -446,7 +476,8 @@ function QuestionModal({
           <label className="text-sm font-medium">
             Dimensão
             <select
-              className="mt-1.5 h-9 w-full rounded-md border bg-background px-3"
+              className="mt-1.5 h-9 w-full rounded-md border bg-background px-3 disabled:opacity-60"
+              disabled={essential}
               value={form.dimensionId}
               onChange={(e) => setForm({ ...form, dimensionId: e.target.value })}
             >
@@ -458,7 +489,7 @@ function QuestionModal({
             </select>
           </label>
         </div>
-        {["single_choice", "multiple_choice"].includes(form.type) && (
+        {!essential && ["single_choice", "multiple_choice"].includes(form.type) && (
           <label className="text-sm font-medium">
             Opções, uma por linha
             <Textarea
@@ -472,6 +503,7 @@ function QuestionModal({
           <label className="flex items-center gap-2 text-sm">
             <Switch
               checked={form.required}
+              disabled={essential}
               onCheckedChange={(required) => setForm({ ...form, required })}
             />
             Obrigatória
@@ -479,6 +511,7 @@ function QuestionModal({
           <label className="flex items-center gap-2 text-sm">
             <Switch
               checked={form.active}
+              disabled={essential}
               onCheckedChange={(active) => setForm({ ...form, active })}
             />
             Ativa

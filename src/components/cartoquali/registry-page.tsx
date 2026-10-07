@@ -10,6 +10,7 @@ import {
   PageHeader,
   StatusBadge,
 } from "@/components/cartoquali/primitives";
+import { RegistryAttributions } from "@/components/cartoquali/registry-attributions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getMyRegistry, updateMyRegistry } from "@/lib/registry.functions";
@@ -260,6 +261,9 @@ export function RegistryPage() {
             </div>
           </div>
         </GlassPanel>
+        <div className="space-y-4 xl:order-last xl:col-span-2">
+          <RegistryAttributions canEdit={canEdit} />
+        </div>
         <div className="space-y-4">
           <GlassPanel>
             <p className="text-xs font-semibold uppercase text-primary">Status da conta</p>

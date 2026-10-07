@@ -18,6 +18,7 @@ import {
 import QRCode from "qrcode";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
@@ -33,6 +34,7 @@ import {
   type OnboardingItem,
 } from "@/lib/onboarding.functions";
 import { getEvaluationUrl } from "@/lib/public-url";
+import { ATTRIBUTIONS, type AttributionKey } from "@/lib/attributions";
 
 const steps = [
   "Cartório",
@@ -54,6 +56,7 @@ const blankRegistry = {
   manager: "",
   email: "",
   phone: "",
+  attributions: [] as AttributionKey[],
 };
 function Field({
   label,
@@ -225,6 +228,35 @@ export function OnboardingPage() {
               onChange={(phone) => setRegistry({ ...registry, phone })}
             />
           </div>
+          <fieldset className="mt-5">
+            <legend className="text-sm font-medium">Atribuições da serventia</legend>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Selecione ao menos uma. Elas montam a pergunta "Qual serviço você utilizou hoje?".
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {ATTRIBUTIONS.map((item) => (
+                <label
+                  key={item.key}
+                  className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm"
+                >
+                  <Checkbox
+                    checked={registry.attributions.includes(item.key)}
+                    onCheckedChange={(checked) =>
+                      setRegistry({
+                        ...registry,
+                        attributions:
+                          checked === true
+                            ? [...registry.attributions, item.key]
+                            : registry.attributions.filter((key) => key !== item.key),
+                      })
+                    }
+                    aria-label={item.label}
+                  />
+                  <span>{item.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
           <div className="mt-6 flex justify-end">
             <Button
               disabled={
@@ -235,7 +267,8 @@ export function OnboardingPage() {
                 !registry.serviceType ||
                 !registry.city ||
                 registry.state.length !== 2 ||
-                !registry.manager
+                !registry.manager ||
+                !registry.attributions.length
               }
               onClick={() => createMutation.mutate()}
             >

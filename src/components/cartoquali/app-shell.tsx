@@ -12,7 +12,7 @@ import {
   ShieldCheck,
   Users,
   X,
-  MapPin,
+  QrCode,
   ExternalLink,
   ListChecks,
   BriefcaseBusiness,
@@ -60,7 +60,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     label: "Coletar",
     items: [
       { to: "/pesquisas", label: "Pesquisas", icon: ClipboardList, module: "surveys" },
-      { to: "/pontos", label: "Pontos de avaliação", icon: MapPin, module: "points" },
+      { to: "/pontos", label: "QR Code", icon: QrCode, module: "points" },
     ],
   },
   {

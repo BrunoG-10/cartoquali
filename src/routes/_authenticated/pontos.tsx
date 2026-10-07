@@ -4,10 +4,13 @@ import { PointsPage } from "@/components/cartoquali/points-page";
 export const Route = createFileRoute("/_authenticated/pontos")({
   head: () => ({
     meta: [
-      { title: "Pontos de avaliação — CartoQuali" },
-      { name: "description", content: "Gerencie os locais de coleta de avaliações." },
-      { property: "og:title", content: "Pontos de avaliação — CartoQuali" },
-      { property: "og:description", content: "Gerencie os locais de coleta de avaliações." },
+      { title: "QR Code do cartório — CartoQuali" },
+      { name: "description", content: "QR Code único para coletar avaliações do atendimento." },
+      { property: "og:title", content: "QR Code do cartório — CartoQuali" },
+      {
+        property: "og:description",
+        content: "QR Code único para coletar avaliações do atendimento.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

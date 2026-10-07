@@ -37,11 +37,11 @@ const labels = {
   priority: { baixa: "Baixa", media: "Média", alta: "Alta", critica: "Crítica" },
   dimension: {
     general: "Geral",
-    service: "Atendimento",
+    service: "Cordialidade",
     time: "Tempo",
     clarity: "Clareza",
     resolution: "Resolutividade",
-    structure: "Estrutura",
+    structure: "Instalações",
   },
 } as const;
 type Status = keyof typeof labels.status;

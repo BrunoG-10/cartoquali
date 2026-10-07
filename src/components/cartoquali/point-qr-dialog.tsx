@@ -15,10 +15,15 @@ import type { EvaluationPoint } from "@/types/cartoquali";
 
 export function PointQrDialog({
   point,
+  officialName,
+  tradeName,
   open,
   onOpenChange,
 }: {
   point: EvaluationPoint | undefined;
+  /** Razão social da serventia, em destaque no cartaz; nome fantasia aparece abaixo. */
+  officialName?: string | undefined;
+  tradeName?: string | undefined;
   open: boolean;
   onOpenChange(open: boolean): void;
 }) {
@@ -53,9 +58,10 @@ export function PointQrDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[94vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader className="print-hidden">
-          <DialogTitle>QR Code do ponto</DialogTitle>
+          <DialogTitle>QR Code do cartório</DialogTitle>
           <DialogDescription>
-            Use o mesmo endereço em cartazes e, futuramente, em tags NFC.
+            Um único QR Code para todo o atendimento. Use o mesmo endereço em cartazes, no balcão e
+            no site.
           </DialogDescription>
         </DialogHeader>
         <section className="point-qr-sheet mx-auto w-full max-w-md bg-background p-4 text-center">
@@ -63,11 +69,19 @@ export function PointQrDialog({
             <QrCode />
           </div>
           <p className="mt-5 text-sm font-semibold text-muted-foreground">AVALIE SEU ATENDIMENTO</p>
-          <h2 className="mt-2 font-display text-3xl font-bold">{point.name}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{point.location}</p>
+          <h2 className="mt-2 font-display text-2xl font-bold leading-tight">
+            {officialName || point.name}
+          </h2>
+          {tradeName && tradeName !== officialName && (
+            <p className="mt-2 text-sm text-muted-foreground">{tradeName}</p>
+          )}
           <div className="mx-auto mt-6 aspect-square w-full max-w-[320px] rounded-md border bg-background p-3">
             {image ? (
-              <img className="size-full" src={image} alt={`QR Code para avaliar ${point.name}`} />
+              <img
+                className="size-full"
+                src={image}
+                alt={`QR Code para avaliar ${officialName || point.name}`}
+              />
             ) : failed ? (
               <div
                 role="alert"
