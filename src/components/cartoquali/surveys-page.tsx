@@ -215,7 +215,7 @@ export function SurveysPage() {
             ) : undefined
           }
         />
-        <div className="grid gap-4 md:grid-cols-2">
+        <div data-tour="surveys-list" className="grid gap-4 md:grid-cols-2">
           {query.data?.surveys.map((survey) => (
             <GlassPanel key={survey.id}>
               <div className="flex items-start justify-between gap-3">
@@ -231,7 +231,11 @@ export function SurveysPage() {
                 perguntas
               </p>
               <div className="mt-5 flex gap-2">
-                <Button className="flex-1" onClick={() => setSelectedId(survey.id)}>
+                <Button
+                  className="flex-1"
+                  data-tour="surveys-configure"
+                  onClick={() => setSelectedId(survey.id)}
+                >
                   <Pencil />
                   Configurar
                 </Button>
@@ -266,12 +270,12 @@ export function SurveysPage() {
             <Button variant="outline" onClick={() => setSelectedId(undefined)}>
               Voltar
             </Button>
-            <Button variant="outline" onClick={() => setPreview(true)}>
+            <Button variant="outline" data-tour="surveys-preview" onClick={() => setPreview(true)}>
               <Eye />
               Prévia
             </Button>
             {query.data?.canManage && (
-              <Button onClick={() => openQuestion()}>
+              <Button data-tour="surveys-add-question" onClick={() => openQuestion()}>
                 <ListPlus />
                 Pergunta
               </Button>
@@ -293,7 +297,10 @@ export function SurveysPage() {
                 <span className="text-xs font-semibold uppercase text-primary">
                   Pergunta {index + 1}
                 </span>
-                <span className="flex flex-wrap justify-end gap-1.5">
+                <span
+                  className="flex flex-wrap justify-end gap-1.5"
+                  data-tour={question.essentialKey === "overall" ? "surveys-essential" : undefined}
+                >
                   {question.essentialKey && (
                     <StatusBadge tone="neutral">
                       <Lock className="size-3" aria-hidden />

@@ -118,13 +118,17 @@ export function SettingsPage() {
         title="Configurações gerais"
         description="Preferências persistentes e auditáveis do seu cartório."
         action={
-          <Button disabled={mutation.isPending} onClick={() => mutation.mutate()}>
+          <Button
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate()}
+            data-tour="settings-save"
+          >
             <Save />
             {mutation.isPending ? "Salvando..." : "Salvar"}
           </Button>
         }
       />
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div data-tour="settings-form" className="grid gap-4 xl:grid-cols-2">
         <GlassPanel>
           <div className="flex items-center gap-2">
             <Settings2 className="text-primary" />

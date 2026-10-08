@@ -200,7 +200,7 @@ export function OccurrencesPage() {
         title="Ocorrências de Qualidade"
         description="Registre, analise e trate problemas com histórico preservado."
         action={
-          <Button onClick={() => setCreating(true)}>
+          <Button onClick={() => setCreating(true)} data-tour="occurrences-new">
             <Plus />
             Nova ocorrência
           </Button>
@@ -329,7 +329,7 @@ function OccurrenceFilters({
 }) {
   const set = (key: keyof Filters, value: string) => setFilters({ ...filters, [key]: value });
   return (
-    <GlassPanel className="mt-4">
+    <GlassPanel className="mt-4" tour="occurrences-filters">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Select
           label="Status"
@@ -409,7 +409,10 @@ function OccurrenceList({
 }) {
   return (
     <>
-      <div className="mt-4 hidden overflow-x-auto rounded-lg border border-glass-border bg-glass shadow-glass md:block">
+      <div
+        data-tour="occurrences-list"
+        className="mt-4 hidden overflow-x-auto rounded-lg border border-glass-border bg-glass shadow-glass md:block"
+      >
         <table className="w-full min-w-[900px] text-left text-sm">
           <thead className="border-b border-glass-border bg-glass-strong text-xs text-muted-foreground">
             <tr>
@@ -468,7 +471,7 @@ function OccurrenceList({
           </tbody>
         </table>
       </div>
-      <div className="mt-4 grid gap-3 md:hidden">
+      <div data-tour="occurrences-list" className="mt-4 grid gap-3 md:hidden">
         {items.map((item) => (
           <Button
             key={item.id}

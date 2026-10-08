@@ -89,7 +89,11 @@ export function QualityDashboard() {
         }
       />
       <QualityNavigation />
-      <nav className="mb-5 overflow-x-auto" aria-label="Análises de qualidade">
+      <nav
+        className="mb-5 overflow-x-auto"
+        aria-label="Análises de qualidade"
+        data-tour="quality-tabs"
+      >
         <div className="flex min-w-max gap-1">
           {sections.map((item) => (
             <Button
@@ -103,7 +107,7 @@ export function QualityDashboard() {
           ))}
         </div>
       </nav>
-      <div className="hidden lg:block">
+      <div className="hidden lg:block" data-tour="quality-filters">
         <FilterBar
           filters={filters}
           setFilters={setFilters}

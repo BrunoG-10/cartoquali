@@ -139,7 +139,7 @@ export function UsersPage() {
         description="Gerencie a equipe, os perfis e o acesso ao CartoQuali."
         action={
           canManage ? (
-            <Button onClick={() => open()}>
+            <Button onClick={() => open()} data-tour="users-new">
               <Plus />
               Novo usuário
             </Button>
@@ -168,7 +168,7 @@ export function UsersPage() {
           />
         </GlassPanel>
       ) : query.data?.length ? (
-        <div className="grid gap-3">
+        <div data-tour="users-list" className="grid gap-3">
           {query.data.map((user) => (
             <GlassPanel key={user.id} className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 font-bold text-primary">

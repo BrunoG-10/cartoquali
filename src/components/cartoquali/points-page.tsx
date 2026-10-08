@@ -195,7 +195,7 @@ export function PointsPage() {
       ) : mainPoint ? (
         <div className="grid max-w-2xl gap-4">
           {[mainPoint].map((point) => (
-            <GlassPanel key={point.id} className="flex flex-col">
+            <GlassPanel key={point.id} className="flex flex-col" tour="qr-card">
               <div className="flex items-start justify-between">
                 <div className="grid size-10 place-items-center rounded-lg bg-primary/10 text-primary">
                   <QrCode />
@@ -229,7 +229,7 @@ export function PointsPage() {
               <code className="mt-4 block truncate rounded-md bg-muted px-3 py-2 text-xs">
                 /avaliar/{point.code}
               </code>
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div data-tour="qr-share" className="mt-3 grid grid-cols-2 gap-2">
                 <Button variant="outline" onClick={() => void copyPublicLink(point.code)}>
                   <Copy />
                   Copiar link
@@ -240,7 +240,11 @@ export function PointsPage() {
                     Abrir
                   </a>
                 </Button>
-                <Button className="col-span-2" onClick={() => setQrPoint(point)}>
+                <Button
+                  className="col-span-2"
+                  data-tour="qr-print"
+                  onClick={() => setQrPoint(point)}
+                >
                   <QrCode />
                   Ver QR Code e imprimir cartaz
                 </Button>

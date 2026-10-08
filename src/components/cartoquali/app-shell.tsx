@@ -33,9 +33,10 @@ type NavItem = { to: string; label: string; icon: LucideIcon; module: AppModule 
 
 // Grouped by what the registry team is doing: follow results, act on problems,
 // collect feedback, administer the registry. Platform tools come last.
-const navGroups: { label: string; items: NavItem[] }[] = [
+const navGroups: { label: string; tour?: string; items: NavItem[] }[] = [
   {
     label: "Acompanhar",
+    tour: "nav-acompanhar",
     items: [
       { to: "/dashboard", label: "Painel", icon: Gauge, module: "dashboard" },
       { to: "/qualidade", label: "Qualidade", icon: ShieldCheck, module: "quality" },
@@ -115,7 +116,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
       aria-label="Navegação principal"
     >
       {groups.map((group) => (
-        <div key={group.label} className="mb-4 last:mb-0">
+        <div key={group.label} data-tour={group.tour} className="mb-4 last:mb-0">
           <p className="px-3 pb-1.5 text-xs font-semibold text-muted-foreground">{group.label}</p>
           <ul className="space-y-0.5">
             {group.items.map(({ to, label, icon: Icon }) => {
