@@ -19,13 +19,14 @@ import {
   availableSteps,
   buildTour,
   guideKeyAction,
+  isOnPage,
   pageGuide,
   progressLabel,
   resolveTarget,
   resumeIndex,
 } from "@/lib/guide/plan";
 import { GuideFinish } from "./guide-finish";
-import { GuideWelcome } from "./guide-welcome";
+import { GuideWelcome, type WelcomeVariant } from "./guide-welcome";
 
 // Guia de uso. Spec: docs/superpowers/specs/2026-10-07-guia-de-uso-design.md
 // Lives in the authenticated layout (not the per-page AppShell) so it survives page changes.
@@ -146,7 +147,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   // Clicking a menu link mid-tour counts as "Continuar depois".
   useEffect(() => {
     const expected = expectedPathRef.current;
-    if ((mode === "tour" || mode === "page") && expected && !pathname.startsWith(expected))
+    if ((mode === "tour" || mode === "page") && expected && !isOnPage(pathname, expected))
       postpone();
   }, [mode, pathname, postpone]);
 
@@ -161,7 +162,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     expectedPathRef.current = step.page;
     // Read through a ref: this effect must react to step changes only, never to the user
     // navigating away (that is handled above as "Continuar depois").
-    if (!pathnameRef.current.startsWith(step.page)) void navigate({ to: step.page });
+    if (!isOnPage(pathnameRef.current, step.page)) void navigate({ to: step.page });
 
     // Save every step of the full tour, so a reload or a closed tab resumes where the person was.
     if (isTour && !completedRef.current) save(index);
@@ -282,14 +283,18 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   );
 
   const firstName = usuario?.name.split(" ")[0] ?? "";
-  const resuming = Boolean(guide && !guide.completedAt && guide.step > 0);
+  const welcomeVariant: WelcomeVariant = guide?.completedAt
+    ? "replay"
+    : guide && guide.step > 0 && index > 0
+      ? "resume"
+      : "first";
   return (
     <GuideContext.Provider value={value}>
       {children}
       {mode === "welcome" && (
         <GuideWelcome
           name={firstName}
-          resuming={resuming && index > 0}
+          variant={welcomeVariant}
           onStart={() => setMode("tour")}
           onRestart={() => {
             setIndex(0);

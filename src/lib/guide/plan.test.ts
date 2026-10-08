@@ -4,6 +4,7 @@ import {
   availableSteps,
   buildTour,
   guideKeyAction,
+  isOnPage,
   pageGuide,
   progressLabel,
   resolveTarget,
@@ -94,6 +95,15 @@ describe("availableSteps", () => {
       { page: "/cartorio", target: null, title: "t", text: "x" },
     ]);
     expect(availableSteps(steps, () => false)).toHaveLength(1);
+  });
+});
+
+describe("isOnPage", () => {
+  it("matches the page and its sub-pages, but not look-alike paths", () => {
+    expect(isOnPage("/relatorios", "/relatorios")).toBe(true);
+    expect(isOnPage("/relatorios/qualidade", "/relatorios")).toBe(true);
+    expect(isOnPage("/pontos-extra", "/pontos")).toBe(false);
+    expect(isOnPage("/dashboard", "/pontos")).toBe(false);
   });
 });
 

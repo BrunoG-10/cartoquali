@@ -2,8 +2,13 @@ import { can } from "@/lib/permissions";
 import type { UserRole } from "@/types/cartoquali";
 import { GUIDE_PAGES, PAGE_GUIDES, TOUR_STEPS, type GuidePage, type GuideStep } from "./content";
 
+/** True on the page itself or one of its sub-pages (/relatorios/qualidade), never on /pontos-extra. */
+export function isOnPage(path: string, page: string): boolean {
+  return path === page || path.startsWith(`${page}/`);
+}
+
 export function guidePageFor(path: string): GuidePage | undefined {
-  return GUIDE_PAGES.find((page) => path === page.path || path.startsWith(`${page.path}/`));
+  return GUIDE_PAGES.find((page) => isOnPage(path, page.path));
 }
 
 const visible = (role: UserRole | null, path: string) => {

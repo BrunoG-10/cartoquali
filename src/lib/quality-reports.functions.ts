@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
+import { reportCsvFilename } from "@/lib/report-filename";
 
 const occurrenceStatuses = [
   "nova",
@@ -236,7 +237,7 @@ export const exportQualityReportCsv = createServerFn({ method: "POST" })
       item.comment,
     ]);
     return {
-      filename: `cartoquali-relatorio-${data.currentStart.slice(0, 10)}-${data.currentEnd.slice(0, 10)}.csv`,
+      filename: reportCsvFilename(data.currentStart, data.currentEnd),
       content: `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n")}`,
     };
   });

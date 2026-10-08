@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
 import { listAuditEvents } from "@/lib/audit.functions";
+import { AUDIT_ACTION_LABELS, auditActionLabel } from "@/lib/audit-labels";
 
 const entityLabels: Record<string, string> = {
   user: "Usuário",
@@ -16,11 +17,16 @@ const entityLabels: Record<string, string> = {
   registry_settings: "Configurações",
   quality_occurrence: "Ocorrência",
   improvement_plan: "Plano",
-  evaluation_point: "Ponto",
+  evaluation_point: "QR Code",
+  registry_service: "Serviço",
   privacy_request: "Solicitação de privacidade",
   evaluation: "Avaliação",
   quality_report: "Relatório",
 };
+
+const actionOptions = Object.entries(AUDIT_ACTION_LABELS).sort(([, a], [, b]) =>
+  a.localeCompare(b, "pt-BR"),
+);
 
 export function AuditPage() {
   const load = useServerFn(listAuditEvents);
@@ -79,15 +85,21 @@ export function AuditPage() {
           </label>
           <label className="text-sm font-medium">
             Ação
-            <Input
-              className="mt-1.5"
+            <select
+              className="mt-1.5 h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
               value={action}
               onChange={(e) => {
                 setAction(e.target.value);
                 setPage(1);
               }}
-              placeholder="Ex.: user_updated"
-            />
+            >
+              <option value="">Todas</option>
+              {actionOptions.map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="text-sm font-medium">
             De
@@ -140,7 +152,9 @@ export function AuditPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <StatusBadge>{entityLabels[event.entity] ?? event.entity}</StatusBadge>
-                      <strong className="text-sm">{event.action}</strong>
+                      <strong className="text-sm" title={event.action}>
+                        {auditActionLabel(event.action)}
+                      </strong>
                     </div>
                     <p className="mt-2 text-sm text-muted-foreground">
                       {event.usuarios?.nome ?? "Sistema"} ·{" "}

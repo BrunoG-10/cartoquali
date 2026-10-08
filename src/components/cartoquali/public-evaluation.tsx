@@ -77,8 +77,8 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   if (context.status === "inactive")
     return (
       <Unavailable
-        title="Este ponto está inativo."
-        description="Peça à equipe do cartório outro ponto de avaliação."
+        title="Este QR Code não está mais em uso."
+        description="Use o QR Code atual do cartório, disponível no balcão, ou peça o link de avaliação à equipe."
       />
     );
   if (context.status === "unavailable")
