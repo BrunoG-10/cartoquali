@@ -14,7 +14,7 @@ const input = z.object({
 
 export const listAuditEvents = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((value: unknown) => input.parse(value))
+  .validator((value: unknown) => input.parse(value))
   .handler(async ({ context, data }) => {
     const { data: caller } = await context.supabase
       .from("usuarios")

@@ -176,6 +176,13 @@
     min-width: 320px;
     letter-spacing: 0;
   }
+
+  /* Keyboard focus is always visible (WCAG 2.4.7). Components with their own
+     focus-visible ring override this through utilities. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
   button,
   a,
   input,

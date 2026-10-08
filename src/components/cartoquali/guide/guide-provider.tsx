@@ -25,6 +25,7 @@ import {
   resolveTarget,
   resumeIndex,
 } from "@/lib/guide/plan";
+import { isGuidePostponed, markGuidePostponed } from "@/lib/guide/postponed";
 import { GuideFinish } from "./guide-finish";
 import { GuideWelcome, type WelcomeVariant } from "./guide-welcome";
 
@@ -119,8 +120,10 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   /** "Continuar depois": keeps the current step for the next login. */
   const postpone = useCallback(() => {
     const wasTour = mode === "tour";
+    const wasAuto = mode === "tour" || mode === "welcome";
     closeDriver();
     setMode("idle");
+    if (wasAuto && !guide?.completedAt) markGuidePostponed();
     if (wasTour && !guide?.completedAt) save(index);
   }, [closeDriver, guide?.completedAt, index, mode, save]);
 
@@ -137,7 +140,7 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   // First login (or an unfinished tour): open the welcome once per page load.
   useEffect(() => {
     if (autoOpenedRef.current || status !== "authenticated" || !guide || guide.completedAt) return;
-    if (!tourSteps.length) return;
+    if (!tourSteps.length || isGuidePostponed()) return;
     autoOpenedRef.current = true;
     setSteps(tourSteps);
     setIndex(resumeIndex(guide.step, tourSteps.length));

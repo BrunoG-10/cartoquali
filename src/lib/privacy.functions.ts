@@ -68,7 +68,7 @@ async function requirePrivacyAdmin(context: { supabase: any; userId: string }) {
 
 export const listPrivacyRequests = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => listInput.parse(input))
+  .validator((input: unknown) => listInput.parse(input))
   .handler(async ({ context, data }) => {
     await requirePrivacyAdmin(context);
     const from = (data.page - 1) * data.pageSize;
@@ -102,7 +102,7 @@ export const listPrivacyRequests = createServerFn({ method: "POST" })
 
 export const createPrivacyRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => createInput.parse(input))
+  .validator((input: unknown) => createInput.parse(input))
   .handler(async ({ context, data }) => {
     const profile = await requirePrivacyAdmin(context);
     const { data: row, error } = await context.supabase
@@ -124,7 +124,7 @@ export const createPrivacyRequest = createServerFn({ method: "POST" })
 
 export const updatePrivacyRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => updateInput.parse(input))
+  .validator((input: unknown) => updateInput.parse(input))
   .handler(async ({ context, data }) => {
     await requirePrivacyAdmin(context);
     const { error } = await context.supabase
@@ -146,7 +146,7 @@ export const updatePrivacyRequest = createServerFn({ method: "POST" })
 
 export const minimizeEvaluationData = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => minimizeInput.parse(input))
+  .validator((input: unknown) => minimizeInput.parse(input))
   .handler(async ({ context, data }) => {
     await requirePrivacyAdmin(context);
     const rpc = context.supabase.rpc.bind(context.supabase) as unknown as (

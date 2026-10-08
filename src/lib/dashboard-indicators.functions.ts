@@ -77,7 +77,7 @@ export type DashboardIndicatorsData = {
 
 export const getDashboardIndicators = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => inputSchema.parse(input))
+  .validator((input: unknown) => inputSchema.parse(input))
   .handler(async ({ context, data }) => {
     const params: {
       _current_start: string;

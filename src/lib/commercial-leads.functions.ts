@@ -22,7 +22,7 @@ export const commercialLeadSchema = z.object({
 export type CommercialLeadInput = z.infer<typeof commercialLeadSchema>;
 
 export const submitCommercialLead = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => commercialLeadSchema.parse(input))
+  .validator((input: unknown) => commercialLeadSchema.parse(input))
   .handler(async ({ data }) => {
     setResponseHeader("Cache-Control", "no-store, max-age=0");
     setResponseHeader("X-Content-Type-Options", "nosniff");

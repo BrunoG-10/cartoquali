@@ -238,7 +238,7 @@ function CommercialHeader() {
   ] as const;
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur">
-      <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-18 max-w-7xl 2xl:max-w-[1600px] items-center justify-between px-4 sm:px-6 lg:px-8">
         <Brand />
         <nav className="hidden items-center gap-6 lg:flex" aria-label="Navegação comercial">
           {links.map(([href, label]) => (
@@ -307,7 +307,7 @@ function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-border bg-background">
       <div aria-hidden="true" className="absolute inset-0 landing-grid opacity-40" />
-      <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-4 py-10 sm:px-6 sm:py-16 lg:min-h-[680px] lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
+      <div className="relative mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-12 px-4 py-10 sm:px-6 sm:py-16 lg:min-h-[680px] lg:grid-cols-[0.95fr_1.05fr] lg:px-8">
         <div className="animate-enter">
           <p className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-semibold text-accent-foreground">
             <ShieldCheck className="size-3.5" aria-hidden="true" />
@@ -355,7 +355,7 @@ function HowItWorks() {
       id="como-funciona"
       className="scroll-mt-20 border-b border-border bg-card py-20 sm:py-24"
     >
-      <div className="mx-auto grid max-w-7xl items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8">
         <div>
           <SectionTitle eyebrow="Como funciona" title="Da avaliação à melhoria, em quatro passos" />
           <ol className="mt-10 space-y-6">
@@ -393,7 +393,7 @@ function HowItWorks() {
 function IndicatorsSection() {
   return (
     <section id="indicadores" className="scroll-mt-20 border-b border-border py-20 sm:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
         <SectionTitle
           eyebrow="Indicadores"
           title="Indicadores claros para decidir onde agir"
@@ -434,7 +434,7 @@ function IndicatorsSection() {
 function ActionSection() {
   return (
     <section className="border-b border-border bg-foreground py-20 text-background sm:py-24">
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         <div>
           <SectionTitle
             dark
@@ -481,7 +481,7 @@ function PrivacySection() {
       id="privacidade"
       className="scroll-mt-20 border-b border-border bg-card py-20 sm:py-24"
     >
-      <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
         <div>
           <div className="mb-6 grid size-12 place-items-center rounded-lg bg-primary text-primary-foreground">
             <LockKeyhole aria-hidden="true" />
@@ -511,7 +511,7 @@ function PrivacySection() {
 function SectorSection() {
   return (
     <section className="border-b border-border py-20 sm:py-24">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         <div>
           <SectionTitle eyebrow="Feito para cartórios" title="Pensado para a rotina do cartório" />
           <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg">
@@ -553,7 +553,7 @@ function SectorSection() {
 function FaqSection() {
   return (
     <section id="faq" className="scroll-mt-20 border-b border-border bg-card py-20 sm:py-24">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.65fr_1.35fr] lg:px-8">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.65fr_1.35fr] lg:px-8">
         <div>
           <CircleHelp className="mb-6 size-9 text-primary" aria-hidden="true" />
           <SectionTitle
@@ -631,7 +631,7 @@ function DemoForm() {
   };
   return (
     <section id="demonstracao" className="bg-foreground py-20 text-background sm:py-24">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
         <div>
           <SectionTitle
             dark
@@ -797,7 +797,7 @@ function Field({
 function Footer() {
   return (
     <footer className="border-t border-border bg-background">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
         <div>
           <Brand />
           <p className="mt-4 max-w-md text-sm text-muted-foreground">
@@ -823,6 +823,9 @@ function Footer() {
             className="hover:text-primary"
           >
             WhatsApp
+          </a>
+          <a href="mailto:cartoquali@gmail.com" className="hover:text-primary">
+            cartoquali@gmail.com
           </a>
           <Link to="/login" className="hover:text-primary">
             Acessar sistema

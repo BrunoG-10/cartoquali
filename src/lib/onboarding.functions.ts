@@ -213,7 +213,7 @@ export const listOnboardings = createServerFn({ method: "GET" })
 
 export const createOnboardingRegistry = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => registryInput.parse(v))
+  .validator((v: unknown) => registryInput.parse(v))
   .handler(async ({ context, data }) => {
     await platformAccess(context);
     const { data: result, error } = await privateRpc<{ id: string }>(
@@ -247,7 +247,7 @@ export const createOnboardingRegistry = createServerFn({ method: "POST" })
 
 export const createOnboardingAdministrator = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) =>
+  .validator((v: unknown) =>
     idInput
       .extend({
         name: z.string().trim().min(1).max(100),
@@ -290,7 +290,7 @@ export const createOnboardingAdministrator = createServerFn({ method: "POST" })
 
 export const saveOnboardingSurvey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => surveyInput.parse(v))
+  .validator((v: unknown) => surveyInput.parse(v))
   .handler(async ({ context, data }) => {
     await platformAccess(context);
     const { data: result, error } = await privateRpc<{ id: string }>(
@@ -308,7 +308,7 @@ export const saveOnboardingSurvey = createServerFn({ method: "POST" })
   });
 export const publishOnboardingSurvey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => idInput.parse(v))
+  .validator((v: unknown) => idInput.parse(v))
   .handler(async ({ context, data }) => {
     await platformAccess(context);
     const { data: result, error } = await privateRpc<{ id: string }>(
@@ -321,7 +321,7 @@ export const publishOnboardingSurvey = createServerFn({ method: "POST" })
   });
 export const saveOnboardingPoint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => pointInput.parse(v))
+  .validator((v: unknown) => pointInput.parse(v))
   .handler(async ({ context, data }) => {
     await platformAccess(context);
     const { data: result, error } = await privateRpc<{ id: string; code: string }>(
@@ -339,7 +339,7 @@ export const saveOnboardingPoint = createServerFn({ method: "POST" })
   });
 export const prepareOnboardingTest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) => idInput.parse(v))
+  .validator((v: unknown) => idInput.parse(v))
   .handler(async ({ context, data }) => {
     await platformAccess(context);
     const { data: result, error } = await privateRpc<{ code: string; testToken: string }>(
@@ -352,7 +352,7 @@ export const prepareOnboardingTest = createServerFn({ method: "POST" })
   });
 export const setOnboardingStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((v: unknown) =>
+  .validator((v: unknown) =>
     idInput.extend({ action: z.enum(["activate", "deactivate", "reactivate"]) }).parse(v),
   )
   .handler(async ({ context, data }) => {

@@ -96,7 +96,7 @@ export const getMyRegistry = createServerFn({ method: "GET" })
 
 export const updateMyRegistry = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => registryUpdateSchema.parse(input))
+  .validator((input: unknown) => registryUpdateSchema.parse(input))
   .handler(async ({ context, data }) => {
     const { data: profile, error: profileError } = await context.supabase
       .from("usuarios")

@@ -175,7 +175,7 @@ export function parseContext(value: unknown): PublicEvaluationContext {
 }
 
 export const getPublicEvaluation = createServerFn({ method: "GET" })
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ code: codeSchema, testToken: z.string().uuid().optional() }).parse(input),
   )
   .handler(async ({ data }) => {
@@ -196,7 +196,7 @@ export const getPublicEvaluation = createServerFn({ method: "GET" })
   });
 
 export const submitPublicEvaluation = createServerFn({ method: "POST" })
-  .inputValidator((input: unknown) => submissionSchema.parse(input))
+  .validator((input: unknown) => submissionSchema.parse(input))
   .handler(async ({ data }) => {
     setResponseHeader("Cache-Control", "no-store, max-age=0");
     setResponseHeader("X-Content-Type-Options", "nosniff");
