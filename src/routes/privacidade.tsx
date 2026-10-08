@@ -44,7 +44,8 @@ function PrivacyPage() {
                 <p className="text-xs font-semibold uppercase text-primary">CartoQuali</p>
                 <h1 className="font-display text-3xl font-bold">Aviso de privacidade</h1>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Versão 1.0 · base técnica sujeita a revisão jurídica
+                  Versão 1.0 · conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018) ·
+                  texto sujeito a revisão jurídica
                 </p>
               </div>
             </div>
@@ -58,6 +59,23 @@ function PrivacyPage() {
                   responsável pelo ponto de atendimento. O CartoQuali fornece a tecnologia; o
                   cartório define as finalidades e regras operacionais do tratamento.
                 </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Quem é responsável pelos seus dados
+                </h2>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>
+                    <strong className="text-foreground">Controlador:</strong> o cartório que prestou
+                    o seu atendimento, cujo nome aparece na tela da avaliação. É ele quem decide
+                    como as avaliações são usadas.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Operador:</strong> o CartoQuali, que trata
+                    os dados em nome do cartório e somente conforme as instruções dele, para operar
+                    a plataforma.
+                  </li>
+                </ul>
               </section>
               <section>
                 <h2 className="font-display text-lg font-bold text-foreground">
@@ -77,6 +95,23 @@ function PrivacyPage() {
                   coletados quando você pede retorno e marca uma autorização específica. Não
                   integram indicadores, rankings ou relatórios gerais.
                 </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Por que podemos tratar esses dados
+                </h2>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>
+                    <strong className="text-foreground">Avaliação:</strong> legítimo interesse do
+                    cartório em conhecer a experiência de quem atende e melhorar o serviço (art. 7º,
+                    IX, da LGPD).
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Contato para retorno:</strong> o seu
+                    consentimento, dado ao marcar a autorização (art. 7º, I). Você pode revogá-lo a
+                    qualquer momento.
+                  </li>
+                </ul>
               </section>
               <section>
                 <h2 className="font-display text-lg font-bold text-foreground">
@@ -109,11 +144,31 @@ function PrivacyPage() {
               </section>
               <section>
                 <h2 className="font-display text-lg font-bold text-foreground">Seus direitos</h2>
-                <p>
-                  Pedidos de confirmação, acesso, correção, informação, eliminação quando aplicável,
-                  oposição ou revogação podem ser registrados pelo cartório. A identificação mínima
-                  necessária pode ser solicitada para localizar a informação e evitar entrega
-                  indevida.
+                <p>A LGPD (art. 18) garante a você, entre outros, os direitos de:</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>confirmar se há tratamento e acessar os seus dados;</li>
+                  <li>corrigir dados incompletos, inexatos ou desatualizados;</li>
+                  <li>pedir anonimização, bloqueio ou eliminação de dados desnecessários;</li>
+                  <li>saber com quem os dados foram compartilhados;</li>
+                  <li>revogar o consentimento e se opor a um tratamento;</li>
+                  <li>
+                    reclamar à Autoridade Nacional de Proteção de Dados (ANPD), em{" "}
+                    <a
+                      href="https://www.gov.br/anpd"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-semibold text-primary underline"
+                    >
+                      gov.br/anpd
+                    </a>
+                    .
+                  </li>
+                </ul>
+                <p className="mt-2">
+                  Para exercer esses direitos, fale com o cartório ou escreva para o contato de
+                  privacidade abaixo, que encaminha o pedido ao cartório responsável. A
+                  identificação mínima necessária pode ser solicitada para localizar a informação e
+                  evitar entrega indevida.
                 </p>
               </section>
               <section>
@@ -126,12 +181,17 @@ function PrivacyPage() {
               <section className="rounded-md bg-muted p-4">
                 <h2 className="flex items-center gap-2 font-display text-lg font-bold text-foreground">
                   <LockKeyhole className="size-4" />
-                  Canal e responsável
+                  Contato de privacidade
                 </h2>
                 <p>
-                  O canal público de privacidade, a identificação formal do controlador, eventual
-                  encarregado e demais dados jurídicos ainda precisam ser configurados pelo cartório
-                  antes da publicação comercial. Nenhum dado foi inventado nesta página.
+                  Dúvidas, pedidos e reclamações sobre dados pessoais:{" "}
+                  <a
+                    href="mailto:cartoquali@gmail.com"
+                    className="font-semibold text-primary underline"
+                  >
+                    cartoquali@gmail.com
+                  </a>
+                  . Respondemos ou encaminhamos ao cartório responsável o quanto antes.
                 </p>
               </section>
               <p>
