@@ -3,10 +3,21 @@ import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  OTHER_TEXT_MAX,
+  choiceAnswer,
+  choiceOther,
+  choiceValues,
+  isOtherOption,
+  toggleChoice,
+} from "@/lib/multiple-choice";
 import type { SurveyQuestion } from "@/types/cartoquali";
 import { Stars } from "./primitives";
 
-export type SurveyAnswers = Record<string, number | boolean | string | string[]>;
+export type SurveyAnswers = Record<
+  string,
+  number | boolean | string | string[] | { values: string[]; other: string }
+>;
 const matchesCondition = (question: SurveyQuestion, answers: SurveyAnswers) =>
   !question.condition ||
   (question.condition.operator === "lte"
@@ -47,7 +58,9 @@ export function SurveyQuestionnaire({
   const answer = answers[question.id];
   const valid =
     !question.required ||
-    (Array.isArray(answer) ? answer.length > 0 : answer !== undefined && answer !== "");
+    (question.type === "multiple_choice"
+      ? choiceValues(answer).length > 0
+      : answer !== undefined && answer !== "");
   const setAnswer = (value: SurveyAnswers[string]) =>
     setAnswers((current) => ({ ...current, [question.id]: value }));
   if (complete)
@@ -182,31 +195,45 @@ export function SurveyQuestionnaire({
             ))}
           </div>
         )}
-        {question.type === "multiple_choice" && (
-          <div className="grid gap-2">
-            {question.options?.map((option) => {
-              const values = Array.isArray(answer) ? answer : [];
-              return (
-                <label
-                  key={option}
-                  className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border p-3 text-left text-sm"
-                >
-                  <Checkbox
-                    checked={values.includes(option)}
-                    onCheckedChange={() =>
-                      setAnswer(
-                        values.includes(option)
-                          ? values.filter((item) => item !== option)
-                          : [...values, option],
-                      )
-                    }
-                  />
-                  {option}
-                </label>
-              );
-            })}
-          </div>
-        )}
+        {question.type === "multiple_choice" &&
+          (() => {
+            const values = choiceValues(answer);
+            const other = choiceOther(answer);
+            const showOther = values.some(isOtherOption);
+            return (
+              <div className="grid gap-2">
+                {question.options?.map((option) => (
+                  <label
+                    key={option}
+                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border p-3 text-left text-sm"
+                  >
+                    <Checkbox
+                      checked={values.includes(option)}
+                      onCheckedChange={() =>
+                        setAnswer(choiceAnswer(toggleChoice(values, option), other))
+                      }
+                    />
+                    {option}
+                  </label>
+                ))}
+                {showOther && (
+                  <label className="mt-1 block text-left text-sm font-medium">
+                    Conte o que poderia melhorar
+                    <Textarea
+                      className="mt-1.5 min-h-20"
+                      maxLength={OTHER_TEXT_MAX}
+                      value={other}
+                      placeholder="Ex.: sinalização das filas, horário de atendimento…"
+                      onChange={(event) => setAnswer(choiceAnswer(values, event.target.value))}
+                    />
+                    <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                      Opcional · não informe dados pessoais.
+                    </span>
+                  </label>
+                )}
+              </div>
+            );
+          })()}
       </div>
       <div className="mt-8 flex gap-3">
         <Button

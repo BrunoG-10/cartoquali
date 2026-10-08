@@ -7,6 +7,11 @@ const answerValue = z.union([
   z.boolean(),
   z.string().max(1000),
   z.array(z.string().max(200)).max(20),
+  // Multiple choice with the free text of "Outro" (see src/lib/multiple-choice.ts).
+  z.object({
+    values: z.array(z.string().max(200)).max(20),
+    other: z.string().trim().max(300),
+  }),
 ]);
 
 const codeSchema = z.string().trim().min(3).max(80);

@@ -14,6 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getEvaluationDetail, listEvaluations } from "@/lib/evaluations.functions";
+import { describeAnswer } from "@/lib/multiple-choice";
 import { GlassPanel, InterfaceState, PageHeader, Stars, StatusBadge } from "./primitives";
 
 const statusTone = (status: string) =>
@@ -450,7 +451,7 @@ function EvaluationDialogContent({
             <div key={answer.id} className="p-4">
               <p className="text-sm font-medium">{answer.question}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                {answer.text || answer.value.join(" · ") || "Sem resposta"}
+                {describeAnswer(answer.value, answer.text)}
               </p>
             </div>
           ))}
