@@ -17,6 +17,13 @@ describe("permission matrix", () => {
     }
   });
 
+  it("shows the platform panel only to the platform administrator", () => {
+    expect(can("platform_admin", "platform")).toBe(true);
+    for (const role of ["registry_admin", "manager", "operator"] as const) {
+      expect(can(role, "platform")).toBe(false);
+    }
+  });
+
   it("lets only administrators manage users, settings and privacy", () => {
     for (const module of ["users", "settings", "privacy"] as const) {
       expect(can("platform_admin", module, "manage")).toBe(true);

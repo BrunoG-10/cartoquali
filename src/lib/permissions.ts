@@ -14,7 +14,8 @@ export type AppModule =
   | "settings"
   | "audit"
   | "privacy"
-  | "onboarding";
+  | "onboarding"
+  | "platform";
 export type AppAction = "view" | "manage";
 
 const viewByRole: Record<UserRole, readonly AppModule[]> = {
@@ -33,6 +34,7 @@ const viewByRole: Record<UserRole, readonly AppModule[]> = {
     "audit",
     "privacy",
     "onboarding",
+    "platform",
   ],
   registry_admin: [
     "dashboard",
@@ -103,6 +105,7 @@ export const MODULE_LABELS: Record<AppModule, string> = {
   audit: "Auditoria",
   privacy: "Solicitações de privacidade",
   onboarding: "Implantações",
+  platform: "Painel da plataforma",
 };
 
 export const APP_MODULES = Object.keys(MODULE_LABELS) as AppModule[];

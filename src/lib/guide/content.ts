@@ -22,6 +22,7 @@ export const GUIDE_PAGES: readonly GuidePage[] = [
   { path: "/configuracoes", label: "Configurações", module: "settings", group: "admin" },
   { path: "/solicitacoes-privacidade", label: "Privacidade", module: "privacy", group: "admin" },
   { path: "/auditoria", label: "Auditoria", module: "audit", group: "admin" },
+  { path: "/plataforma", label: "Painel da plataforma", module: "platform", group: "admin" },
   { path: "/implantacoes", label: "Implantações", module: "onboarding", group: "admin" },
 ];
 
@@ -374,6 +375,26 @@ export const PAGE_GUIDES: Record<string, readonly GuideStep[]> = {
       null,
       "Transparência",
       'Use a auditoria para responder "quem mudou o quê e quando" com segurança.',
+    ),
+  ],
+  "/plataforma": [
+    step(
+      "/plataforma",
+      "platform-summary",
+      "Visão geral",
+      "Os totais de todos os cartórios: ativos, avaliações da semana, ocorrências abertas e alertas.",
+    ),
+    step(
+      "/plataforma",
+      "platform-list",
+      "Um cartório por linha",
+      "Veja avaliações, nota média, ocorrências abertas, usuários e o último acesso de cada cartório.",
+    ),
+    step(
+      "/plataforma",
+      null,
+      "Alertas",
+      "Um cartório ativo sem avaliações há mais de 7 dias aparece em vermelho: confira se o QR Code está no lugar.",
     ),
   ],
   "/implantacoes": [

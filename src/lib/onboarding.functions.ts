@@ -122,6 +122,8 @@ export const listOnboardings = createServerFn({ method: "GET" })
       .select(
         "id,cartorio_id,status,current_step,survey_id,point_id,test_evaluation_id,created_at,updated_at,activated_at,cartorios!inner(razao_social,nome_fantasia,cnpj,cidade,estado,status,environment_kind),pesquisas(nome,descricao,status),pontos_avaliacao(nome,localizacao,codigo,status)",
       )
+      // Cartórios de teste antigos ficam fora da lista (migração 20261011010000).
+      .eq("cartorios.oculto", false)
       .order("updated_at", { ascending: false });
     if (error) throw new Error("Não foi possível carregar as implantações.");
     return Promise.all(
