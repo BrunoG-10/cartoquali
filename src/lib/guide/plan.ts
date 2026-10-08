@@ -35,6 +35,21 @@ export function pageGuide(path: string, role: UserRole | null): GuideStep[] {
   return [...(PAGE_GUIDES[page.path] ?? [])];
 }
 
+/** Page guides only show balloons whose target is on screen now (or centered ones). */
+export function availableSteps(
+  steps: GuideStep[],
+  isOnScreen: (target: string) => boolean,
+): GuideStep[] {
+  return steps.filter((step) => step.target === null || isOnScreen(step.target));
+}
+
+/** Arrow keys move the guide (driver.js only handles them in its own drive() mode). */
+export function guideKeyAction(key: string): "next" | "previous" | null {
+  if (key === "ArrowRight") return "next";
+  if (key === "ArrowLeft") return "previous";
+  return null;
+}
+
 /** First visible element with this data-tour (lists render a desktop table and mobile cards). */
 export function resolveTarget(target: string, doc: Document = document): Element | null {
   const matches = Array.from(doc.querySelectorAll(`[data-tour="${target}"]`));

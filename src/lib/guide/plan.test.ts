@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { GUIDE_PAGES, PAGE_GUIDES, TOUR_STEPS } from "./content";
-import { buildTour, pageGuide, progressLabel, resolveTarget, resumeIndex } from "./plan";
+import {
+  availableSteps,
+  buildTour,
+  guideKeyAction,
+  pageGuide,
+  progressLabel,
+  resolveTarget,
+  resumeIndex,
+} from "./plan";
 
 describe("guide content", () => {
   it("has the 17 tour steps of the spec, starting at the dashboard", () => {
@@ -70,6 +78,30 @@ describe("pageGuide", () => {
 
   it("is empty for unknown pages", () => {
     expect(pageGuide("/nao-existe", "registry_admin")).toEqual([]);
+  });
+});
+
+describe("availableSteps", () => {
+  it("keeps centered balloons and those whose target is on screen", () => {
+    const steps = pageGuide("/pesquisas", "registry_admin");
+    const onList = new Set(["surveys-list", "surveys-configure"]);
+    const result = availableSteps(steps, (target) => onList.has(target));
+    expect(result.map((step) => step.target)).toEqual(["surveys-list", "surveys-configure"]);
+  });
+
+  it("keeps null targets", () => {
+    const steps = pageGuide("/cartorio", "registry_admin").concat([
+      { page: "/cartorio", target: null, title: "t", text: "x" },
+    ]);
+    expect(availableSteps(steps, () => false)).toHaveLength(1);
+  });
+});
+
+describe("guideKeyAction", () => {
+  it("maps arrow keys to next/previous", () => {
+    expect(guideKeyAction("ArrowRight")).toBe("next");
+    expect(guideKeyAction("ArrowLeft")).toBe("previous");
+    expect(guideKeyAction("Enter")).toBeNull();
   });
 });
 

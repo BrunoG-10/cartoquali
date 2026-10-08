@@ -15,7 +15,15 @@ import "driver.js/dist/driver.css";
 import { useAuth } from "@/components/cartoquali/auth-provider";
 import type { GuideStep } from "@/lib/guide/content";
 import { saveGuideProgress } from "@/lib/guide.functions";
-import { buildTour, pageGuide, progressLabel, resolveTarget, resumeIndex } from "@/lib/guide/plan";
+import {
+  availableSteps,
+  buildTour,
+  guideKeyAction,
+  pageGuide,
+  progressLabel,
+  resolveTarget,
+  resumeIndex,
+} from "@/lib/guide/plan";
 import { GuideFinish } from "./guide-finish";
 import { GuideWelcome } from "./guide-welcome";
 
@@ -31,7 +39,8 @@ type GuideValue = {
 };
 
 const GuideContext = createContext<GuideValue | undefined>(undefined);
-const TARGET_TIMEOUT_MS = 4000;
+// A page with no data may never render a target; after this, the balloon is centered.
+const TARGET_TIMEOUT_MS = 2500;
 
 function waitForTarget(target: string | null): Promise<Element | null> {
   if (!target) return Promise.resolve(null);
@@ -60,7 +69,9 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   const closingRef = useRef(false);
   const expectedPathRef = useRef<string | null>(null);
   const autoOpenedRef = useRef(false);
-  const directionRef = useRef<1 | -1>(1);
+  const actionsRef = useRef<{ next(): void; previous(): void } | null>(null);
+  const completedRef = useRef(Boolean(guide?.completedAt));
+  completedRef.current = Boolean(guide?.completedAt);
 
   const tourSteps = useMemo(() => buildTour(currentRole), [currentRole]);
   const currentPageSteps = useMemo(() => pageGuide(pathname, currentRole), [pathname, currentRole]);
@@ -71,6 +82,28 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     driverRef.current = null;
     closingRef.current = false;
     expectedPathRef.current = null;
+    actionsRef.current = null;
+  }, []);
+
+  const ensureDriver = useCallback(() => {
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    driverRef.current ??= driver({
+      animate: !reduceMotion,
+      smoothScroll: !reduceMotion,
+      overlayColor: "#16294a",
+      overlayOpacity: 0.72,
+      stagePadding: 8,
+      stageRadius: 12,
+      allowClose: true,
+      overlayClickBehavior: "none",
+      disableActiveInteraction: true,
+      popoverClass: "cq-guide-popover",
+      onDestroyStarted: () => {
+        if (closingRef.current) return;
+        postponeRef.current();
+      },
+    });
+    return driverRef.current;
   }, []);
 
   const save = useCallback(
@@ -130,33 +163,34 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     // navigating away (that is handled above as "Continuar depois").
     if (!pathnameRef.current.startsWith(step.page)) void navigate({ to: step.page });
 
-    void waitForTarget(step.target).then((element) => {
-      if (cancelled) return;
-      // Page guides skip balloons whose button is not on this screen; the full tour centers them.
-      if (!element && step.target && !isTour) {
-        const next = index + directionRef.current;
-        if (next >= 0 && next < steps.length) setIndex(next);
-        else postpone();
-        return;
-      }
-      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      driverRef.current ??= driver({
-        animate: !reduceMotion,
-        smoothScroll: !reduceMotion,
-        overlayColor: "#16294a",
-        overlayOpacity: 0.72,
-        stagePadding: 8,
-        stageRadius: 12,
-        allowClose: true,
-        overlayClickBehavior: "none",
-        disableActiveInteraction: true,
-        popoverClass: "cq-guide-popover",
-        onDestroyStarted: () => {
-          if (closingRef.current) return;
-          postponeRef.current();
+    // Save every step of the full tour, so a reload or a closed tab resumes where the person was.
+    if (isTour && !completedRef.current) save(index);
+
+    const next = () => {
+      if (!isLast) setIndex(index + 1);
+      else if (isTour) finishTour();
+      else postpone();
+    };
+    const previous = () => {
+      if (index > 0) setIndex(index - 1);
+    };
+    // Until the target shows up (new page loading), replace the previous balloon with a neutral
+    // one, so its buttons never look dead.
+    actionsRef.current = null;
+    if (step.target && !resolveTarget(step.target))
+      ensureDriver().highlight({
+        popover: {
+          title: "Carregando…",
+          description: "Abrindo a próxima tela do guia.",
+          showButtons: ["close"],
+          onCloseClick: () => postpone(),
         },
       });
-      driverRef.current.highlight({
+
+    void waitForTarget(step.target).then((element) => {
+      if (cancelled) return;
+      actionsRef.current = { next, previous };
+      ensureDriver().highlight({
         ...(element ? { element } : {}),
         popover: {
           title: step.title,
@@ -166,16 +200,8 @@ export function GuideProvider({ children }: { children: ReactNode }) {
           showButtons: index === 0 ? ["next", "close"] : ["previous", "next", "close"],
           nextBtnText: isLast ? (isTour ? "Concluir" : "Entendi") : "Próximo",
           prevBtnText: "Voltar",
-          onNextClick: () => {
-            directionRef.current = 1;
-            if (!isLast) setIndex(index + 1);
-            else if (isTour) finishTour();
-            else postpone();
-          },
-          onPrevClick: () => {
-            directionRef.current = -1;
-            if (index > 0) setIndex(index - 1);
-          },
+          onNextClick: next,
+          onPrevClick: previous,
           onCloseClick: () => postpone(),
           onPopoverRender: (popover) => {
             popover.closeButton.setAttribute(
@@ -209,7 +235,20 @@ export function GuideProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [finishTour, index, mode, navigate, postpone, steps]);
+  }, [ensureDriver, finishTour, index, mode, navigate, postpone, save, steps]);
+
+  // Arrow keys move the guide (driver.js ignores them outside its own drive() mode).
+  useEffect(() => {
+    if (mode !== "tour" && mode !== "page") return;
+    const onKey = (event: KeyboardEvent) => {
+      const action = guideKeyAction(event.key);
+      if (!action || !actionsRef.current) return;
+      event.preventDefault();
+      actionsRef.current[action]();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mode]);
 
   useEffect(() => () => closeDriver(), [closeDriver]);
 
@@ -222,10 +261,12 @@ export function GuideProvider({ children }: { children: ReactNode }) {
   }, [closeDriver, guide, tourSteps]);
 
   const startPageGuide = useCallback(() => {
-    if (!currentPageSteps.length) return;
+    // The page is already rendered: keep only balloons whose button is on screen right now, so
+    // "N de M" is honest and no step waits for something that will not appear.
+    const available = availableSteps(currentPageSteps, (target) => Boolean(resolveTarget(target)));
+    if (!available.length) return;
     closeDriver();
-    directionRef.current = 1;
-    setSteps(currentPageSteps);
+    setSteps(available);
     setIndex(0);
     setMode("page");
   }, [closeDriver, currentPageSteps]);
@@ -249,12 +290,8 @@ export function GuideProvider({ children }: { children: ReactNode }) {
         <GuideWelcome
           name={firstName}
           resuming={resuming && index > 0}
-          onStart={() => {
-            directionRef.current = 1;
-            setMode("tour");
-          }}
+          onStart={() => setMode("tour")}
           onRestart={() => {
-            directionRef.current = 1;
             setIndex(0);
             setMode("tour");
           }}
