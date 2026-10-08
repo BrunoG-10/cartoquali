@@ -74,17 +74,32 @@ function TermsPage() {
                   <Link to="/privacidade" className="font-semibold text-primary underline">
                     Aviso de Privacidade
                   </Link>
-                  . A autorização para contato é separada e opcional.
+                  , conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018). O cartório é o
+                  controlador dos dados e o CartoQuali atua como operador, seguindo as instruções do
+                  cartório. A autorização para contato é separada e opcional.
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">Contato</h2>
+                <p>
+                  Dúvidas sobre estes termos ou sobre dados pessoais:{" "}
+                  <a
+                    href="mailto:cartoquali@gmail.com"
+                    className="font-semibold text-primary underline"
+                  >
+                    cartoquali@gmail.com
+                  </a>
+                  .
                 </p>
               </section>
               <section className="rounded-md bg-muted p-4">
                 <h2 className="font-display text-lg font-bold text-foreground">
-                  Revisão jurídica pendente
+                  Condições contratuais
                 </h2>
                 <p>
-                  Este texto é uma base operacional e precisa de revisão jurídica antes da
-                  publicação comercial. Responsabilidades, foro, nível de serviço e dados formais
-                  das partes ainda dependem de definição contratual.
+                  Responsabilidades, foro, nível de serviço e dados formais das partes são definidos
+                  no contrato firmado entre o CartoQuali e cada cartório. Este texto está sujeito a
+                  revisão jurídica.
                 </p>
               </section>
             </div>
