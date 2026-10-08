@@ -98,6 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
       if (event === "SIGNED_OUT") {
+        // Also on session expiry or sign-out in another tab, not only via signOut().
+        clearGuidePostponed();
         clear();
         setStatus("unauthenticated");
         void router.invalidate();
