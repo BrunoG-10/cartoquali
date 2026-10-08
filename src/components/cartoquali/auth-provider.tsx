@@ -12,7 +12,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { getCurrentAuthContext } from "@/lib/auth.functions";
+import { getCurrentAuthContext, type GuideProgress } from "@/lib/auth.functions";
 import type { RegistryUser, UserRole } from "@/types/cartoquali";
 
 type AuthStatus =
@@ -38,6 +38,9 @@ type AuthValue = {
   resetPassword(email: string): Promise<void>;
   updatePassword(password: string): Promise<void>;
   refresh(): Promise<void>;
+  /** Progresso do guia de uso; null = desconhecido (não abre o tour sozinho). */
+  guide: GuideProgress | null;
+  setGuide(next: GuideProgress): void;
 };
 const AuthContext = createContext<AuthValue | undefined>(undefined);
 
@@ -47,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [cartorio, setCartorio] = useState<AuthValue["cartorio"]>(null);
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
   const [status, setStatus] = useState<AuthStatus>("loading");
+  const [guide, setGuide] = useState<GuideProgress | null>(null);
   const fetchContext = useServerFn(getCurrentAuthContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -74,6 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUsuario(result.usuario);
         setCartorio(result.cartorio);
         setCurrentRole(result.role);
+        setGuide(result.guide);
         setStatus("authenticated");
       } else {
         setUsuario(null);
@@ -152,8 +157,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       resetPassword,
       updatePassword,
       refresh,
+      guide,
+      setGuide,
     }),
-    [user, usuario, cartorio, currentRole, status],
+    [user, usuario, cartorio, currentRole, status, guide],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

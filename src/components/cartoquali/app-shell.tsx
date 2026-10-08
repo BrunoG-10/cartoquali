@@ -28,14 +28,17 @@ import { useAuth } from "@/components/cartoquali/auth-provider";
 import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { USER_ROLE_LABELS } from "@/constants/cartoquali";
 import { can, type AppModule } from "@/lib/permissions";
+import { guidePageFor } from "@/lib/guide/plan";
+import { GuideButton } from "@/components/cartoquali/guide/guide-button";
 
 type NavItem = { to: string; label: string; icon: LucideIcon; module: AppModule };
 
 // Grouped by what the registry team is doing: follow results, act on problems,
 // collect feedback, administer the registry. Platform tools come last.
-const navGroups: { label: string; items: NavItem[] }[] = [
+const navGroups: { label: string; tour?: string; items: NavItem[] }[] = [
   {
     label: "Acompanhar",
+    tour: "nav-acompanhar",
     items: [
       { to: "/dashboard", label: "Painel", icon: Gauge, module: "dashboard" },
       { to: "/qualidade", label: "Qualidade", icon: ShieldCheck, module: "quality" },
@@ -115,7 +118,7 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
       aria-label="Navegação principal"
     >
       {groups.map((group) => (
-        <div key={group.label} className="mb-4 last:mb-0">
+        <div key={group.label} data-tour={group.tour} className="mb-4 last:mb-0">
           <p className="px-3 pb-1.5 text-xs font-semibold text-muted-foreground">{group.label}</p>
           <ul className="space-y-0.5">
             {group.items.map(({ to, label, icon: Icon }) => {
@@ -167,6 +170,18 @@ function UserCard() {
   );
 }
 
+/** Desktop top bar: current page name and the "?" guide button. */
+function AppTopbar() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const label = guidePageFor(pathname)?.label ?? "CartoQuali";
+  return (
+    <div className="sticky top-0 z-30 hidden h-14 items-center justify-between border-b border-border bg-card/95 px-8 backdrop-blur lg:flex">
+      <p className="text-sm font-semibold text-muted-foreground">{label}</p>
+      <GuideButton />
+    </div>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   // overflow-x-clip (not hidden): "hidden" would turn this div into a scroll container and break the sticky sidebar.
@@ -213,15 +228,19 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Menu />
             </Button>
             <Brand />
-            <Link
-              to="/avaliar"
-              aria-label="Abrir avaliação pública"
-              title="Abrir avaliação pública"
-              className="grid size-9 place-items-center rounded-md text-primary hover:bg-muted"
-            >
-              <ExternalLink className="size-4" />
-            </Link>
+            <div className="flex items-center">
+              <GuideButton />
+              <Link
+                to="/avaliar"
+                aria-label="Abrir avaliação pública"
+                title="Abrir avaliação pública"
+                className="grid size-9 place-items-center rounded-md text-primary hover:bg-muted"
+              >
+                <ExternalLink className="size-4" />
+              </Link>
+            </div>
           </div>
+          <AppTopbar />
           <main className="p-4 sm:p-6 lg:p-8">
             {children}
             <p className="mt-8 text-center text-xs text-muted-foreground">

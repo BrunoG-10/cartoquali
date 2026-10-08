@@ -57,7 +57,7 @@ export function AuditPage() {
           </Button>
         }
       />
-      <GlassPanel className="mb-4">
+      <GlassPanel className="mb-4" tour="audit-filters">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="text-sm font-medium">
             Entidade
@@ -133,7 +133,7 @@ export function AuditPage() {
         </GlassPanel>
       ) : query.data?.rows.length ? (
         <>
-          <div className="space-y-3">
+          <div data-tour="audit-list" className="space-y-3">
             {query.data.rows.map((event) => (
               <GlassPanel key={event.id} className="p-4">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

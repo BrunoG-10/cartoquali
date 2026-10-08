@@ -161,7 +161,7 @@ export function RegistryPage() {
         </div>
       )}
       <div className="grid gap-4 xl:grid-cols-[1.4fr_.6fr]">
-        <GlassPanel>
+        <GlassPanel tour="registry-data">
           <div className="mb-5 flex items-center gap-3">
             <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
               <Building2 />

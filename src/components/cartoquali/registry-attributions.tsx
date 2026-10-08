@@ -108,7 +108,7 @@ export function RegistryAttributions({ canEdit }: { canEdit: boolean }) {
           Nenhuma atribuição marcada. Enquanto isso, a avaliação funciona sem a pergunta de serviço.
         </p>
       )}
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div data-tour="registry-attributions" className="grid gap-2 sm:grid-cols-2">
         {ATTRIBUTIONS.map((item) => (
           <label
             key={item.key}
@@ -132,7 +132,7 @@ export function RegistryAttributions({ canEdit }: { canEdit: boolean }) {
       )}
 
       {saved.length > 0 && (
-        <div className="mt-6 space-y-5">
+        <div data-tour="registry-services" className="mt-6 space-y-5">
           <p className="text-sm text-muted-foreground">
             Desative os serviços que o cartório não oferece. Eles deixam de aparecer para o cidadão.
           </p>

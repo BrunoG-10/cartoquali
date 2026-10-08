@@ -114,7 +114,7 @@ export function PrivacyRequestsPage() {
         title="Solicitações de privacidade"
         description="Registre e acompanhe pedidos sem armazenar documentos pessoais desnecessários."
         action={
-          <Button onClick={() => setCreating((value) => !value)}>
+          <Button onClick={() => setCreating((value) => !value)} data-tour="privacy-new">
             <Plus />
             {creating ? "Cancelar" : "Nova solicitação"}
           </Button>
@@ -254,7 +254,7 @@ export function PrivacyRequestsPage() {
         </GlassPanel>
       ) : query.data?.rows.length ? (
         <>
-          <div className="space-y-3">
+          <div data-tour="privacy-list" className="space-y-3">
             {query.data.rows.map((request) => (
               <RequestCard
                 key={request.id}

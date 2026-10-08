@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { useAuth } from "@/components/cartoquali/auth-provider";
 import { AuthAccessState } from "@/components/cartoquali/auth-pages";
+import { GuideProvider } from "@/components/cartoquali/guide/guide-provider";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -21,5 +22,11 @@ export const Route = createFileRoute("/_authenticated")({
 
 function ProtectedOutlet() {
   const { status } = useAuth();
-  return status === "authenticated" ? <Outlet /> : <AuthAccessState />;
+  return status === "authenticated" ? (
+    <GuideProvider>
+      <Outlet />
+    </GuideProvider>
+  ) : (
+    <AuthAccessState />
+  );
 }

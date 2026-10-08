@@ -133,7 +133,7 @@ export function ReportsCatalog() {
           </Link>
         </Button>
       </GlassPanel>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <div data-tour="reports-catalog" className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {catalog.map(({ kind, title, description, icon: Icon }) => (
           <GlassPanel key={kind} className="flex min-h-56 flex-col">
             <span className="grid size-11 place-items-center rounded-lg bg-primary/10 text-primary">
@@ -224,7 +224,7 @@ export function ReportViewer({ kind }: { kind: ReportKind }) {
         title={title}
         description={`${data.registry.trade_name} · dados atualizados do Supabase`}
         action={
-          <div className="print-hidden flex flex-wrap gap-2">
+          <div data-tour="report-actions" className="print-hidden flex flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={() => void report.refetch()}
@@ -347,7 +347,7 @@ function FilterBar({
     if (next.period !== "Personalizado" || (next.startDate && next.endDate)) onApply(next);
   };
   return (
-    <GlassPanel className="print-hidden">
+    <GlassPanel className="print-hidden" tour="report-filters">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <Select
           label="Período"
@@ -449,7 +449,7 @@ function Summary({
     ...(filters.surveyId ? { survey: filters.surveyId } : {}),
   };
   return (
-    <>
+    <div data-tour="report-summary" className="space-y-5">
       <SectionTitle
         title="Resumo executivo"
         description="Indicadores calculados a partir dos registros do período e comparados ao intervalo anterior equivalente."
@@ -489,7 +489,7 @@ function Summary({
           action={() => void navigate({ to: "/planos-melhoria", search: { status: "concluido" } })}
         />
       </div>
-    </>
+    </div>
   );
 }
 function Kpi({

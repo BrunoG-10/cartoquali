@@ -168,7 +168,7 @@ export function OnboardingPage() {
         title="Implantações"
         description="Cadastre, teste e ative novos cartórios sem operações manuais."
         action={
-          <Button onClick={() => setCreating(!creating)}>
+          <Button onClick={() => setCreating(!creating)} data-tour="onboarding-new">
             {creating ? <ChevronLeft /> : <Plus />}
             {creating ? "Voltar" : "Novo cartório"}
           </Button>
@@ -278,7 +278,7 @@ export function OnboardingPage() {
           </div>
         </GlassPanel>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div data-tour="onboarding-list" className="grid gap-4 lg:grid-cols-2">
           {query.data?.map((item) => (
             <GlassPanel key={item.id}>
               <div className="flex items-start justify-between gap-3">

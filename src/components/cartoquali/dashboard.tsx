@@ -38,7 +38,7 @@ export function DashboardPage() {
   });
   const data = query.data;
   const filters = (
-    <GlassPanel className="mb-4">
+    <GlassPanel className="mb-4" tour="dashboard-filters">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="flex flex-wrap gap-1">
           {DASHBOARD_PERIODS.map((item) => (
@@ -105,6 +105,7 @@ export function DashboardPage() {
               size="icon"
               variant="outline"
               aria-label="Atualizar indicadores"
+              data-tour="dashboard-refresh"
               onClick={() => query.refetch()}
               disabled={query.isFetching}
             >
@@ -256,7 +257,10 @@ function DashboardContent({
     );
   return (
     <>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div
+        data-tour="dashboard-kpis"
+        className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
+      >
         <KpiCard
           label="Satisfação geral"
           value={`${number(summary.satisfaction)}%`}
@@ -357,7 +361,7 @@ function DashboardContent({
         </GlassPanel>
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <GlassPanel>
+        <GlassPanel tour="dashboard-services">
           <h2 className="flex items-center gap-2 font-display text-lg font-bold">
             <ListChecks className="size-5 text-primary" aria-hidden="true" />
             {data.services ? "Desempenho por serviço" : "Desempenho por ponto"}
@@ -400,7 +404,7 @@ function DashboardContent({
             ))}
           </ul>
         </GlassPanel>
-        <GlassPanel>
+        <GlassPanel tour="dashboard-recent">
           <h2 className="flex items-center gap-2 font-display text-lg font-bold">
             <MessageSquareText className="size-5 text-primary" aria-hidden="true" />
             Avaliações recentes

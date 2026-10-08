@@ -186,7 +186,7 @@ export function ImprovementPlansPage() {
         description="Transforme problemas identificados em ações com responsável, prazo e resultado."
         action={
           list.data?.canManage ? (
-            <Button onClick={() => setCreating(true)}>
+            <Button onClick={() => setCreating(true)} data-tour="plans-new">
               <Plus />
               Novo plano
             </Button>
@@ -203,7 +203,7 @@ export function ImprovementPlansPage() {
           </GlassPanel>
         ))}
       </div>
-      <GlassPanel className="mt-4">
+      <GlassPanel className="mt-4" tour="plans-filters">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Select
             label="Status"
@@ -369,7 +369,10 @@ export function ImprovementPlansPage() {
 function PlanList({ items, onSelect }: { items: Plan[]; onSelect: (id: string) => void }) {
   return (
     <>
-      <div className="mt-4 hidden overflow-x-auto rounded-lg border border-glass-border bg-glass shadow-glass md:block">
+      <div
+        data-tour="plans-list"
+        className="mt-4 hidden overflow-x-auto rounded-lg border border-glass-border bg-glass shadow-glass md:block"
+      >
         <table className="w-full min-w-[900px] text-left text-sm">
           <thead className="border-b border-glass-border bg-glass-strong text-xs text-muted-foreground">
             <tr>
@@ -407,7 +410,7 @@ function PlanList({ items, onSelect }: { items: Plan[]; onSelect: (id: string) =
           </tbody>
         </table>
       </div>
-      <div className="mt-4 grid gap-3 md:hidden">
+      <div data-tour="plans-list" className="mt-4 grid gap-3 md:hidden">
         {items.map((p) => (
           <Button
             key={p.id}

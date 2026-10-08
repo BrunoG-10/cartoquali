@@ -97,7 +97,7 @@ export function ReviewsPage() {
         title="Avaliações"
         description="Consulte avaliações e respostas registradas no seu cartório."
       />
-      <GlassPanel className="mb-4">
+      <GlassPanel className="mb-4" tour="reviews-filters">
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           <label className="relative">
             <span className="sr-only">Buscar comentário</span>
@@ -229,7 +229,10 @@ export function ReviewsPage() {
         </GlassPanel>
       ) : (
         <>
-          <div className="hidden overflow-hidden rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-xl md:block">
+          <div
+            data-tour="reviews-list"
+            className="hidden overflow-hidden rounded-xl border border-glass-border bg-glass shadow-glass backdrop-blur-xl md:block"
+          >
             <table className="w-full text-left text-sm">
               <thead className="border-b border-glass-border bg-glass-strong text-xs text-muted-foreground">
                 <tr>
@@ -285,7 +288,7 @@ export function ReviewsPage() {
               </tbody>
             </table>
           </div>
-          <div className="grid gap-3 md:hidden">
+          <div data-tour="reviews-list" className="grid gap-3 md:hidden">
             {list.data.items.map((item) => (
               <Button
                 key={item.id}

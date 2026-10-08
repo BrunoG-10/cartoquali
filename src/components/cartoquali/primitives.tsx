@@ -2,9 +2,21 @@ import type { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, Inbox, LoaderCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-export function GlassPanel({ children, className }: { children: ReactNode; className?: string }) {
+export function GlassPanel({
+  children,
+  className,
+  tour,
+}: {
+  children: ReactNode;
+  className?: string;
+  /** data-tour target for the usage guide (src/lib/guide/content.ts). */
+  tour?: string;
+}) {
   return (
-    <section className={cn("rounded-xl border border-border bg-card p-5 shadow-glass", className)}>
+    <section
+      data-tour={tour}
+      className={cn("rounded-xl border border-border bg-card p-5 shadow-glass", className)}
+    >
       {children}
     </section>
   );
