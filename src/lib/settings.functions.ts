@@ -71,7 +71,7 @@ export const getRegistrySettings = createServerFn({ method: "GET" })
   });
 export const saveRegistrySettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((value: unknown) => settingsInput.parse(value))
+  .validator((value: unknown) => settingsInput.parse(value))
   .handler(async ({ context, data }) => {
     const user = await admin(context);
     const { error } = await context.supabase

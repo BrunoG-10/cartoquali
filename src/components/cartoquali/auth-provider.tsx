@@ -14,6 +14,7 @@ import { useNavigate, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAuthContext, type GuideProgress } from "@/lib/auth.functions";
 import { getPasswordSetupUrl } from "@/lib/public-url";
+import { clearGuidePostponed } from "@/lib/guide/postponed";
 import type { RegistryUser, UserRole } from "@/types/cartoquali";
 
 type AuthStatus =
@@ -97,6 +98,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
       if (event === "SIGNED_OUT") {
+        // Also on session expiry or sign-out in another tab, not only via signOut().
+        clearGuidePostponed();
         clear();
         setStatus("unauthenticated");
         void router.invalidate();
@@ -118,6 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [clear, queryClient, refresh, router]);
   const signIn = async (email: string, password: string) => {
+    clearGuidePostponed();
     setStatus("loading");
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
@@ -127,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await refresh();
   };
   const signOut = async () => {
+    clearGuidePostponed();
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();

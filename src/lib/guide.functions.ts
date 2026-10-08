@@ -7,7 +7,7 @@ import { untypedDb } from "@/lib/untyped-db";
 // Grava o progresso do guia do próprio usuário (a RPC deriva o usuário da sessão).
 export const saveGuideProgress = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({ step: z.number().int().min(0).max(1000), completed: z.boolean().optional() })
       .parse(input),

@@ -187,7 +187,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   // overflow-x-clip (not hidden): "hidden" would turn this div into a scroll container and break the sticky sidebar.
   return (
     <div className="relative min-h-screen overflow-x-clip bg-background">
-      <div className="relative mx-auto flex min-h-screen max-w-[1600px]">
+      {/* Full width: the sidebar sits on the left edge and content fills any screen size. */}
+      <div className="relative flex min-h-screen">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-card p-4 lg:flex">
           <Brand />
           <Navigation />
@@ -234,7 +235,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 to="/avaliar"
                 aria-label="Abrir avaliação pública"
                 title="Abrir avaliação pública"
-                className="grid size-9 place-items-center rounded-md text-primary hover:bg-muted"
+                className="grid size-9 place-items-center rounded-md text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ExternalLink className="size-4" />
               </Link>

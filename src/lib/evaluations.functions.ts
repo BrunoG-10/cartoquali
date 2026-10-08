@@ -78,7 +78,7 @@ async function loadServiceNames(client: unknown, evaluationIds: string[]) {
 
 export const listEvaluations = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => listInput.parse(input))
+  .validator((input: unknown) => listInput.parse(input))
   .handler(async ({ context, data }) => {
     const from = (data.page - 1) * data.pageSize;
     let query = context.supabase
@@ -141,7 +141,7 @@ export const listEvaluations = createServerFn({ method: "POST" })
 
 export const getEvaluationDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
     const { data: row, error } = await context.supabase
       .from("avaliacoes")

@@ -108,7 +108,7 @@ export const listSurveys = createServerFn({ method: "GET" })
 
 export const saveSurvey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((value: unknown) => surveyInput.parse(value))
+  .validator((value: unknown) => surveyInput.parse(value))
   .handler(async ({ context, data }) => {
     const permission = await access(context);
     if (!permission.canManage) throw new Error("Você não possui permissão para alterar pesquisas.");
@@ -154,7 +154,7 @@ export const saveSurvey = createServerFn({ method: "POST" })
 
 export const saveSurveyQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((value: unknown) => questionInput.parse(value))
+  .validator((value: unknown) => questionInput.parse(value))
   .handler(async ({ context, data }) => {
     const permission = await access(context);
     if (!permission.canManage) throw new Error("Você não possui permissão para alterar perguntas.");
@@ -217,7 +217,7 @@ export const saveSurveyQuestion = createServerFn({ method: "POST" })
 
 export const deactivateSurveyQuestion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((value: unknown) => z.object({ id: z.string().uuid() }).parse(value))
+  .validator((value: unknown) => z.object({ id: z.string().uuid() }).parse(value))
   .handler(async ({ context, data }) => {
     const permission = await access(context);
     if (!permission.canManage) throw new Error("Você não possui permissão para alterar perguntas.");

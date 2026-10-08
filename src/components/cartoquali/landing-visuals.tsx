@@ -91,9 +91,9 @@ export function ProductScene() {
         </div>
       </div>
       <div className="absolute -bottom-8 -left-2 hidden w-40 rounded-lg border border-border bg-card p-3 shadow-lg sm:block">
-        <div className="flex items-center gap-2 text-rating">
-          <Star className="size-5 fill-current" />
-          <strong className="font-display text-lg">5/5</strong>
+        <div className="flex items-center gap-2">
+          <Star className="size-5 fill-current text-rating" aria-hidden="true" />
+          <strong className="font-display text-lg text-foreground">5/5</strong>
         </div>
         <p className="mt-1 text-[10px] text-muted-foreground">Avaliação recebida agora</p>
       </div>
@@ -183,7 +183,8 @@ export function QrTotemScene() {
 export function OccurrenceScene() {
   return (
     <div>
-      <p className="mb-2 text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+      {/* Shown on the dark "Da avaliação à ação" band: light text keeps the caption readable. */}
+      <p className="mb-2 text-right text-[11px] font-semibold uppercase tracking-wide text-background/75">
         Exemplo ilustrativo
       </p>
       <div className="rounded-xl border border-border bg-card p-5 shadow-glass">

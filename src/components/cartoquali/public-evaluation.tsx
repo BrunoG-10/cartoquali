@@ -418,10 +418,11 @@ function Screen({
           Sem conta · identificação opcional somente para retorno
         </p>
         <div className="mt-1 flex flex-wrap justify-center gap-1">
-          <Button asChild variant="link" size="sm" className="h-auto text-xs">
+          {/* min-h-10: comfortable touch target on phones (WCAG 2.5.8). */}
+          <Button asChild variant="link" size="sm" className="min-h-10 text-xs">
             <Link to="/privacidade">Privacidade</Link>
           </Button>
-          <Button asChild variant="link" size="sm" className="h-auto text-xs">
+          <Button asChild variant="link" size="sm" className="min-h-10 text-xs">
             <Link to="/termos">Termos de uso</Link>
           </Button>
         </div>

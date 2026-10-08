@@ -226,6 +226,7 @@ Status: **VALIDADA COM RESSALVAS OPERACIONAIS**. O formulário persiste contatos
 Desenvolvimento passou a ser feito via Claude Code, com o GitHub como fonte oficial e PRs para a `main`.
 
 ## Correções e segurança
+
 - [x] Papel efetivo do usuário com vários papéis (`primaryDbRole` em `src/lib/roles.ts`) no login e na listagem (PRs #1)
 - [x] Rollback correto na criação de usuário (PR #1)
 - [x] Administrador da plataforma protegido na tela de usuários e na função `update_registry_user` (PR #4, migração `20261007010000`)
@@ -234,6 +235,7 @@ Desenvolvimento passou a ser feito via Claude Code, com o GitHub como fonte ofic
 - [x] 22 testes automatizados (Vitest) e verificação automática no GitHub Actions (PR #2)
 
 ## Revisão visual
+
 - [x] Identidade "selo de conformidade": logo, ícones, paleta institucional e títulos em serifa (PR #5)
 - [x] Menu lateral agrupado; botão "Sair" sempre acessível, inclusive no celular (PR #6)
 - [x] Página inicial reduzida de 18 para 8 seções, com contexto do PQTA/ANOREG e aviso de independência (PR #7)
@@ -241,9 +243,40 @@ Desenvolvimento passou a ser feito via Claude Code, com o GitHub como fonte ofic
 - [x] Avaliação pública destacando o cartório (PR #9)
 - [x] Dados do DEMO: avaliações de testes marcadas como `is_test`; textos de pesquisa e pontos realistas
 
-## Pendências
-- [ ] Captcha (Cloudflare Turnstile) na avaliação pública — aguarda chaves
-- [ ] SMTP próprio, URLs de redirecionamento, cadastro aberto desligado e proteção contra senhas vazadas no Supabase Auth
-- [ ] Troca da secret key do Supabase (também nos secrets da Lovable)
+## QR Code único e serviços (PRs #11–#12)
+
+- [x] Formatação geral com Prettier (PR #11, mesclado junto com o #12)
+- [x] Um QR Code por cartório; cartaz com razão social e nome fantasia
+- [x] Atribuições da serventia (Lei 8.935/94, art. 5º) e serviços configuráveis; pergunta opcional "Qual serviço você utilizou hoje?"
+- [x] Seis perguntas essenciais protegidas no banco; perguntas próprias livres
+- [x] Painel, lista de avaliações e CSV por serviço; página inicial citando CNJ (Prov. 229/2026), Lei 13.460/2017 e PQTA
+
+## Experiência, correções e guia (PRs #13–#19)
+
+- [x] Login com cena animada do QR Code (PR #13)
+- [x] Redefinição de senha liberada pela sessão do link (PR #14)
+- [x] Navegação mais fluida: guarda de rota local e rechecagens silenciosas (PR #15)
+- [x] Varredura de botões: imprimir com filtros, CSV, ocorrências, cartaz, permissões e menus (PR #16)
+- [x] Guia de uso: tour no primeiro login, guia por página e botão "?" (PR #17; tabela `guia_progresso`)
+- [x] Ajustes menores: texto neutro, Auditoria em português, nome do CSV, QR inativo (PR #18)
+- [x] Convite pela tela Implantações e links de e-mail pelo endereço oficial; roteiro do Supabase Auth em `docs/operacao/configuracao-supabase-auth.md` (PR #19)
+- [x] Layout em tela cheia sem bordas vazias; revisão em 360, 768, 1024, 1440, 1920 e 2560 px; foco visível e alvos de toque (PR #20)
+
+## Pendências para o MVP
+
+Dependem de configuração ou decisão do responsável:
+
+- [ ] Troca da secret key do Supabase (também nos secrets da Lovable) — ver roteiro, passo 6
+- [ ] Supabase Auth: URLs de redirecionamento, cadastro aberto desligado, SMTP com `cartoquali@gmail.com` e e-mails em português — ver roteiro
 - [ ] Validação de ponta a ponta: convite, primeiro acesso, avaliação real no painel e logout
-- [ ] Formatação geral com Prettier
+- [ ] Primeira implantação real (segundo cartório) para validar isolamento e fluxo de implantação
+- [ ] Privacidade e Termos: identificação da empresa e canal de privacidade
+- [ ] Plano do Supabase (Pro recomendado: sem pausa por inatividade e com backups)
+- [ ] Captcha (Cloudflare Turnstile) na avaliação pública — aguarda chaves
+- [ ] Monitoramento de erros (ex.: Sentry) — aguarda conta
+- [ ] Remover o plano de teste antigo `STAGE9_TEST_e182a0f5` do DEMO (exclusão de dados)
+
+Pós-MVP:
+
+- [ ] Filtro por serviço nos relatórios (exige migração da função `get_quality_report`)
+- [ ] Notificação e CRM para contatos comerciais

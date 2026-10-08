@@ -76,7 +76,7 @@ async function permissions(context: { supabase: any; userId: string }) {
 
 export const listImprovementPlans = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => listInput.parse(input))
+  .validator((input: unknown) => listInput.parse(input))
   .handler(async ({ context, data }) => {
     const access = await permissions(context);
     const from = (data.page - 1) * data.pageSize;
@@ -144,7 +144,7 @@ export const listImprovementPlans = createServerFn({ method: "POST" })
 
 export const getImprovementPlanDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
     const access = await permissions(context);
     const { data: row, error } = await context.supabase
@@ -220,7 +220,7 @@ export const getImprovementPlanDetail = createServerFn({ method: "POST" })
 
 export const createImprovementPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => createInput.parse(input))
+  .validator((input: unknown) => createInput.parse(input))
   .handler(async ({ context, data }) => {
     await permissions(context);
     const params = {
@@ -255,7 +255,7 @@ export const createImprovementPlan = createServerFn({ method: "POST" })
 
 export const updateImprovementPlan = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => updateInput.parse(input))
+  .validator((input: unknown) => updateInput.parse(input))
   .handler(async ({ context, data }) => {
     await permissions(context);
     const params = {

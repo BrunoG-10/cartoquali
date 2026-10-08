@@ -94,7 +94,7 @@ export const listEvaluationPoints = createServerFn({ method: "GET" })
 
 export const saveEvaluationPoint = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => pointInput.parse(input))
+  .validator((input: unknown) => pointInput.parse(input))
   .handler(async ({ context, data }) => {
     const { profile, canManage } = await permissions(context);
     if (!canManage) throw new Error("Você não possui permissão para alterar pontos de avaliação.");

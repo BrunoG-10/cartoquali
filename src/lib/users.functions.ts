@@ -92,9 +92,7 @@ export const listRegistryUsers = createServerFn({ method: "GET" })
 
 export const createRegistryUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
-    userInput.extend({ redirectTo: z.string().url() }).parse(input),
-  )
+  .validator((input: unknown) => userInput.extend({ redirectTo: z.string().url() }).parse(input))
   .handler(async ({ context, data }) => {
     await requireRegistryAdmin(context);
     const { data: duplicate } = await context.supabase
@@ -157,7 +155,7 @@ export const createRegistryUser = createServerFn({ method: "POST" })
 
 export const updateRegistryUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z
       .object({
         id: z.string().uuid(),

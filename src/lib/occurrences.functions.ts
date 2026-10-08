@@ -84,7 +84,7 @@ async function permissions(context: { supabase: any; userId: string }) {
 
 export const listOccurrences = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => listInput.parse(input))
+  .validator((input: unknown) => listInput.parse(input))
   .handler(async ({ context, data }) => {
     const access = await permissions(context);
     const from = (data.page - 1) * data.pageSize;
@@ -147,7 +147,7 @@ export const listOccurrences = createServerFn({ method: "POST" })
 
 export const getOccurrenceDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
     const access = await permissions(context);
     const { data: row, error } = await context.supabase
@@ -301,7 +301,7 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" })
 
 export const createOccurrence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => createInput.parse(input))
+  .validator((input: unknown) => createInput.parse(input))
   .handler(async ({ context, data }) => {
     const params = {
       _client_request_id: data.requestId,
@@ -334,7 +334,7 @@ export const createOccurrence = createServerFn({ method: "POST" })
 
 export const updateOccurrence = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => updateInput.parse(input))
+  .validator((input: unknown) => updateInput.parse(input))
   .handler(async ({ context, data }) => {
     const params = {
       _id: data.id,

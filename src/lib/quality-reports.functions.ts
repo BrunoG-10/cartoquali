@@ -186,7 +186,7 @@ async function runReport(context: { supabase: any }, data: QualityReportInput) {
 
 export const getQualityReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => reportInput.parse(input))
+  .validator((input: unknown) => reportInput.parse(input))
   .handler(async ({ context, data }) => runReport(context, data));
 
 function csvCell(value: string | number | null) {
@@ -196,7 +196,7 @@ function csvCell(value: string | number | null) {
 
 export const exportQualityReportCsv = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => reportInput.parse(input))
+  .validator((input: unknown) => reportInput.parse(input))
   .handler(async ({ context, data }) => {
     const report = await runReport(context, data);
     const { data: profile } = await context.supabase

@@ -53,7 +53,7 @@ export const getRegistryServices = createServerFn({ method: "GET" })
 
 export const setRegistryAttributions = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ attributions: z.array(attributionKey).min(1).max(7) }).parse(input),
   )
   .handler(async ({ context, data }) => {
@@ -66,7 +66,7 @@ export const setRegistryAttributions = createServerFn({ method: "POST" })
 
 export const setRegistryServiceActive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .validator((input: unknown) =>
     z.object({ serviceId: z.string().uuid(), active: z.boolean() }).parse(input),
   )
   .handler(async ({ context, data }) => {
