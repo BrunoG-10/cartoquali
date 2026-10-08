@@ -74,21 +74,30 @@ describe("pageGuide", () => {
 });
 
 describe("resolveTarget", () => {
+  const el = (visible: boolean) =>
+    ({ getClientRects: () => ({ length: visible ? 1 : 0 }) }) as unknown as Element;
+
   it("returns null when the target is missing", () => {
-    const doc = { querySelector: () => null } as unknown as Document;
+    const doc = { querySelectorAll: () => [] } as unknown as Document;
     expect(resolveTarget("inexistente", doc)).toBeNull();
   });
 
-  it("queries by data-tour", () => {
+  it("queries by data-tour and prefers the visible copy (desktop table vs mobile cards)", () => {
     let selector = "";
-    const element = {} as Element;
+    const hidden = el(false);
+    const shown = el(true);
     const doc = {
-      querySelector: (value: string) => {
+      querySelectorAll: (value: string) => {
         selector = value;
-        return element;
+        return [hidden, shown];
       },
     } as unknown as Document;
-    expect(resolveTarget("dashboard-kpis", doc)).toBe(element);
-    expect(selector).toBe('[data-tour="dashboard-kpis"]');
+    expect(resolveTarget("reviews-list", doc)).toBe(shown);
+    expect(selector).toBe('[data-tour="reviews-list"]');
+  });
+
+  it("returns null when every copy is hidden", () => {
+    const doc = { querySelectorAll: () => [el(false)] } as unknown as Document;
+    expect(resolveTarget("reviews-list", doc)).toBeNull();
   });
 });

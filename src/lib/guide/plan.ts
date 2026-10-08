@@ -35,6 +35,8 @@ export function pageGuide(path: string, role: UserRole | null): GuideStep[] {
   return [...(PAGE_GUIDES[page.path] ?? [])];
 }
 
+/** First visible element with this data-tour (lists render a desktop table and mobile cards). */
 export function resolveTarget(target: string, doc: Document = document): Element | null {
-  return doc.querySelector(`[data-tour="${target}"]`);
+  const matches = Array.from(doc.querySelectorAll(`[data-tour="${target}"]`));
+  return matches.find((element) => element.getClientRects().length > 0) ?? null;
 }
