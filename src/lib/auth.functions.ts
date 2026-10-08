@@ -2,6 +2,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { primaryDbRole } from "@/lib/roles";
+import { untypedDb } from "@/lib/untyped-db";
+
+export type GuideProgress = { step: number; completedAt: string | null };
 
 const roleMap = {
   PLATFORM_ADMIN: "platform_admin",
@@ -36,7 +39,20 @@ export const getCurrentAuthContext = createServerFn({ method: "GET" })
     if (cartorio.status !== "ativo") return { status: "inactive_registry" as const };
     const dbRole = primaryDbRole(roles);
     if (!dbRole || !roleMap[dbRole]) return { status: "missing_role" as const };
+    // Guia de uso: linha ausente = nunca começou; erro de leitura = null (o tour não abre sozinho).
+    const { data: progress, error: progressError } = await untypedDb(context.supabase)
+      .from("guia_progresso")
+      .select("etapa, concluido_em")
+      .eq("usuario_id", usuario.id)
+      .maybeSingle();
+    const guide: GuideProgress | null = progressError
+      ? null
+      : {
+          step: Number(progress?.etapa ?? 0),
+          completedAt: (progress?.concluido_em as string | null | undefined) ?? null,
+        };
     return {
+      guide,
       status: "active" as const,
       usuario: {
         id: usuario.id,
