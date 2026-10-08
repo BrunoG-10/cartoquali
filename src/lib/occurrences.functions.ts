@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
+import { describeAnswer } from "@/lib/multiple-choice";
 
 const statuses = ["nova", "em_analise", "em_tratamento", "resolvida", "encerrada"] as const;
 const priorities = ["baixa", "media", "alta", "critica"] as const;
@@ -267,9 +268,14 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" })
             id: answer.id,
             question: questionMap.get(answer.pergunta_id)?.texto ?? "Pergunta indisponível",
             order: questionMap.get(answer.pergunta_id)?.ordem ?? 999,
-            value:
-              answer.resposta_texto ??
-              (Array.isArray(answer.valor) ? answer.valor.join(" · ") : String(answer.valor ?? "")),
+            value: describeAnswer(
+              Array.isArray(answer.valor)
+                ? answer.valor.map(String)
+                : answer.valor == null
+                  ? []
+                  : [String(answer.valor)],
+              answer.resposta_texto,
+            ),
           }))
           .sort((a: any, b: any) => a.order - b.order),
       };
