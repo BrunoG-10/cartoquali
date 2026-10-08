@@ -20,6 +20,16 @@ export function getPublicAppBaseUrl() {
   return "";
 }
 
+/**
+ * Where invitation and password-recovery e-mails send people: always the official address
+ * (never whichever host the administrator happened to be on). Invitations are flagged so the
+ * page can greet a new user instead of talking about a "new" password.
+ */
+export function getPasswordSetupUrl(kind: "invite" | "recovery") {
+  const path = kind === "invite" ? "/reset-password?origem=convite" : "/reset-password";
+  return `${getPublicAppBaseUrl()}${path}`;
+}
+
 export function getEvaluationUrl(code: string) {
   const path = `/avaliar/${encodeURIComponent(code)}`;
   const baseUrl = getPublicAppBaseUrl();

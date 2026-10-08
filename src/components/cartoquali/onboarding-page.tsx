@@ -33,7 +33,7 @@ import {
   setOnboardingStatus,
   type OnboardingItem,
 } from "@/lib/onboarding.functions";
-import { getEvaluationUrl } from "@/lib/public-url";
+import { getEvaluationUrl, getPasswordSetupUrl } from "@/lib/public-url";
 import { ATTRIBUTIONS, type AttributionKey } from "@/lib/attributions";
 
 const steps = [
@@ -439,7 +439,7 @@ function StepContent({
           data: {
             registryId: item.registryId,
             ...admin,
-            redirectTo: `${window.location.origin}/login`,
+            redirectTo: getPasswordSetupUrl("invite"),
           },
         });
       if (kind === "survey") return surveyFn({ data: { registryId: item.registryId, ...survey } });
