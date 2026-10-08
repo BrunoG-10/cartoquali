@@ -261,6 +261,7 @@ Desenvolvimento passou a ser feito via Claude Code, com o GitHub como fonte ofic
 - [x] Ajustes menores: texto neutro, Auditoria em português, nome do CSV, QR inativo (PR #18)
 - [x] Convite pela tela Implantações e links de e-mail pelo endereço oficial; roteiro do Supabase Auth em `docs/operacao/configuracao-supabase-auth.md` (PR #19)
 - [x] Layout em tela cheia sem bordas vazias; revisão em 360, 768, 1024, 1440, 1920 e 2560 px; foco visível e alvos de toque (PR #20)
+- [x] Pergunta de melhoria com texto livre no "Outro" e opção "Nada a melhorar" (PR #21)
 
 ## Pendências para o MVP
 
@@ -274,7 +275,7 @@ Dependem de configuração ou decisão do responsável:
 - [ ] Plano do Supabase (Pro recomendado: sem pausa por inatividade e com backups)
 - [ ] Captcha (Cloudflare Turnstile) na avaliação pública — aguarda chaves
 - [ ] Monitoramento de erros (ex.: Sentry) — aguarda conta
-- [ ] Remover o plano de teste antigo `STAGE9_TEST_e182a0f5` do DEMO (exclusão de dados)
+- [x] Remover o plano de teste antigo `STAGE9_TEST_e182a0f5` do DEMO (removido em 08/10/2026)
 
 Pós-MVP:
 
