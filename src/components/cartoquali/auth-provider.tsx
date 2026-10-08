@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentAuthContext, type GuideProgress } from "@/lib/auth.functions";
+import { getPasswordSetupUrl } from "@/lib/public-url";
 import type { RegistryUser, UserRole } from "@/types/cartoquali";
 
 type AuthStatus =
@@ -135,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
   const resetPassword = async (email: string) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: getPasswordSetupUrl("recovery"),
     });
     if (error) throw new Error("Não foi possível enviar o email de recuperação.");
   };

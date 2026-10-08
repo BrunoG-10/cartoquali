@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { USER_ROLE_LABELS } from "@/constants/cartoquali";
 import { createRegistryUser, listRegistryUsers, updateRegistryUser } from "@/lib/users.functions";
 import { APP_MODULES, MODULE_LABELS, can } from "@/lib/permissions";
+import { getPasswordSetupUrl } from "@/lib/public-url";
 import type { RegistryUser, UserRole } from "@/types/cartoquali";
 import { firstValidationError, userSchema } from "@/utils/cartoquali-validation";
 
@@ -99,7 +100,7 @@ export function UsersPage() {
             data: {
               ...form,
               role: form.role === "platform_admin" ? "operator" : form.role,
-              redirectTo: `${window.location.origin}/reset-password`,
+              redirectTo: getPasswordSetupUrl("invite"),
             },
           }),
     onSuccess: async () => {

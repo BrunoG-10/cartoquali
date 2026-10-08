@@ -171,6 +171,16 @@ export function ResetPasswordPage() {
     };
   }, []);
   const recovery = link === "ready";
+  // Invitation links carry ?origem=convite (see getPasswordSetupUrl); a new user creates a
+  // password rather than replacing one.
+  const [invite] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("origem") === "convite",
+  );
+  const retry = invite
+    ? "Peça ao administrador do cartório um novo convite, ou use “Esqueci minha senha” com o seu e-mail."
+    : "Peça um novo em “Esqueci minha senha”.";
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (password.length < 8) {
@@ -194,9 +204,13 @@ export function ResetPasswordPage() {
   };
   return (
     <AuthFrame>
-      <h1 className="font-display text-2xl font-bold">Definir nova senha</h1>
+      <h1 className="font-display text-2xl font-bold">
+        {invite ? "Crie sua senha de acesso" : "Definir nova senha"}
+      </h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        Escolha uma nova senha para seu acesso administrativo.
+        {invite
+          ? "Você recebeu um convite para o CartoQuali. Escolha uma senha para entrar no sistema."
+          : "Escolha uma nova senha para seu acesso administrativo."}
       </p>
       {link === "checking" && (
         <p role="status" className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
@@ -207,9 +221,9 @@ export function ResetPasswordPage() {
       {(link === "expired" || link === "invalid" || link === "missing") && (
         <p role="alert" className="mt-5 rounded-md bg-warning-soft p-3 text-sm text-warning">
           {link === "expired"
-            ? "Este link expirou ou já foi usado. Peça um novo em “Esqueci minha senha”."
+            ? `Este link expirou ou já foi usado. ${retry}`
             : link === "invalid"
-              ? "Não foi possível validar este link. Peça um novo em “Esqueci minha senha”."
+              ? `Não foi possível validar este link. ${retry}`
               : "Abra esta página pelo link mais recente recebido no email."}
         </p>
       )}

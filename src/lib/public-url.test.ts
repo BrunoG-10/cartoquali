@@ -39,6 +39,14 @@ describe("public evaluation URL", () => {
     expect(getEvaluationUrl("CQ-BAL-001")).toBe("/avaliar/CQ-BAL-001");
   });
 
+  it("sends invitation and recovery e-mails to the canonical password page", async () => {
+    const { getPasswordSetupUrl } = await loadWith("https://cartoquali.com.br");
+    expect(getPasswordSetupUrl("invite")).toBe(
+      "https://cartoquali.com.br/reset-password?origem=convite",
+    );
+    expect(getPasswordSetupUrl("recovery")).toBe("https://cartoquali.com.br/reset-password");
+  });
+
   it("encodes the point code", async () => {
     const { getEvaluationUrl } = await loadWith("https://cartoquali.com.br");
     expect(getEvaluationUrl("A/B C")).toBe("https://cartoquali.com.br/avaliar/A%2FB%20C");
