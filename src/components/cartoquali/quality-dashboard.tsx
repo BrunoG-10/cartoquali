@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import {
   AlertCircle,
   ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
   BarChart3,
   Filter,
@@ -13,14 +14,13 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DASHBOARD_PERIODS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
 import type { DashboardPeriod, QualityFilters } from "@/types/cartoquali";
 import { cn } from "@/lib/utils";
 import { GlassPanel, PageHeader } from "./primitives";
-import { QualityNavigation } from "./quality-navigation";
 import { useRealDashboard } from "./use-real-dashboard";
 
 const sections = [
@@ -46,7 +46,7 @@ const delta = (current: number | null, previous: number | null) =>
 
 export function QualityDashboard() {
   // The section lives in the URL (?section=) so the tabs below and the QualityNavigation links
-  // above stay in sync.
+  // on Ocorrências / Planos de melhoria open the right analysis.
   const navigate = useNavigate();
   const urlSection = useRouterState({
     select: (state) => (state.location.search as { section?: string }).section,
@@ -88,23 +88,37 @@ export function QualityDashboard() {
           </div>
         }
       />
-      <QualityNavigation />
+      {/* Uma barra só: as análises desta página e, ao fim, os atalhos para tratar problemas. */}
       <nav
         className="mb-5 overflow-x-auto"
         aria-label="Análises de qualidade"
         data-tour="quality-tabs"
       >
-        <div className="flex min-w-max gap-1">
+        <div className="flex min-w-max items-center gap-1">
           {sections.map((item) => (
             <Button
               key={item}
               size="sm"
               variant={section === item ? "default" : "ghost"}
+              aria-current={section === item ? "page" : undefined}
               onClick={() => setSection(item)}
             >
               {item}
             </Button>
           ))}
+          <span className="mx-2 h-5 w-px bg-border" aria-hidden />
+          <Button asChild size="sm" variant="ghost">
+            <Link to="/ocorrencias">
+              Ocorrências
+              <ArrowRight aria-hidden />
+            </Link>
+          </Button>
+          <Button asChild size="sm" variant="ghost">
+            <Link to="/planos-melhoria">
+              Planos de Melhoria
+              <ArrowRight aria-hidden />
+            </Link>
+          </Button>
         </div>
       </nav>
       <div className="hidden lg:block" data-tour="quality-filters">
