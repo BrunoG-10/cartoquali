@@ -382,19 +382,19 @@ export const PAGE_GUIDES: Record<string, readonly GuideStep[]> = {
       "/plataforma",
       "platform-summary",
       "Visão geral",
-      "Os totais de todos os cartórios: ativos, avaliações da semana, ocorrências abertas e alertas.",
+      "Os totais de todos os cartórios: ativos, avaliações da semana, ocorrências abertas, alertas e pagamentos atrasados.",
     ),
     step(
       "/plataforma",
       "platform-list",
       "Um cartório por linha",
-      "Veja avaliações, nota média, ocorrências abertas, usuários e o último acesso de cada cartório.",
+      "Veja uso, mensalidade e pagamento de cada cartório. Em Cobrança você configura o valor e o vencimento e registra cada pagamento recebido.",
     ),
     step(
       "/plataforma",
       null,
       "Alertas",
-      "Um cartório ativo sem avaliações há mais de 7 dias aparece em vermelho: confira se o QR Code está no lugar.",
+      "Fica em vermelho o cartório ativo sem avaliações há mais de 7 dias (confira o QR Code) ou com mensalidade vencida sem pagamento.",
     ),
   ],
   "/implantacoes": [

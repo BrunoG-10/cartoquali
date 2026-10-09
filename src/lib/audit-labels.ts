@@ -3,6 +3,9 @@
 export const AUDIT_ACTION_LABELS: Record<string, string> = {
   answer_option_created: "Opção de resposta criada",
   answer_option_updated: "Opção de resposta alterada",
+  BILLING_UPDATED: "Cobrança do cartório alterada",
+  PAYMENT_REGISTERED: "Pagamento registrado",
+  PAYMENT_REMOVED: "Pagamento desfeito",
   CARTORIO_ACTIVATED: "Cartório ativado",
   CARTORIO_CREATED: "Cartório criado",
   CARTORIO_DEACTIVATED: "Cartório desativado",

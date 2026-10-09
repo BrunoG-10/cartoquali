@@ -1,11 +1,19 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, RefreshCw, Rocket } from "lucide-react";
+import { AlertTriangle, RefreshCw, Rocket, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
+import { BillingBadge, BillingDialog, brl, shortDate } from "./billing-dialog";
 import { getPlatformOverview } from "@/lib/platform.functions";
 import { registryAlert, STALE_DAYS, type PlatformRegistry } from "@/lib/platform-overview";
+import {
+  billingStatus,
+  billingStatusLabel,
+  todayInSaoPaulo,
+  type BillingStatus,
+} from "@/lib/billing";
 
 const ONBOARDING_LABELS: Record<string, string> = {
   IN_PROGRESS: "Em implantação",
@@ -32,14 +40,13 @@ function SituationBadge({ registry }: { registry: PlatformRegistry }) {
   return <StatusBadge tone="positive">Ativo</StatusBadge>;
 }
 
-function AlertLine({ text }: { text: string | null }) {
-  if (!text) return null;
-  return (
-    <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-destructive">
+function AlertLines({ texts }: { texts: string[] }) {
+  return texts.map((text) => (
+    <p key={text} className="mt-1 flex items-center gap-1 text-xs font-semibold text-destructive">
       <AlertTriangle className="size-3.5 shrink-0" aria-hidden />
       {text}
     </p>
-  );
+  ));
 }
 
 function Name({ registry }: { registry: PlatformRegistry }) {
@@ -58,9 +65,30 @@ function Name({ registry }: { registry: PlatformRegistry }) {
   );
 }
 
+function Payment({ status }: { status: BillingStatus }) {
+  return (
+    <>
+      <BillingBadge kind={status.kind} label={billingStatusLabel(status)} />
+      {status.kind !== "none" ? (
+        <span className="mt-1 block text-xs text-muted-foreground">
+          {status.kind === "overdue"
+            ? `${brl(status.amountDue)} em aberto`
+            : `Próximo: ${shortDate(status.nextDue)}`}
+        </span>
+      ) : null}
+    </>
+  );
+}
+
+const fee = (registry: PlatformRegistry) =>
+  registry.billing?.active
+    ? `${brl(registry.billing.monthlyFee)} · dia ${registry.billing.dueDay}`
+    : "—";
+
 export function PlatformPage() {
   const load = useServerFn(getPlatformOverview);
   const query = useQuery({ queryKey: ["platform-overview"], queryFn: () => load() });
+  const [billingId, setBillingId] = useState<string>();
 
   if (query.isLoading)
     return (
@@ -90,21 +118,43 @@ export function PlatformPage() {
 
   const { registries, hiddenCount } = query.data;
   const now = new Date();
-  const rows = registries.map((registry) => ({ registry, alert: registryAlert(registry, now) }));
-  const active = registries.filter((r) => r.status === "ativo").length;
+  const today = todayInSaoPaulo(now);
+  const rows = registries.map((registry) => {
+    const payment = billingStatus(registry.billing, registry.payments, today);
+    const usage = registryAlert(registry, now);
+    const alerts = [
+      usage,
+      payment.kind === "overdue" ? `Pagamento ${billingStatusLabel(payment).toLowerCase()}` : null,
+    ].filter((text): text is string => !!text);
+    return { registry, payment, alerts };
+  });
+  const overdue = rows.filter((row) => row.payment.kind === "overdue");
   const totals = {
-    active,
+    active: registries.filter((r) => r.status === "ativo").length,
     evaluations7d: registries.reduce((sum, r) => sum + r.evaluations7d, 0),
     openOccurrences: registries.reduce((sum, r) => sum + r.openOccurrences, 0),
-    alerts: rows.filter((row) => row.alert).length,
+    alerts: rows.filter((row) => row.alerts.length).length,
+    overdueCount: overdue.length,
+    overdueAmount: overdue.reduce(
+      (sum, row) => sum + (row.payment.kind === "overdue" ? row.payment.amountDue : 0),
+      0,
+    ),
   };
+  const billingRegistry = registries.find((registry) => registry.id === billingId);
+
+  const billingButton = (registry: PlatformRegistry) => (
+    <Button size="sm" variant="outline" onClick={() => setBillingId(registry.id)}>
+      <Wallet aria-hidden />
+      Cobrança
+    </Button>
+  );
 
   return (
     <div className="animate-enter">
       <PageHeader
         eyebrow="Administração da plataforma"
         title="Painel da plataforma"
-        description="Acompanhe o uso de todos os cartórios: avaliações, ocorrências e acessos."
+        description="Acompanhe uso e pagamentos de todos os cartórios."
         action={
           <div className="flex flex-wrap gap-2">
             <Button
@@ -125,19 +175,36 @@ export function PlatformPage() {
         }
       />
 
-      <div data-tour="platform-summary" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div data-tour="platform-summary" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
         {[
-          { label: "Cartórios ativos", value: totals.active },
-          { label: "Avaliações em 7 dias", value: totals.evaluations7d },
-          { label: "Ocorrências abertas", value: totals.openOccurrences },
-          { label: "Cartórios com alerta", value: totals.alerts, danger: totals.alerts > 0 },
+          { label: "Cartórios ativos", value: String(totals.active) },
+          { label: "Avaliações em 7 dias", value: String(totals.evaluations7d) },
+          { label: "Ocorrências abertas", value: String(totals.openOccurrences) },
+          {
+            label: "Cartórios com alerta",
+            value: String(totals.alerts),
+            danger: totals.alerts > 0,
+          },
+          {
+            label: "Pagamentos atrasados",
+            value: String(totals.overdueCount),
+            detail: totals.overdueCount ? brl(totals.overdueAmount) : null,
+            danger: totals.overdueCount > 0,
+            wide: true,
+          },
         ].map((card) => (
-          <GlassPanel key={card.label} className="p-4">
+          <GlassPanel
+            key={card.label}
+            className={`p-4 ${card.wide ? "col-span-2 lg:col-span-1" : ""}`}
+          >
             <p className="text-xs font-semibold text-muted-foreground">{card.label}</p>
             <p
               className={`mt-1 font-display text-2xl font-bold ${card.danger ? "text-destructive" : "text-foreground"}`}
             >
               {card.value}
+              {card.detail ? (
+                <span className="ml-2 text-sm font-semibold">{card.detail}</span>
+              ) : null}
             </p>
           </GlassPanel>
         ))}
@@ -156,7 +223,7 @@ export function PlatformPage() {
           <>
             {/* Celular e tablet: um cartão por cartório */}
             <ul className="divide-y divide-border lg:hidden">
-              {rows.map(({ registry, alert }) => (
+              {rows.map(({ registry, payment, alerts }) => (
                 <li key={registry.id} className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -164,7 +231,7 @@ export function PlatformPage() {
                     </div>
                     <SituationBadge registry={registry} />
                   </div>
-                  <AlertLine text={alert} />
+                  <AlertLines texts={alerts} />
                   <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
                     <div>
                       <dt className="text-xs text-muted-foreground">Avaliações 7 / 30 dias</dt>
@@ -192,7 +259,18 @@ export function PlatformPage() {
                       <dt className="text-xs text-muted-foreground">Último acesso</dt>
                       <dd>{when(registry.lastAccessAt)}</dd>
                     </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Mensalidade</dt>
+                      <dd className="font-semibold">{fee(registry)}</dd>
+                    </div>
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Pagamento</dt>
+                      <dd>
+                        <Payment status={payment} />
+                      </dd>
+                    </div>
                   </dl>
+                  <div className="mt-3">{billingButton(registry)}</div>
                 </li>
               ))}
             </ul>
@@ -204,30 +282,34 @@ export function PlatformPage() {
                   <tr>
                     <th className="px-4 py-3 font-semibold">Cartório</th>
                     <th className="px-4 py-3 font-semibold">Situação</th>
-                    <th className="px-4 py-3 text-right font-semibold">Aval. 7d</th>
-                    <th className="px-4 py-3 text-right font-semibold">Aval. 30d</th>
+                    <th className="px-4 py-3 text-right font-semibold">Aval. 7d / 30d</th>
                     <th className="px-4 py-3 text-right font-semibold">Nota 30d</th>
                     <th className="px-4 py-3 font-semibold">Última avaliação</th>
                     <th className="px-4 py-3 text-right font-semibold">Ocorr. abertas</th>
                     <th className="px-4 py-3 text-right font-semibold">Usuários</th>
                     <th className="px-4 py-3 font-semibold">Último acesso</th>
+                    <th className="px-4 py-3 font-semibold">Mensalidade</th>
+                    <th className="px-4 py-3 font-semibold">Pagamento</th>
+                    <th className="px-4 py-3">
+                      <span className="sr-only">Ações</span>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {rows.map(({ registry, alert }) => (
-                    <tr key={registry.id} className={alert ? "bg-destructive/5" : undefined}>
+                  {rows.map(({ registry, payment, alerts }) => (
+                    <tr
+                      key={registry.id}
+                      className={alerts.length ? "bg-destructive/5" : undefined}
+                    >
                       <td className="px-4 py-3">
                         <Name registry={registry} />
-                        <AlertLine text={alert} />
+                        <AlertLines texts={alerts} />
                       </td>
                       <td className="px-4 py-3">
                         <SituationBadge registry={registry} />
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
-                        {registry.evaluations7d}
-                      </td>
-                      <td className="px-4 py-3 text-right tabular-nums">
-                        {registry.evaluations30d}
+                        {registry.evaluations7d} / {registry.evaluations30d}
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         {average(registry.average30d)}
@@ -240,6 +322,11 @@ export function PlatformPage() {
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">{registry.activeUsers}</td>
                       <td className="px-4 py-3 whitespace-nowrap">{when(registry.lastAccessAt)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">{fee(registry)}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <Payment status={payment} />
+                      </td>
+                      <td className="px-4 py-3 text-right">{billingButton(registry)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -250,12 +337,20 @@ export function PlatformPage() {
       </GlassPanel>
 
       <p className="mt-3 text-xs text-muted-foreground">
-        Alerta: cartório ativo sem avaliações há mais de {STALE_DAYS} dias (QR Code fora do lugar ou
-        parado). Avaliações de teste da implantação não entram nos números.
+        Alertas: cartório ativo sem avaliações há mais de {STALE_DAYS} dias (QR Code fora do lugar
+        ou parado) e mensalidade vencida sem pagamento registrado. Avaliações de teste da
+        implantação não entram nos números.
         {hiddenCount > 0
           ? ` ${hiddenCount} cartório${hiddenCount > 1 ? "s" : ""} de teste oculto${hiddenCount > 1 ? "s" : ""}.`
           : ""}
       </p>
+
+      <BillingDialog
+        registry={billingRegistry}
+        open={!!billingRegistry}
+        onOpenChange={(open) => !open && setBillingId(undefined)}
+        onChanged={() => query.refetch()}
+      />
     </div>
   );
 }
