@@ -236,6 +236,8 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
         point_inactive: "Este ponto de avaliação está temporariamente indisponível.",
         survey_unavailable: "A avaliação está temporariamente indisponível.",
         rate_limited: "Muitas avaliações foram enviadas nesta sessão. Aguarde alguns minutos.",
+        registry_busy:
+          "Recebemos muitas avaliações deste cartório agora. Tente novamente em alguns minutos.",
         required_answer_missing: "Responda todas as perguntas obrigatórias.",
         invalid_contact: "Confira os dados de contato informados.",
         service_unavailable:

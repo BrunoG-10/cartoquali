@@ -1,21 +1,47 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   AlertCircle,
+  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   FilterX,
   LockKeyhole,
+  PhoneCall,
   Search,
   UserRound,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getEvaluationDetail, listEvaluations } from "@/lib/evaluations.functions";
+import {
+  getEvaluationDetail,
+  listEvaluations,
+  updateEvaluationStatus,
+} from "@/lib/evaluations.functions";
 import { describeAnswer } from "@/lib/multiple-choice";
+import { can } from "@/lib/permissions";
+import { useAuth } from "./auth-provider";
 import { GlassPanel, InterfaceState, PageHeader, Stars, StatusBadge } from "./primitives";
+
+type EvaluationStatus = "nova" | "em_analise" | "respondida";
+const STATUS_OPTIONS: Array<{ value: EvaluationStatus; label: string }> = [
+  { value: "nova", label: "Nova" },
+  { value: "em_analise", label: "Em análise" },
+  { value: "respondida", label: "Respondida" },
+];
+
+/** Selo "Pediu retorno": amarelo enquanto não respondida. */
+function ContactBadge({ status }: { status: string }) {
+  return (
+    <StatusBadge tone={status === "Respondida" ? "neutral" : "warning"}>
+      <PhoneCall className="size-3" aria-hidden />
+      Pediu retorno
+    </StatusBadge>
+  );
+}
 
 const statusTone = (status: string) =>
   status === "Nova"
@@ -44,6 +70,7 @@ export function ReviewsPage() {
   const [classification, setClassification] = useState(initialSearch.get("classification") ?? "");
   const [startDate, setStartDate] = useState(initialSearch.get("start") ?? "");
   const [endDate, setEndDate] = useState(initialSearch.get("end") ?? "");
+  const [contactOnly, setContactOnly] = useState(initialSearch.get("retorno") === "1" ? "1" : "");
   const [selectedId, setSelectedId] = useState<string>();
   const pageSize = 10;
   useEffect(() => {
@@ -62,6 +89,7 @@ export function ReviewsPage() {
     ...(rating ? { rating: Number(rating) } : {}),
     ...(status ? { status: status as "nova" | "em_analise" | "respondida" } : {}),
     ...(classification ? { classification: classification as "satisfeita" | "atencao" } : {}),
+    ...(contactOnly ? { contactRequested: true } : {}),
     ...(startDate ? { startDate: new Date(`${startDate}T00:00:00`).toISOString() } : {}),
     ...(endDate ? { endDate: new Date(`${endDate}T23:59:59.999`).toISOString() } : {}),
   };
@@ -83,6 +111,7 @@ export function ReviewsPage() {
     setRating("");
     setStatus("");
     setClassification("");
+    setContactOnly("");
     setStartDate("");
     setEndDate("");
     setPage(1);
@@ -169,6 +198,15 @@ export function ReviewsPage() {
             <option value="nova">Nova</option>
             <option value="em_analise">Em análise</option>
             <option value="respondida">Respondida</option>
+          </select>
+          <select
+            aria-label="Filtrar por pedido de retorno"
+            className="h-9 rounded-md border border-input bg-glass-strong px-3 text-sm"
+            value={contactOnly}
+            onChange={(event) => update(setContactOnly, event.target.value)}
+          >
+            <option value="">Com e sem pedido de retorno</option>
+            <option value="1">Só quem pediu retorno</option>
           </select>
           <label className="grid grid-cols-[auto_1fr] items-center gap-2 text-xs text-muted-foreground">
             De
@@ -282,7 +320,10 @@ export function ReviewsPage() {
                       {item.comment || "Sem comentário"}
                     </td>
                     <td className="px-4 py-4">
-                      <StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge>
+                      <span className="flex flex-wrap gap-1">
+                        <StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge>
+                        {item.contactRequested ? <ContactBadge status={item.status} /> : null}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -300,7 +341,10 @@ export function ReviewsPage() {
                 <span className="w-full">
                   <span className="flex justify-between gap-2">
                     <Stars value={item.rating} size="sm" />
-                    <StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge>
+                    <span className="flex flex-wrap justify-end gap-1">
+                      {item.contactRequested ? <ContactBadge status={item.status} /> : null}
+                      <StatusBadge tone={statusTone(item.status)}>{item.status}</StatusBadge>
+                    </span>
                   </span>
                   <span className="mt-3 block font-medium">{item.comment || "Sem comentário"}</span>
                   <span className="mt-2 block text-xs text-muted-foreground">
@@ -388,6 +432,67 @@ export function ReviewsPage() {
   );
 }
 
+function StatusControl({
+  evaluationId,
+  status,
+  contactRequested,
+}: {
+  evaluationId: string;
+  status: EvaluationStatus;
+  contactRequested: boolean;
+}) {
+  const { currentRole } = useAuth();
+  const client = useQueryClient();
+  const update = useServerFn(updateEvaluationStatus);
+  const mutation = useMutation({
+    mutationFn: (next: EvaluationStatus) => update({ data: { id: evaluationId, status: next } }),
+    onSuccess: async (_, next) => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: ["evaluations"] }),
+        client.invalidateQueries({ queryKey: ["evaluation-detail", evaluationId] }),
+        client.invalidateQueries({ queryKey: ["pending-contacts"] }),
+      ]);
+      toast.success(
+        next === "respondida" && contactRequested
+          ? "Retorno marcado como feito."
+          : "Situação da avaliação atualizada.",
+      );
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível atualizar."),
+  });
+  if (!can(currentRole, "evaluations", "manage")) return null;
+  return (
+    <div className="mt-4 rounded-lg border border-glass-border p-3">
+      <p className="text-xs font-semibold text-muted-foreground">Alterar situação</p>
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {STATUS_OPTIONS.map((option) => (
+          <Button
+            key={option.value}
+            size="sm"
+            variant={status === option.value ? "default" : "outline"}
+            aria-pressed={status === option.value}
+            disabled={mutation.isPending || status === option.value}
+            onClick={() => mutation.mutate(option.value)}
+          >
+            {option.label}
+          </Button>
+        ))}
+        {contactRequested && status !== "respondida" ? (
+          <Button
+            size="sm"
+            className="sm:ml-auto"
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate("respondida")}
+          >
+            <CheckCircle2 />
+            Retorno feito
+          </Button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg bg-muted/70 p-3">
@@ -434,6 +539,11 @@ function EvaluationDialogContent({
           <StatusBadge tone={statusTone(evaluation.status)}>{evaluation.status}</StatusBadge>
         </Info>
       </div>
+      <StatusControl
+        evaluationId={evaluation.id}
+        status={evaluation.statusValue}
+        contactRequested={Boolean(evaluation.contact || evaluation.contactRestricted)}
+      />
       <dl className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
         <div>
           <dt className="text-xs text-muted-foreground">Pesquisa</dt>
@@ -489,8 +599,8 @@ function EvaluationDialogContent({
       )}
       {evaluation.contactRestricted && (
         <div className="mt-5 flex items-center gap-2 rounded-lg bg-muted p-4 text-sm text-muted-foreground">
-          <LockKeyhole className="size-4" />
-          Os dados de contato são restritos a administradores e gestores.
+          <LockKeyhole className="size-4" />A pessoa pediu retorno. Os dados de contato são
+          restritos aos administradores do cartório.
         </div>
       )}
       <div className="mt-6 flex justify-end">

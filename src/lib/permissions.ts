@@ -66,6 +66,7 @@ const viewByRole: Record<UserRole, readonly AppModule[]> = {
 
 const manageByRole: Record<UserRole, readonly AppModule[]> = {
   platform_admin: [
+    "evaluations",
     "surveys",
     "points",
     "occurrences",
@@ -77,6 +78,7 @@ const manageByRole: Record<UserRole, readonly AppModule[]> = {
     "onboarding",
   ],
   registry_admin: [
+    "evaluations",
     "surveys",
     "points",
     "occurrences",
@@ -86,7 +88,7 @@ const manageByRole: Record<UserRole, readonly AppModule[]> = {
     "settings",
     "privacy",
   ],
-  manager: ["surveys", "points", "occurrences", "plans"],
+  manager: ["evaluations", "surveys", "points", "occurrences", "plans"],
   operator: [],
 };
 

@@ -1,4 +1,6 @@
 import { useState, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -7,6 +9,7 @@ import {
   ListChecks,
   MessageSquareText,
   Minus,
+  PhoneCall,
   RefreshCw,
   Star,
   TrendingDown,
@@ -16,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { countPendingContacts } from "@/lib/evaluations.functions";
 import { DASHBOARD_PERIODS } from "@/constants/cartoquali";
 import type { DashboardPeriod } from "@/types/cartoquali";
 import { GlassPanel, PageHeader, Stars } from "./primitives";
@@ -23,6 +27,30 @@ import { useRealDashboard } from "./use-real-dashboard";
 
 const number = (value: number | null, digits = 1) =>
   value === null ? "—" : value.toLocaleString("pt-BR", { maximumFractionDigits: digits });
+
+/** Pedidos de retorno ainda não respondidos: some quando não há nenhum. */
+function PendingContactsBanner() {
+  const load = useServerFn(countPendingContacts);
+  const query = useQuery({ queryKey: ["pending-contacts"], queryFn: () => load() });
+  const pending = query.data?.pending ?? 0;
+  if (!pending) return null;
+  return (
+    <Link
+      to="/avaliacoes"
+      search={{ retorno: 1 }}
+      className="mb-5 flex items-center gap-3 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm transition-colors hover:bg-warning/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      <PhoneCall className="size-5 shrink-0 text-warning" aria-hidden />
+      <span className="flex-1">
+        <strong>
+          {pending} {pending === 1 ? "pessoa pediu" : "pessoas pediram"} retorno
+        </strong>{" "}
+        e {pending === 1 ? "ainda aguarda" : "ainda aguardam"} contato do cartório.
+      </span>
+      <span className="font-semibold text-primary">Ver pedidos →</span>
+    </Link>
+  );
+}
 
 export function DashboardPage() {
   const [period, setPeriod] = useState<DashboardPeriod>("30 dias");
@@ -118,6 +146,7 @@ export function DashboardPage() {
           </div>
         }
       />
+      <PendingContactsBanner />
       <div className="hidden lg:block">{filters}</div>
       {mobileFilters && (
         <div

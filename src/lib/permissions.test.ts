@@ -24,6 +24,13 @@ describe("permission matrix", () => {
     }
   });
 
+  it("lets administrators and managers update an evaluation's status, not operators", () => {
+    expect(can("platform_admin", "evaluations", "manage")).toBe(true);
+    expect(can("registry_admin", "evaluations", "manage")).toBe(true);
+    expect(can("manager", "evaluations", "manage")).toBe(true);
+    expect(can("operator", "evaluations", "manage")).toBe(false);
+  });
+
   it("lets only administrators manage users, settings and privacy", () => {
     for (const module of ["users", "settings", "privacy"] as const) {
       expect(can("platform_admin", module, "manage")).toBe(true);

@@ -15,6 +15,8 @@ const listInput = z.object({
   rating: z.number().int().min(1).max(5).optional(),
   status: z.enum(["nova", "em_analise", "respondida"]).optional(),
   classification: z.enum(["satisfeita", "atencao"]).optional(),
+  /** Só avaliações em que a pessoa pediu retorno. */
+  contactRequested: z.boolean().optional(),
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
 });
@@ -50,6 +52,7 @@ function summary(row: EvaluationRow, pointName: string, surveyName: string) {
     statusValue: row.status,
     comment: row.comentario ?? "",
     anonymous: row.anonymous,
+    contactRequested: row.deseja_contato,
     createdAt: row.created_at,
   };
 }
@@ -95,6 +98,7 @@ export const listEvaluations = createServerFn({ method: "POST" })
     if (data.status) query = query.eq("status", data.status);
     if (data.classification === "satisfeita") query = query.gte("nota_geral", 4);
     if (data.classification === "atencao") query = query.lte("nota_geral", 3);
+    if (data.contactRequested) query = query.eq("deseja_contato", true);
     if (data.startDate) query = query.gte("created_at", data.startDate);
     if (data.endDate) query = query.lte("created_at", data.endDate);
     const {
@@ -255,4 +259,39 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
       contact: contact ? { name: contact.name, phone: contact.phone, email: contact.email } : null,
       contactRestricted: row.deseja_contato && !canViewContact,
     };
+  });
+
+// Pedidos de retorno ainda não respondidos (RLS limita ao cartório da sessão).
+export const countPendingContacts = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { count, error } = await context.supabase
+      .from("avaliacoes")
+      .select("id", { count: "exact", head: true })
+      .eq("is_test", false)
+      .eq("deseja_contato", true)
+      .neq("status", "respondida");
+    if (error) throw new Error("Não foi possível contar os pedidos de retorno.");
+    return { pending: count ?? 0 };
+  });
+
+// A avaliação é imutável; a RPC muda só a situação, no cartório da sessão, e audita a troca.
+export const updateEvaluationStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z
+      .object({ id: z.string().uuid(), status: z.enum(["nova", "em_analise", "respondida"]) })
+      .parse(input),
+  )
+  .handler(async ({ context, data }) => {
+    const { error } = await untypedDb(context.supabase).rpc("set_evaluation_status", {
+      _id: data.id,
+      _status: data.status,
+    });
+    if (error) {
+      if (error.message?.includes("forbidden"))
+        throw new Error("Seu perfil pode consultar, mas não alterar a situação da avaliação.");
+      throw new Error("Não foi possível alterar a situação da avaliação.");
+    }
+    return { ok: true };
   });
