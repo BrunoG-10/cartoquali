@@ -5,18 +5,13 @@ do $$
 declare
   _demo uuid := '10000000-0000-4000-8000-000000000001';
   _admin_auth uuid := 'd92c734a-9305-4b68-b7cc-67419eb52337';
-  _other_auth uuid := (
-    select u.auth_user_id from public.usuarios u
-    where u.cartorio_id = '10000000-0000-4000-8000-000000000001' and u.status = 'ativo'
-      and u.auth_user_id is not null
-      and not exists (select 1 from public.user_roles r where r.user_id = u.id and r.role = 'PLATFORM_ADMIN')
-    limit 1);
+  _admin uuid := (select id from public.usuarios where auth_user_id = 'd92c734a-9305-4b68-b7cc-67419eb52337');
   _expected_30 int;
   _expected_open int;
   _r jsonb;
   _demo_row jsonb;
 begin
-  if _other_auth is null then raise exception 'FALHA pré: falta um usuário do DEMO sem perfil de plataforma'; end if;
+  if _admin is null then raise exception 'FALHA pré: administrador DEMO não encontrado'; end if;
 
   -- a) os 6 cartórios de teste ficaram ocultos; o DEMO não
   if (select count(*) from public.cartorios where oculto and nome_fantasia like 'Stage %') <> 6 then
@@ -55,8 +50,11 @@ begin
   -- d) último acesso lido do Auth (o administrador já entrou no sistema)
   if _demo_row ->> 'lastAccessAt' is null then raise exception 'FALHA d: último acesso vazio'; end if;
 
-  -- e) usuário sem perfil de plataforma é recusado
-  perform set_config('request.jwt.claims', json_build_object('role','authenticated','sub',_other_auth)::text, true);
+  -- e) administrador só do cartório (sem PLATFORM_ADMIN) é recusado. O perfil é retirado só dentro
+  --    desta transação, que termina desfeita.
+  execute 'reset role';
+  delete from public.user_roles where user_id = _admin and role = 'PLATFORM_ADMIN';
+  execute 'set local role authenticated';
   begin
     perform public.get_platform_overview();
     raise exception 'FALHA e: usuário comum leu o painel';
