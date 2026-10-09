@@ -10,6 +10,7 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   CARTORIO_CREATED: "Cartório criado",
   CARTORIO_DEACTIVATED: "Cartório desativado",
   email_changed: "E-mail alterado",
+  evaluation_status_changed: "Situação da avaliação alterada",
   evaluation_personal_data_minimized: "Dados pessoais da avaliação minimizados",
   evaluation_point_activated: "QR Code ativado",
   evaluation_point_code_changed: "Código do QR Code alterado",
