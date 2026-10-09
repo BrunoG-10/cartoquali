@@ -25,6 +25,7 @@ import { Route as AuthenticatedImplantacoesRouteImport } from './routes/_authent
 import { Route as AuthenticatedOcorrenciasRouteImport } from './routes/_authenticated/ocorrencias'
 import { Route as AuthenticatedPesquisasRouteImport } from './routes/_authenticated/pesquisas'
 import { Route as AuthenticatedPlanosMelhoriaRouteImport } from './routes/_authenticated/planos-melhoria'
+import { Route as AuthenticatedPlataformaRouteImport } from './routes/_authenticated/plataforma'
 import { Route as AuthenticatedPontosRouteImport } from './routes/_authenticated/pontos'
 import { Route as AuthenticatedQualidadeRouteImport } from './routes/_authenticated/qualidade'
 import { Route as AuthenticatedRelatoriosRouteImport } from './routes/_authenticated/relatorios'
@@ -119,6 +120,11 @@ const AuthenticatedPlanosMelhoriaRoute =
     path: '/planos-melhoria',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPlataformaRoute = AuthenticatedPlataformaRouteImport.update({
+  id: '/plataforma',
+  path: '/plataforma',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPontosRoute = AuthenticatedPontosRouteImport.update({
   id: '/pontos',
   path: '/pontos',
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/ocorrencias': typeof AuthenticatedOcorrenciasRoute
   '/pesquisas': typeof AuthenticatedPesquisasRoute
   '/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
+  '/plataforma': typeof AuthenticatedPlataformaRoute
   '/pontos': typeof AuthenticatedPontosRoute
   '/qualidade': typeof AuthenticatedQualidadeRoute
   '/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/ocorrencias': typeof AuthenticatedOcorrenciasRoute
   '/pesquisas': typeof AuthenticatedPesquisasRoute
   '/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
+  '/plataforma': typeof AuthenticatedPlataformaRoute
   '/pontos': typeof AuthenticatedPontosRoute
   '/qualidade': typeof AuthenticatedQualidadeRoute
   '/solicitacoes-privacidade': typeof AuthenticatedSolicitacoesPrivacidadeRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/_authenticated/ocorrencias': typeof AuthenticatedOcorrenciasRoute
   '/_authenticated/pesquisas': typeof AuthenticatedPesquisasRoute
   '/_authenticated/planos-melhoria': typeof AuthenticatedPlanosMelhoriaRoute
+  '/_authenticated/plataforma': typeof AuthenticatedPlataformaRoute
   '/_authenticated/pontos': typeof AuthenticatedPontosRoute
   '/_authenticated/qualidade': typeof AuthenticatedQualidadeRoute
   '/_authenticated/relatorios': typeof AuthenticatedRelatoriosRouteWithChildren
@@ -274,6 +283,7 @@ export interface FileRouteTypes {
     | '/ocorrencias'
     | '/pesquisas'
     | '/planos-melhoria'
+    | '/plataforma'
     | '/pontos'
     | '/qualidade'
     | '/relatorios'
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/ocorrencias'
     | '/pesquisas'
     | '/planos-melhoria'
+    | '/plataforma'
     | '/pontos'
     | '/qualidade'
     | '/solicitacoes-privacidade'
@@ -328,6 +339,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ocorrencias'
     | '/_authenticated/pesquisas'
     | '/_authenticated/planos-melhoria'
+    | '/_authenticated/plataforma'
     | '/_authenticated/pontos'
     | '/_authenticated/qualidade'
     | '/_authenticated/relatorios'
@@ -465,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPlanosMelhoriaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/plataforma': {
+      id: '/_authenticated/plataforma'
+      path: '/plataforma'
+      fullPath: '/plataforma'
+      preLoaderRoute: typeof AuthenticatedPlataformaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/pontos': {
       id: '/_authenticated/pontos'
       path: '/pontos'
@@ -564,6 +583,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOcorrenciasRoute: typeof AuthenticatedOcorrenciasRoute
   AuthenticatedPesquisasRoute: typeof AuthenticatedPesquisasRoute
   AuthenticatedPlanosMelhoriaRoute: typeof AuthenticatedPlanosMelhoriaRoute
+  AuthenticatedPlataformaRoute: typeof AuthenticatedPlataformaRoute
   AuthenticatedPontosRoute: typeof AuthenticatedPontosRoute
   AuthenticatedQualidadeRoute: typeof AuthenticatedQualidadeRoute
   AuthenticatedRelatoriosRoute: typeof AuthenticatedRelatoriosRouteWithChildren
@@ -582,6 +602,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOcorrenciasRoute: AuthenticatedOcorrenciasRoute,
   AuthenticatedPesquisasRoute: AuthenticatedPesquisasRoute,
   AuthenticatedPlanosMelhoriaRoute: AuthenticatedPlanosMelhoriaRoute,
+  AuthenticatedPlataformaRoute: AuthenticatedPlataformaRoute,
   AuthenticatedPontosRoute: AuthenticatedPontosRoute,
   AuthenticatedQualidadeRoute: AuthenticatedQualidadeRoute,
   AuthenticatedRelatoriosRoute: AuthenticatedRelatoriosRouteWithChildren,

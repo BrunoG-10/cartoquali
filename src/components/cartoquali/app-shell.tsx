@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import {
+  Activity,
   AlertCircle,
   Building2,
   ClipboardList,
@@ -83,7 +84,10 @@ const navGroups: { label: string; tour?: string; items: NavItem[] }[] = [
   },
   {
     label: "Plataforma",
-    items: [{ to: "/implantacoes", label: "Implantações", icon: Rocket, module: "onboarding" }],
+    items: [
+      { to: "/plataforma", label: "Painel da plataforma", icon: Activity, module: "platform" },
+      { to: "/implantacoes", label: "Implantações", icon: Rocket, module: "onboarding" },
+    ],
   },
 ];
 
