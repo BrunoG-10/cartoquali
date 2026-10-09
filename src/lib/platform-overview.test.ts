@@ -17,6 +17,8 @@ const base = {
   openOccurrences: 0,
   activeUsers: 2,
   lastAccessAt: "2026-10-08T10:00:00Z",
+  billing: null,
+  payments: [],
 };
 
 describe("platform overview", () => {
@@ -50,5 +52,37 @@ describe("platform overview", () => {
       onboardingStatus: null,
     });
     expect(parsePlatformOverview(null)).toEqual({ hiddenCount: 0, registries: [] });
+  });
+
+  it("parses billing and payments, numbers arriving as text", () => {
+    const parsed = parsePlatformOverview({
+      registries: [
+        {
+          ...base,
+          billing: { monthlyFee: "299.90", dueDay: 10, startMonth: "2026-08", active: true },
+          payments: [
+            {
+              id: "p1",
+              month: "2026-08",
+              amount: "299.90",
+              paidOn: "2026-08-09",
+              method: "pix",
+              note: null,
+            },
+          ],
+        },
+      ],
+    });
+    expect(parsed.registries[0]?.billing).toEqual({
+      monthlyFee: 299.9,
+      dueDay: 10,
+      startMonth: "2026-08",
+      active: true,
+    });
+    expect(parsed.registries[0]?.payments[0]).toMatchObject({ amount: 299.9, method: "pix" });
+    expect(parsePlatformOverview({ registries: [base] }).registries[0]).toMatchObject({
+      billing: null,
+      payments: [],
+    });
   });
 });

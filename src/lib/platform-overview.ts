@@ -1,4 +1,5 @@
 // Painel da plataforma: formato dos dados de get_platform_overview e o alerta de cartório parado.
+import type { BillingContract, BillingPayment, PaymentMethod } from "@/lib/billing";
 
 export type PlatformRegistry = {
   id: string;
@@ -15,6 +16,8 @@ export type PlatformRegistry = {
   openOccurrences: number;
   activeUsers: number;
   lastAccessAt: string | null;
+  billing: BillingContract | null;
+  payments: BillingPayment[];
 };
 
 export type PlatformOverview = { hiddenCount: number; registries: PlatformRegistry[] };
@@ -48,7 +51,35 @@ export function parsePlatformOverview(payload: unknown): PlatformOverview {
       openOccurrences: toNumber(row.openOccurrences) ?? 0,
       activeUsers: toNumber(row.activeUsers) ?? 0,
       lastAccessAt: toText(row.lastAccessAt),
+      billing: parseBilling(row.billing),
+      payments: Array.isArray(row.payments) ? row.payments.map(parsePayment) : [],
     })),
+  };
+}
+
+const METHODS: PaymentMethod[] = ["pix", "boleto", "transferencia", "outro"];
+
+function parseBilling(value: unknown): BillingContract | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Partial<Record<keyof BillingContract, unknown>>;
+  return {
+    monthlyFee: toNumber(raw.monthlyFee) ?? 0,
+    dueDay: toNumber(raw.dueDay) ?? 1,
+    startMonth: String(raw.startMonth ?? ""),
+    active: raw.active !== false,
+  };
+}
+
+function parsePayment(value: unknown): BillingPayment {
+  const raw = (value ?? {}) as Partial<Record<keyof BillingPayment, unknown>>;
+  const method = METHODS.find((item) => item === raw.method) ?? "outro";
+  return {
+    id: String(raw.id),
+    month: String(raw.month ?? ""),
+    amount: toNumber(raw.amount) ?? 0,
+    paidOn: String(raw.paidOn ?? ""),
+    method,
+    note: toText(raw.note),
   };
 }
 
