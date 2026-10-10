@@ -14,7 +14,7 @@ const listInput = z.object({
   surveyId: z.string().uuid().optional(),
   rating: z.number().int().min(1).max(5).optional(),
   status: z.enum(["nova", "em_analise", "respondida"]).optional(),
-  classification: z.enum(["satisfeita", "atencao"]).optional(),
+  classification: z.enum(["satisfeita", "atencao", "ruim"]).optional(),
   /** Só avaliações em que a pessoa pediu retorno. */
   contactRequested: z.boolean().optional(),
   startDate: z.string().datetime().optional(),
@@ -98,6 +98,7 @@ export const listEvaluations = createServerFn({ method: "POST" })
     if (data.status) query = query.eq("status", data.status);
     if (data.classification === "satisfeita") query = query.gte("nota_geral", 4);
     if (data.classification === "atencao") query = query.lte("nota_geral", 3);
+    if (data.classification === "ruim") query = query.lte("nota_geral", 2);
     if (data.contactRequested) query = query.eq("deseja_contato", true);
     if (data.startDate) query = query.gte("created_at", data.startDate);
     if (data.endDate) query = query.lte("created_at", data.endDate);
@@ -261,18 +262,23 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
     };
   });
 
-// Pedidos de retorno ainda não respondidos (RLS limita ao cartório da sessão).
-export const countPendingContacts = createServerFn({ method: "GET" })
+// Pendências que pedem ação da equipe (RLS limita ao cartório da sessão):
+// pedidos de retorno não respondidos e avaliações com nota 1 ou 2 ainda "Nova".
+export const getAttentionCounts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { count, error } = await context.supabase
-      .from("avaliacoes")
-      .select("id", { count: "exact", head: true })
-      .eq("is_test", false)
-      .eq("deseja_contato", true)
-      .neq("status", "respondida");
-    if (error) throw new Error("Não foi possível contar os pedidos de retorno.");
-    return { pending: count ?? 0 };
+    const base = () =>
+      context.supabase
+        .from("avaliacoes")
+        .select("id", { count: "exact", head: true })
+        .eq("is_test", false);
+    const [contacts, lowRatings] = await Promise.all([
+      base().eq("deseja_contato", true).neq("status", "respondida"),
+      base().lte("nota_geral", 2).eq("status", "nova"),
+    ]);
+    if (contacts.error || lowRatings.error)
+      throw new Error("Não foi possível carregar as pendências.");
+    return { pendingContacts: contacts.count ?? 0, lowRatings: lowRatings.count ?? 0 };
   });
 
 // A avaliação é imutável; a RPC muda só a situação, no cartório da sessão, e audita a troca.
