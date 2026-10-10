@@ -83,7 +83,7 @@ Assunto: `Seu acesso ao CartoQuali`
   <p>Clique no botão abaixo para criar sua senha de acesso:</p>
   <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#16294a;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Criar minha senha</a></p>
   <p style="font-size:13px;color:#555">Se você não esperava este convite, ignore esta mensagem.</p>
-  <p style="font-size:12px;color:#888">CartoQuali · Gestão de qualidade para cartórios</p>
+  <p style="font-size:12px;color:#888">CartoQuali · Gestão de qualidade para cartórios · Dúvidas: cartoquali@gmail.com</p>
 </div>
 ```
 
@@ -97,7 +97,7 @@ Assunto: `Redefinição de senha do CartoQuali`
   <p>Recebemos um pedido para redefinir a senha da conta {{ .Email }} no CartoQuali.</p>
   <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#16294a;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Definir nova senha</a></p>
   <p style="font-size:13px;color:#555">O link vale por pouco tempo e só pode ser usado uma vez. Se você não pediu a redefinição, ignore esta mensagem: sua senha continua a mesma.</p>
-  <p style="font-size:12px;color:#888">CartoQuali · Gestão de qualidade para cartórios</p>
+  <p style="font-size:12px;color:#888">CartoQuali · Gestão de qualidade para cartórios · Dúvidas: cartoquali@gmail.com</p>
 </div>
 ```
 
@@ -111,6 +111,7 @@ Assunto: `Confirme seu novo e-mail no CartoQuali`
   <p>Confirme a troca do e-mail da sua conta de {{ .Email }} para {{ .NewEmail }}.</p>
   <p><a href="{{ .ConfirmationURL }}" style="display:inline-block;background:#16294a;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:bold">Confirmar e-mail</a></p>
   <p style="font-size:13px;color:#555">Se você não pediu esta troca, ignore esta mensagem e avise o administrador do cartório.</p>
+  <p style="font-size:12px;color:#888">CartoQuali · Gestão de qualidade para cartórios · Dúvidas: cartoquali@gmail.com</p>
 </div>
 ```
 
