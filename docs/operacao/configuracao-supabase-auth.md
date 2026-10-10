@@ -1,8 +1,7 @@
 # Configuração do Supabase Auth para produção
 
 Passo a passo para deixar login, convites e recuperação de senha prontos para clientes reais.
-Tudo é feito no painel do Supabase (projeto `pztxfbeghbzqvglkancj`) e na conta Google
-`cartoquali@gmail.com`. **Nenhuma senha ou chave deve ser colada em chat, código ou documento.**
+Tudo é feito no painel do Supabase (projeto `pztxfbeghbzqvglkancj`), no Resend e no Registro.br. **Nenhuma senha ou chave deve ser colada em chat, código ou documento.**
 
 > Dica: desligue o tradutor automático do navegador no painel do Supabase (ele quebra a página).
 
@@ -29,33 +28,45 @@ Sem isso, os links dos e-mails podem levar para o endereço errado ou ser recusa
 - **Secure email change:** ligado.
 - **Minimum password length:** 8 (o sistema já exige 8 na tela).
 
-## 3. Remetente próprio dos e-mails — SMTP (obrigatório)
+## 3. Remetente próprio dos e-mails — SMTP via Resend (obrigatório)
 
-O remetente padrão do Supabase envia poucos e-mails por hora e cai em spam com facilidade.
+O remetente padrão do Supabase **só entrega e-mails para membros da equipe do projeto**: sem SMTP
+próprio, convites e "esqueci minha senha" não chegam aos clientes.
 
-**3.1 Na conta Google `cartoquali@gmail.com`**
+**3.1 No Resend (resend.com, plano gratuito: 3.000 e-mails/mês)**
 
-1. Ative a **verificação em duas etapas** (myaccount.google.com → Segurança).
-2. Gere uma **senha de app** (Segurança → Senhas de app → nome "Supabase").
-3. Guarde essa senha só para o passo seguinte. Não a envie a ninguém.
+1. **API Keys → Create API key** (permissão *Sending access*). Guarde a chave (`re_…`) só para o
+   passo 3.3. Não a envie a ninguém.
+2. **Domains → Add Domain → `cartoquali.com.br`** (região São Paulo, se disponível). O Resend lista
+   os registros de DNS a criar.
 
-**3.2 No Supabase: Authentication → Emails → SMTP Settings → Enable custom SMTP**
+**3.2 No Registro.br (domínio → DNS → Editar zona → Nova entrada)**
+
+| Tipo | Nome | Valor |
+|---|---|---|
+| MX | `send` | servidor indicado pelo Resend (`feedback-smtp….amazonses.com`), prioridade 10 |
+| TXT | `send` | SPF indicado pelo Resend (`v=spf1 include:amazonses.com ~all`) |
+| TXT | `resend._domainkey` | chave DKIM indicada pelo Resend (`p=MIGf…`) |
+| TXT | `_dmarc` (recomendado) | `v=DMARC1; p=none;` |
+
+No campo **Nome**, digite só o prefixo (o Registro.br completa com `.cartoquali.com.br`). Não altere
+os registros do site. Salve e, no Resend, clique em **Verify DNS Records** até ficar **Verified**.
+
+**3.3 No Supabase: Authentication → Emails → SMTP Settings → Enable custom SMTP**
 
 | Campo | Valor |
 |---|---|
-| Sender email | `cartoquali@gmail.com` |
+| Sender email | `nao-responda@cartoquali.com.br` |
 | Sender name | `CartoQuali` |
-| Host | `smtp.gmail.com` |
-| Port | `587` |
-| Username | `cartoquali@gmail.com` |
-| Password | a senha de app do passo 3.1 |
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | a chave de API do passo 3.1 |
 | Minimum interval between emails | `10` segundos (padrão) |
 
 Depois de salvar, em **Authentication → Rate Limits**, ajuste "Rate limit for sending emails"
-para cerca de **30 por hora** (o Gmail aceita algumas centenas por dia).
-
-> Mais adiante, um e-mail no domínio (ex.: `contato@cartoquali.com.br`) com um serviço como
-> Resend ou Brevo melhora a entrega. O Gmail atende bem o início.
+para cerca de **30 por hora**. O endereço `nao-responda@` só envia; o contato para dúvidas segue
+sendo `cartoquali@gmail.com`.
 
 ## 4. E-mails em português (recomendado)
 
@@ -124,7 +135,8 @@ que já apareceram em vazamentos conhecidos. Disponível no plano Pro.
 
 ## 7. Conferência final
 
-- [ ] Em uma janela anônima, "Esqueci minha senha" envia e-mail em português, remetente CartoQuali,
+- [ ] Em uma janela anônima, "Esqueci minha senha" envia e-mail em português, remetente
+      CartoQuali `<nao-responda@cartoquali.com.br>`,
       e o link abre `cartoquali.com.br/reset-password` com o formulário liberado.
 - [ ] Convite pela tela **Usuários** chega como "Seu acesso ao CartoQuali" e abre
       "Crie sua senha de acesso"; após salvar, a pessoa entra no Painel e vê o tour.
