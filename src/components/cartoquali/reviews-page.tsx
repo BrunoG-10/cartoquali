@@ -25,6 +25,7 @@ import { describeAnswer } from "@/lib/multiple-choice";
 import { can } from "@/lib/permissions";
 import { useAuth } from "./auth-provider";
 import { GlassPanel, InterfaceState, PageHeader, Stars, StatusBadge } from "./primitives";
+import { ATTENTION_COUNTS_KEY } from "./use-attention-counts";
 
 type EvaluationStatus = "nova" | "em_analise" | "respondida";
 const STATUS_OPTIONS: Array<{ value: EvaluationStatus; label: string }> = [
@@ -66,7 +67,10 @@ export function ReviewsPage() {
   const [pointId, setPointId] = useState(initialSearch.get("point") ?? "");
   const [surveyId, setSurveyId] = useState(initialSearch.get("survey") ?? "");
   const [rating, setRating] = useState("");
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState(() => {
+    const value = initialSearch.get("status") ?? "";
+    return STATUS_OPTIONS.some((option) => option.value === value) ? value : "";
+  });
   const [classification, setClassification] = useState(initialSearch.get("classification") ?? "");
   const [startDate, setStartDate] = useState(initialSearch.get("start") ?? "");
   const [endDate, setEndDate] = useState(initialSearch.get("end") ?? "");
@@ -88,7 +92,9 @@ export function ReviewsPage() {
     ...(surveyId ? { surveyId } : {}),
     ...(rating ? { rating: Number(rating) } : {}),
     ...(status ? { status: status as "nova" | "em_analise" | "respondida" } : {}),
-    ...(classification ? { classification: classification as "satisfeita" | "atencao" } : {}),
+    ...(classification
+      ? { classification: classification as "satisfeita" | "atencao" | "ruim" }
+      : {}),
     ...(contactOnly ? { contactRequested: true } : {}),
     ...(startDate ? { startDate: new Date(`${startDate}T00:00:00`).toISOString() } : {}),
     ...(endDate ? { endDate: new Date(`${endDate}T23:59:59.999`).toISOString() } : {}),
@@ -187,6 +193,7 @@ export function ReviewsPage() {
             <option value="">Todas as classificações</option>
             <option value="satisfeita">Satisfeita</option>
             <option value="atencao">Atenção</option>
+            <option value="ruim">Nota 1 ou 2</option>
           </select>
           <select
             aria-label="Filtrar por status"
@@ -450,7 +457,7 @@ function StatusControl({
       await Promise.all([
         client.invalidateQueries({ queryKey: ["evaluations"] }),
         client.invalidateQueries({ queryKey: ["evaluation-detail", evaluationId] }),
-        client.invalidateQueries({ queryKey: ["pending-contacts"] }),
+        client.invalidateQueries({ queryKey: ATTENTION_COUNTS_KEY }),
       ]);
       toast.success(
         next === "respondida" && contactRequested

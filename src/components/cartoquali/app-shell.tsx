@@ -31,6 +31,7 @@ import { USER_ROLE_LABELS } from "@/constants/cartoquali";
 import { can, type AppModule } from "@/lib/permissions";
 import { guidePageFor } from "@/lib/guide/plan";
 import { GuideButton } from "@/components/cartoquali/guide/guide-button";
+import { useAttentionCounts } from "@/components/cartoquali/use-attention-counts";
 
 type NavItem = { to: string; label: string; icon: LucideIcon; module: AppModule };
 
@@ -109,6 +110,8 @@ function Brand() {
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { currentRole } = useAuth();
+  const attention = useAttentionCounts();
+  const lowRatings = attention.data?.lowRatings ?? 0;
   const groups = navGroups
     .map((group) => ({
       ...group,
@@ -141,6 +144,14 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
                   >
                     <Icon className="size-4 shrink-0" aria-hidden="true" />
                     {label}
+                    {to === "/avaliacoes" && lowRatings > 0 ? (
+                      <span
+                        className="ml-auto grid min-w-5 place-items-center rounded-full bg-destructive px-1.5 text-[11px] font-bold leading-5 text-destructive-foreground"
+                        aria-label={`${lowRatings} ${lowRatings === 1 ? "avaliação" : "avaliações"} com nota 1 ou 2 aguardando análise`}
+                      >
+                        {lowRatings}
+                      </span>
+                    ) : null}
                   </Link>
                 </li>
               );
