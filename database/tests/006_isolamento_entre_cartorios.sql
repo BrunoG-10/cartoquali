@@ -1,13 +1,15 @@
 -- Auditoria de isolamento entre cartórios. Rodar SEMPRE dentro de uma transação desfeita:
 -- begin; <este arquivo>; rollback;
--- Um cartório de teste oculto (Stage 12) é ativado só dentro da transação e o administrador dele
--- tenta ler e alterar dados do DEMO em todas as tabelas. Depois, um visitante anônimo tenta ler tudo.
+-- O administrador de outro cartório ATIVO (o primeiro real com administrador ativo, ex.: o piloto
+-- do ensaio; sem nenhum, um cartório de teste oculto é ativado só dentro da transação) tenta ler e
+-- alterar dados do DEMO em todas as tabelas. Depois, um visitante anônimo tenta ler tudo.
 -- O bloco termina com uma exceção: ISOLAMENTO_OK (nenhum vazamento) ou ISOLAMENTO_FALHA (lista os pontos).
 do $$
 declare
   _demo uuid := '10000000-0000-4000-8000-000000000001';
-  _b_cartorio uuid := 'dd61eea8-f5dd-407c-9fc8-50f338767096';   -- Stage 12 0 (teste, oculto)
-  _b_auth uuid := 'dd5be703-2cbc-46e0-ac99-68d39374dc8c';       -- administrador desse cartório
+  _b_cartorio uuid;
+  _b_auth uuid;
+  _real boolean := true;
   _demo_evals uuid[];
   _demo_users uuid[];
   _t text;
@@ -18,8 +20,19 @@ declare
 begin
   -- Preparação (como dono do banco; a trava de status do cartório só libera o service_role)
   perform set_config('request.jwt.claims', json_build_object('role','service_role')::text, true);
-  update public.cartorios set status = 'ativo' where id = _b_cartorio;
-  update public.usuarios set status = 'ativo' where auth_user_id = _b_auth;
+  select c.id, u.auth_user_id into _b_cartorio, _b_auth
+  from public.cartorios c
+  join public.usuarios u on u.cartorio_id = c.id and u.status = 'ativo' and u.auth_user_id is not null
+  join public.user_roles r on r.user_id = u.id and r.role = 'CARTORIO_ADMIN'
+  where c.id <> _demo and c.status = 'ativo' and not c.oculto
+  order by c.created_at limit 1;
+  if _b_cartorio is null then
+    _real := false;
+    _b_cartorio := 'dd61eea8-f5dd-407c-9fc8-50f338767096';   -- Stage 12 0 (teste, oculto)
+    _b_auth := 'dd5be703-2cbc-46e0-ac99-68d39374dc8c';       -- administrador desse cartório
+    update public.cartorios set status = 'ativo' where id = _b_cartorio;
+    update public.usuarios set status = 'ativo' where auth_user_id = _b_auth;
+  end if;
   select array_agg(id) into _demo_evals from public.avaliacoes where cartorio_id = _demo;
   select array_agg(id) into _demo_users from public.usuarios where cartorio_id = _demo;
 
@@ -85,6 +98,23 @@ begin
   exception when others then null;
   end;
 
+  -- 1d) sentido inverso: o administrador do DEMO (também administrador da plataforma) não lê nem
+  --     altera linhas do outro cartório pelas tabelas
+  execute 'reset role';
+  perform set_config('request.jwt.claims',
+    json_build_object('role','authenticated','sub','d92c734a-9305-4b68-b7cc-67419eb52337')::text, true);
+  execute 'set local role authenticated';
+  for _t in select col.table_name::text from information_schema.columns col
+            join information_schema.tables tb on tb.table_schema = col.table_schema and tb.table_name = col.table_name
+            where col.table_schema = 'public' and col.column_name = 'cartorio_id' and tb.table_type = 'BASE TABLE'
+            order by 1 loop
+    begin
+      execute format('select count(*) from public.%I where cartorio_id = $1', _t) into _n using _b_cartorio;
+      if _n > 0 then _leaks := _leaks || format(' | DEMO LÊ %s linhas do outro cartório em %s', _n, _t); end if;
+    exception when insufficient_privilege then null;
+    end;
+  end loop;
+
   -- 2) visitante anônimo não lê nenhuma tabela
   execute 'reset role';
   perform set_config('request.jwt.claims', json_build_object('role','anon')::text, true);
@@ -105,7 +135,10 @@ begin
   where p.pronamespace = 'public'::regnamespace and has_function_privilege('anon', p.oid, 'execute');
 
   if _leaks = '' then
-    raise exception 'ISOLAMENTO_OK: % tabelas com cartorio_id testadas, nenhum vazamento (nada foi gravado). Funções liberadas ao anônimo: %', _checked, _anon_exec;
+    raise exception 'ISOLAMENTO_OK: % tabelas com cartorio_id testadas nos dois sentidos (%), nenhum vazamento (nada foi gravado). Funções liberadas ao anônimo: %',
+      _checked,
+      case when _real then 'DEMO x ' || (select nome_fantasia from public.cartorios where id = _b_cartorio) else 'DEMO x cartório de teste ativado na transação' end,
+      _anon_exec;
   end if;
   raise exception 'ISOLAMENTO_FALHA:%. Funções liberadas ao anônimo: %', _leaks, _anon_exec;
 end $$;
