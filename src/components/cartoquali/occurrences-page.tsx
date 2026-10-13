@@ -723,7 +723,14 @@ function OccurrenceDetail({
       </Overlay>
     );
   return (
-    <OccurrenceEditor data={data} saving={saving} users={users} onClose={onClose} onSave={onSave} />
+    <OccurrenceEditor
+      key={data.updated_at}
+      data={data}
+      saving={saving}
+      users={users}
+      onClose={onClose}
+      onSave={onSave}
+    />
   );
 }
 

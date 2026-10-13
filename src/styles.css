@@ -222,8 +222,10 @@
     transform: translateY(0);
   }
 }
+/* "backwards", not "both": a transform left on the page after the animation makes it the
+   containing block of every position:fixed dialog inside it, so overlays stopped covering the screen. */
 @utility animate-enter {
-  animation: enter-up 180ms ease-out both;
+  animation: enter-up 180ms ease-out backwards;
 }
 /* Sign-in showcase (auth-scene.tsx): one 6s loop — QR scanned, stars filled, evaluation sent,
    indicator goes up. Base styles are the loop's final state, shown as-is with reduced motion. */
