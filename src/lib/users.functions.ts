@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { primaryDbRole } from "@/lib/roles";
+import { accessLabel } from "@/lib/user-access";
 import type { RegistryUser, UserRole } from "@/types/cartoquali";
 
 const appToDbRole: Record<Exclude<UserRole, "platform_admin">, string> = {
@@ -87,7 +88,47 @@ export const listRegistryUsers = createServerFn({ method: "GET" })
       )
       .order("nome");
     if (error) throw new Error("Não foi possível carregar os usuários.");
-    return (data ?? []).map((row) => mapUser(row as UserRow));
+    const rows = (data ?? []) as UserRow[];
+    // Último acesso vem do Auth; a lista acima já foi limitada pela RLS ao cartório de quem pede.
+    const { readLastSignIn } = await import("@/lib/access-email.server");
+    const signIns = await readLastSignIn(
+      rows.map((row) => row.auth_user_id).filter((id): id is string => Boolean(id)),
+    ).catch(() => new Map<string, string | null>());
+    return rows.map((row) => {
+      const lastSignInAt = row.auth_user_id ? (signIns.get(row.auth_user_id) ?? null) : null;
+      return {
+        ...mapUser(row),
+        lastSignInAt,
+        lastAccess: accessLabel({ hasAuth: Boolean(row.auth_user_id), lastSignInAt }),
+      };
+    });
+  });
+
+export const resendUserAccess = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z
+      .object({ id: z.string().uuid(), inviteUrl: z.string().url(), recoveryUrl: z.string().url() })
+      .parse(input),
+  )
+  .handler(async ({ context, data }) => {
+    await requireRegistryAdmin(context);
+    const { data: user } = await context.supabase
+      .from("usuarios")
+      .select("id, email, status, auth_user_id")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (!user) throw new Error("Usuário não encontrado neste cartório.");
+    if (user.status !== "ativo") throw new Error("Ative o usuário antes de reenviar o acesso.");
+    if (!user.auth_user_id) throw new Error("Este usuário ainda não tem acesso criado.");
+    const { resendAccessEmail } = await import("@/lib/access-email.server");
+    const kind = await resendAccessEmail({
+      authUserId: user.auth_user_id,
+      email: user.email,
+      inviteUrl: data.inviteUrl,
+      recoveryUrl: data.recoveryUrl,
+    });
+    return { kind };
   });
 
 export const createRegistryUser = createServerFn({ method: "POST" })

@@ -15,6 +15,7 @@ import {
   QrCode,
   Rocket,
   RotateCcw,
+  Send,
 } from "lucide-react";
 import QRCode from "qrcode";
 import { toast } from "sonner";
@@ -29,6 +30,7 @@ import {
   listOnboardings,
   prepareOnboardingTest,
   publishOnboardingSurvey,
+  resendOnboardingAdministrator,
   saveOnboardingPoint,
   saveOnboardingSurvey,
   setOnboardingStatus,
@@ -488,6 +490,20 @@ function StepContent({
     },
     onError: (e) => toast.error(userMessage(e, "Não foi possível concluir a operação.")),
   });
+  const resendFn = useServerFn(resendOnboardingAdministrator);
+  const resend = useMutation({
+    mutationFn: () =>
+      resendFn({
+        data: {
+          registryId: item.registryId,
+          inviteUrl: getPasswordSetupUrl("invite"),
+          recoveryUrl: getPasswordSetupUrl("recovery"),
+        },
+      }),
+    onSuccess: (result) =>
+      toast.success(`Novo link de acesso enviado para ${result.email}. Ele vale por 24 horas.`),
+    onError: (e) => toast.error(userMessage(e, "Não foi possível reenviar o convite.")),
+  });
   const next = () => onStep(Math.min(7, step + 1));
   const nav = (
     <div className="mt-6 flex justify-between">
@@ -545,11 +561,25 @@ function StepContent({
       <GlassPanel>
         <h2 className="font-display text-xl font-bold">Administrador inicial</h2>
         {item.administrator ? (
-          <InterfaceState
-            kind="success"
-            title={item.administrator.name}
-            description={`${item.administrator.email} · convite vinculado ao cartório`}
-          />
+          <>
+            <InterfaceState
+              kind="success"
+              title={item.administrator.name}
+              description={`${item.administrator.email} · convite vinculado ao cartório`}
+            />
+            <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
+              O link do convite vale 24 horas.
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={resend.isPending}
+                onClick={() => resend.mutate()}
+              >
+                <Send />
+                Reenviar convite
+              </Button>
+            </div>
+          </>
         ) : (
           <>
             <p className="mt-1 text-sm text-muted-foreground">
