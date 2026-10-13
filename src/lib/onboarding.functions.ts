@@ -290,6 +290,35 @@ export const createOnboardingAdministrator = createServerFn({ method: "POST" })
     return result;
   });
 
+// O convite expira em 24 h: reenvia o acesso do administrador inicial do cartório em implantação.
+export const resendOnboardingAdministrator = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((v: unknown) =>
+    idInput.extend({ inviteUrl: z.string().url(), recoveryUrl: z.string().url() }).parse(v),
+  )
+  .handler(async ({ context, data }) => {
+    await platformAccess(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: admins } = await supabaseAdmin
+      .from("usuarios")
+      .select("email,status,auth_user_id,user_roles!inner(role)")
+      .eq("cartorio_id", data.registryId)
+      .eq("user_roles.role", "CARTORIO_ADMIN")
+      .limit(1);
+    const admin = admins?.[0];
+    if (!admin?.auth_user_id)
+      throw new Error("Este cartório ainda não tem administrador convidado.");
+    if (admin.status !== "ativo") throw new Error("O administrador está inativo.");
+    const { resendAccessEmail } = await import("@/lib/access-email.server");
+    const kind = await resendAccessEmail({
+      authUserId: admin.auth_user_id,
+      email: admin.email,
+      inviteUrl: data.inviteUrl,
+      recoveryUrl: data.recoveryUrl,
+    });
+    return { kind, email: admin.email };
+  });
+
 export const saveOnboardingSurvey = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((v: unknown) => surveyInput.parse(v))

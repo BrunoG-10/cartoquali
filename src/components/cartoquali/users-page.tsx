@@ -2,7 +2,7 @@ import { userMessage } from "@/lib/user-message";
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, LoaderCircle, Plus, Save, ShieldCheck, UserRound, X } from "lucide-react";
+import { Check, LoaderCircle, Plus, Save, Send, ShieldCheck, UserRound, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/cartoquali/auth-provider";
 import {
@@ -14,7 +14,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { USER_ROLE_LABELS } from "@/constants/cartoquali";
-import { createRegistryUser, listRegistryUsers, updateRegistryUser } from "@/lib/users.functions";
+import {
+  createRegistryUser,
+  listRegistryUsers,
+  resendUserAccess,
+  updateRegistryUser,
+} from "@/lib/users.functions";
 import { APP_MODULES, MODULE_LABELS, can } from "@/lib/permissions";
 import { getPasswordSetupUrl } from "@/lib/public-url";
 import type { RegistryUser, UserRole } from "@/types/cartoquali";
@@ -111,6 +116,20 @@ export function UsersPage() {
     },
     onError: (error) => toast.error(userMessage(error, "Não foi possível salvar o usuário.")),
   });
+  const resendAccess = useServerFn(resendUserAccess);
+  const resend = useMutation({
+    mutationFn: (user: RealUser) =>
+      resendAccess({
+        data: {
+          id: user.id,
+          inviteUrl: getPasswordSetupUrl("invite"),
+          recoveryUrl: getPasswordSetupUrl("recovery"),
+        },
+      }),
+    onSuccess: (_result, user) =>
+      toast.success(`Novo link de acesso enviado para ${user.email}. Ele vale por 24 horas.`),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível reenviar o acesso.")),
+  });
   const open = (user?: RealUser) => {
     if (user) {
       setSelected(user);
@@ -185,15 +204,28 @@ export function UsersPage() {
                   {user.email}
                   {user.phone ? ` · ${user.phone}` : ""}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {user.hasAuthAccess ? "Acesso autenticado disponível" : "Convite pendente"}
-                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{user.lastAccess}</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge tone={user.status === "Ativo" ? "positive" : "neutral"}>
                   {user.status}
                 </StatusBadge>
                 <StatusBadge>{USER_ROLE_LABELS[user.role]}</StatusBadge>
+                {canManage &&
+                  user.role !== "platform_admin" &&
+                  user.status === "Ativo" &&
+                  user.hasAuthAccess &&
+                  user.id !== usuario?.id && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={resend.isPending}
+                      onClick={() => resend.mutate(user)}
+                    >
+                      <Send />
+                      Reenviar acesso
+                    </Button>
+                  )}
                 {canManage && user.role !== "platform_admin" && (
                   <Button size="sm" variant="outline" onClick={() => open(user)}>
                     Editar
