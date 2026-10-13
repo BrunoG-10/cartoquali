@@ -1,3 +1,4 @@
+import { formatPhoneBR, plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -364,7 +365,7 @@ export function ReviewsPage() {
           </div>
           <div className="mt-4 flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">
             <p className="text-muted-foreground">
-              {list.data.total} avaliações · página {page} de {totalPages}
+              {plural(list.data.total, "avaliação", "avaliações")} · página {page} de {totalPages}
             </p>
             <div className="flex gap-2">
               <Button
@@ -510,6 +511,24 @@ function Info({ label, children }: { label: string; children: React.ReactNode })
   );
 }
 
+/** Abre a solicitação de privacidade já vinculada a esta avaliação (só administradores tratam). */
+function PrivacyRequestButton({ evaluationId }: { evaluationId: string }) {
+  const { currentRole } = useAuth();
+  const navigate = useNavigate();
+  if (!can(currentRole, "privacy", "manage")) return null;
+  return (
+    <Button
+      variant="outline"
+      onClick={() =>
+        void navigate({ to: "/solicitacoes-privacidade", search: { avaliacao: evaluationId } })
+      }
+    >
+      <LockKeyhole />
+      Solicitação de privacidade
+    </Button>
+  );
+}
+
 function EvaluationDialogContent({
   evaluation,
   onClose,
@@ -599,7 +618,11 @@ function EvaluationDialogContent({
             Contato solicitado
           </div>
           <p className="mt-2">
-            {[evaluation.contact.name, evaluation.contact.phone, evaluation.contact.email]
+            {[
+              evaluation.contact.name,
+              formatPhoneBR(evaluation.contact.phone),
+              evaluation.contact.email,
+            ]
               .filter(Boolean)
               .join(" · ") || "Dados não informados"}
           </p>
@@ -611,7 +634,8 @@ function EvaluationDialogContent({
           restritos aos administradores do cartório.
         </div>
       )}
-      <div className="mt-6 flex justify-end">
+      <div className="mt-6 flex flex-wrap justify-end gap-2">
+        <PrivacyRequestButton evaluationId={evaluation.id} />
         <Button onClick={() => onCreateOccurrence(evaluation.id)}>
           <AlertCircle />
           Criar ocorrência

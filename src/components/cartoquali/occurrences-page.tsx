@@ -1,3 +1,4 @@
+import { formatPhoneBR, plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -263,7 +264,8 @@ export function OccurrencesPage() {
           <OccurrenceList items={items} onSelect={setSelectedId} />
           <div className="mt-4 flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">
             <p className="text-muted-foreground">
-              {list.data?.total ?? 0} ocorrências · página {page} de {totalPages}
+              {plural(list.data?.total ?? 0, "ocorrência", "ocorrências")} · página {page} de{" "}
+              {totalPages}
             </p>
             <div className="flex gap-2">
               <Button
@@ -942,7 +944,11 @@ function EvaluationOrigin({ evaluation }: { evaluation: any }) {
       {evaluation.contact && (
         <p className="mt-3 rounded-md bg-muted p-3 text-sm">
           <strong>Contato solicitado:</strong>{" "}
-          {[evaluation.contact.name, evaluation.contact.phone, evaluation.contact.email]
+          {[
+            evaluation.contact.name,
+            formatPhoneBR(evaluation.contact.phone),
+            evaluation.contact.email,
+          ]
             .filter(Boolean)
             .join(" · ")}
         </p>

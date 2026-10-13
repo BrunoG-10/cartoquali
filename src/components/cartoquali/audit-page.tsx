@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
 import { listAuditEvents } from "@/lib/audit.functions";
 import { AUDIT_ACTION_LABELS, auditActionLabel } from "@/lib/audit-labels";
+import { useAuth } from "./auth-provider";
 
 const entityLabels: Record<string, string> = {
   user: "Usuário",
@@ -24,11 +25,18 @@ const entityLabels: Record<string, string> = {
   quality_report: "Relatório",
 };
 
-const actionOptions = Object.entries(AUDIT_ACTION_LABELS).sort(([, a], [, b]) =>
+// Ações que só o administrador da plataforma registra (cobrança); não aparecem no filtro do cartório.
+const PLATFORM_ONLY_ACTIONS = new Set(["BILLING_UPDATED", "PAYMENT_REGISTERED", "PAYMENT_REMOVED"]);
+const sortedActions = Object.entries(AUDIT_ACTION_LABELS).sort(([, a], [, b]) =>
   a.localeCompare(b, "pt-BR"),
 );
 
 export function AuditPage() {
+  const { currentRole } = useAuth();
+  const actionOptions =
+    currentRole === "platform_admin"
+      ? sortedActions
+      : sortedActions.filter(([code]) => !PLATFORM_ONLY_ACTIONS.has(code));
   const load = useServerFn(listAuditEvents);
   const [page, setPage] = useState(1);
   const [entity, setEntity] = useState("");

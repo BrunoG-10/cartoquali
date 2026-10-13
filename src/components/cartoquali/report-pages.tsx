@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { exportQualityReportCsv, type QualityReportData } from "@/lib/quality-reports.functions";
 import { cn } from "@/lib/utils";
+import { decimalBR, percentBR, plural } from "@/lib/format";
 import type { DashboardPeriod, ReportKind } from "@/types/cartoquali";
 import { validatePeriod } from "@/utils/cartoquali-validation";
 import { reportInput, useQualityReport, type RealReportFilters } from "./use-quality-report";
@@ -222,7 +223,7 @@ export function ReportViewer({ kind }: { kind: ReportKind }) {
       <PageHeader
         eyebrow="Documento gerencial"
         title={title}
-        description={`${data.registry.trade_name} · dados atualizados do Supabase`}
+        description={`${data.registry.trade_name} · dados atualizados`}
         action={
           <div data-tour="report-actions" className="print-hidden flex flex-wrap gap-2">
             <Button
@@ -458,12 +459,12 @@ function Summary({
         <Kpi label="Avaliações" value={s.total} hint={delta(s.total, p.total)} />
         <Kpi
           label="Nota média"
-          value={s.average === null ? "Sem dados" : `${s.average.toFixed(1)}/5`}
+          value={s.average === null ? "Sem dados" : `${decimalBR(s.average)}/5`}
           hint={delta(s.average, p.average)}
         />
         <Kpi
           label="Satisfação"
-          value={s.satisfaction === null ? "Sem dados" : `${s.satisfaction.toFixed(1)}%`}
+          value={s.satisfaction === null ? "Sem dados" : percentBR(s.satisfaction)}
           hint={delta(s.satisfaction, p.satisfaction, " p.p.")}
         />
         <Kpi
@@ -525,7 +526,7 @@ function Kpi({
 function delta(current: number | null, previous: number | null, suffix = "") {
   if (current === null || previous === null) return "Período anterior sem dados";
   const value = current - previous;
-  return `${value > 0 ? "+" : ""}${value.toFixed(Number.isInteger(value) ? 0 : 1)}${suffix} vs. período anterior`;
+  return `${value > 0 ? "+" : ""}${Number.isInteger(value) ? value : decimalBR(value)}${suffix} vs. período anterior`;
 }
 function Evolution({ data }: { data: QualityReportData }) {
   return (
@@ -552,9 +553,9 @@ function Evolution({ data }: { data: QualityReportData }) {
                   {new Date(x.bucket).toLocaleDateString("pt-BR")}
                 </td>
                 <td className="border-b px-3 py-3">{x.total}</td>
-                <td className="border-b px-3 py-3">{x.average.toFixed(1)}/5</td>
-                <td className="border-b px-3 py-3">{x.satisfaction.toFixed(1)}%</td>
-                <td className="border-b px-3 py-3">{x.negative_rate.toFixed(1)}%</td>
+                <td className="border-b px-3 py-3">{decimalBR(x.average)}/5</td>
+                <td className="border-b px-3 py-3">{percentBR(x.satisfaction)}</td>
+                <td className="border-b px-3 py-3">{percentBR(x.negative_rate)}</td>
               </tr>
             ))}
           </tbody>
@@ -579,9 +580,9 @@ function Distribution({ data }: { data: QualityReportData }) {
           return (
             <div key={rating}>
               <div className="flex justify-between text-sm">
-                <span>{rating} estrelas</span>
+                <span>{plural(rating, "estrela", "estrelas")}</span>
                 <strong>
-                  {count} · {percent.toFixed(1)}%
+                  {count} · {percentBR(percent)}
                 </strong>
               </div>
               <progress className="mt-1 h-2 w-full accent-primary" max="100" value={percent} />
@@ -607,12 +608,14 @@ function Dimensions({ data }: { data: QualityReportData }) {
           >
             <div>
               <p className="font-semibold">{x.label}</p>
-              <p className="text-xs text-muted-foreground">{x.responses} respostas</p>
+              <p className="text-xs text-muted-foreground">
+                {plural(x.responses, "resposta", "respostas")}
+              </p>
             </div>
             <strong>
               {x.index === null
                 ? "Sem dados suficientes no período selecionado."
-                : `${x.index.toFixed(1)}%`}
+                : percentBR(x.index)}
             </strong>
           </div>
         ))}
@@ -640,9 +643,19 @@ function Points({ data }: { data: QualityReportData }) {
               <tr key={x.id}>
                 <td className="border-b px-3 py-3 font-semibold">{x.name}</td>
                 <td className="border-b px-3 py-3">{x.total}</td>
-                <td className="border-b px-3 py-3">{x.average?.toFixed(1) ?? "—"}</td>
-                <td className="border-b px-3 py-3">{x.satisfaction?.toFixed(1) ?? "—"}%</td>
-                <td className="border-b px-3 py-3">{x.negative_rate?.toFixed(1) ?? "—"}%</td>
+                <td className="border-b px-3 py-3">
+                  {x.average === null || x.average === undefined ? "—" : decimalBR(x.average)}
+                </td>
+                <td className="border-b px-3 py-3">
+                  {x.satisfaction === null || x.satisfaction === undefined
+                    ? "—"
+                    : percentBR(x.satisfaction)}
+                </td>
+                <td className="border-b px-3 py-3">
+                  {x.negative_rate === null || x.negative_rate === undefined
+                    ? "—"
+                    : percentBR(x.negative_rate)}
+                </td>
               </tr>
             ))}
           </tbody>

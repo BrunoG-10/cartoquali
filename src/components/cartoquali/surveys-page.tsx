@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { QUESTION_TYPE_LABELS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
+import { QUESTION_TYPE_LABELS } from "@/constants/cartoquali";
+import {
+  DEFAULT_QUESTION_DIMENSION,
+  SELECTABLE_QUESTION_DIMENSIONS,
+  questionDimensionLabel,
+} from "@/lib/question-dimensions";
 import { ESSENTIAL_LABELS } from "@/lib/attributions";
 import { getRegistryServices } from "@/lib/registry-services.functions";
 import { resolveServiceStep } from "@/lib/service-step";
@@ -80,7 +85,7 @@ export function SurveysPage() {
   const [questionForm, setQuestionForm] = useState({
     text: "",
     type: "scale" as QuestionType,
-    dimensionId: "general",
+    dimensionId: DEFAULT_QUESTION_DIMENSION as string,
     required: true,
     active: true,
     options: "",
@@ -170,7 +175,7 @@ export function SurveysPage() {
         : {
             text: "",
             type: "scale",
-            dimensionId: "general",
+            dimensionId: DEFAULT_QUESTION_DIMENSION,
             required: true,
             active: true,
             options: "",
@@ -315,10 +320,7 @@ export function SurveysPage() {
               <p className="mt-2 text-xs text-muted-foreground">
                 {QUESTION_TYPE_LABELS[question.type]} ·{" "}
                 {question.required ? "Obrigatória" : "Opcional"} ·{" "}
-                {
-                  QUALITY_METHODOLOGY.dimensions.find((item) => item.key === question.dimensionId)
-                    ?.label
-                }
+                {questionDimensionLabel(question.dimensionId)}
               </p>
             </div>
             {query.data?.canManage && (
@@ -518,7 +520,7 @@ function QuestionModal({
               value={form.dimensionId}
               onChange={(e) => setForm({ ...form, dimensionId: e.target.value })}
             >
-              {QUALITY_METHODOLOGY.dimensions.map((item) => (
+              {SELECTABLE_QUESTION_DIMENSIONS.map((item) => (
                 <option key={item.key} value={item.key}>
                   {item.label}
                 </option>

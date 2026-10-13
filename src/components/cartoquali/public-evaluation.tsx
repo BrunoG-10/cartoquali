@@ -77,8 +77,8 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   if (context.status === "inactive")
     return (
       <Unavailable
-        title="Este QR Code não está mais em uso."
-        description="Use o QR Code atual do cartório, disponível no balcão, ou peça o link de avaliação à equipe."
+        title="Este QR Code não está recebendo avaliações no momento."
+        description="Se o cartório trocou o cartaz, use o QR Code atual do balcão ou peça o link de avaliação à equipe."
       />
     );
   if (context.status === "unavailable")
@@ -110,7 +110,9 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   const header = {
     registryName: context.registryOfficialName,
     tradeName: context.registryTradeName,
-    subtitle: "Avaliação do atendimento",
+    subtitle: testToken
+      ? "Avaliação de teste da implantação — não entra nos indicadores"
+      : "Avaliação do atendimento",
   };
   const allowContact = context.settings.allowContactRequest;
   const thankYouMessage =
