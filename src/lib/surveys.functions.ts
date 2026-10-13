@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Survey, SurveyQuestion } from "@/types/cartoquali";
+import { QUESTION_DIMENSION_KEYS } from "@/lib/question-dimensions";
 
 const surveyInput = z.object({
   id: z.string().uuid().optional(),
@@ -16,7 +17,7 @@ const questionInput = z.object({
   surveyId: z.string().uuid(),
   text: z.string().trim().min(1).max(500),
   type: z.enum(["stars", "yes_no", "scale", "text", "single_choice", "multiple_choice"]),
-  dimensionId: z.enum(["general", "service", "time", "clarity", "resolution", "structure"]),
+  dimensionId: z.enum(QUESTION_DIMENSION_KEYS),
   order: z.number().int().min(1),
   required: z.boolean(),
   active: z.boolean(),

@@ -1,3 +1,4 @@
+import { plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -316,7 +317,7 @@ export function ImprovementPlansPage() {
           <PlanList items={items} onSelect={setSelectedId} />
           <div className="mt-4 flex flex-col items-center justify-between gap-3 text-sm sm:flex-row">
             <p className="text-muted-foreground">
-              {list.data?.total ?? 0} planos · página {page} de {totalPages}
+              {plural(list.data?.total ?? 0, "plano", "planos")} · página {page} de {totalPages}
             </p>
             <div className="flex gap-2">
               <Button
@@ -847,6 +848,12 @@ function PlanEditor({
                   {data.observacao_resultado && (
                     <p className="mt-2 text-sm text-muted-foreground">
                       {data.observacao_resultado}
+                    </p>
+                  )}
+                  {(data.indicador_antes !== null || data.indicador_depois !== null) && (
+                    <p className="mt-3 text-sm">
+                      <strong>{data.indicador_nome || "Indicador"}:</strong> antes{" "}
+                      {data.indicador_antes ?? "—"} → depois {data.indicador_depois ?? "—"}
                     </p>
                   )}
                 </GlassPanel>

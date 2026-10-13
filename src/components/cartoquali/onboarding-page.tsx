@@ -47,6 +47,16 @@ const steps = [
   "Teste",
   "Ativação",
 ];
+const STEP_SUCCESS: Record<string, string> = {
+  admin: "Convite enviado ao administrador do cartório.",
+  survey: "Pesquisa salva.",
+  publish: "Pesquisa publicada.",
+  point: "Ponto salvo e QR Code gerado.",
+  test: "Teste preparado. Use “Abrir teste” para responder.",
+  activate: "Cartório ativado. O QR Code já recebe avaliações.",
+  deactivate: "Cartório desativado.",
+  reactivate: "Cartório reativado.",
+};
 const blankRegistry = {
   officialName: "",
   tradeName: "",
@@ -59,6 +69,19 @@ const blankRegistry = {
   phone: "",
   attributions: [] as AttributionKey[],
 };
+/** Campos obrigatórios do novo cartório que ainda estão vazios, para o botão explicar o bloqueio. */
+function missingRegistryFields(value: typeof blankRegistry): string[] {
+  const missing: string[] = [];
+  if (!value.officialName.trim()) missing.push("razão social");
+  if (!value.tradeName.trim()) missing.push("nome fantasia");
+  if (!value.cnpj.trim()) missing.push("CNPJ");
+  if (!value.serviceType.trim()) missing.push("tipo de serventia");
+  if (!value.city.trim()) missing.push("cidade");
+  if (value.state.trim().length !== 2) missing.push("UF (2 letras)");
+  if (!value.manager.trim()) missing.push("responsável");
+  if (!value.attributions.length) missing.push("ao menos uma atribuição");
+  return missing;
+}
 function Field({
   label,
   value,
@@ -123,7 +146,9 @@ export function OnboardingPage() {
       await refresh();
       setCreating(false);
       setRegistry(blankRegistry);
-      setSelectedId((query.data ?? []).find((x) => x.registryId === result.id)?.id);
+      // Lê a lista já atualizada (query.data deste closure ainda é a anterior, sem o cartório novo).
+      const fresh = client.getQueryData<OnboardingItem[]>(["onboardings"]) ?? [];
+      setSelectedId(fresh.find((x) => x.registryId === result.id)?.id);
       toast.success("Cartório criado; a implantação pode continuar.");
     },
     onError: (e) => toast.error(userMessage(e, "Não foi possível criar o cartório.")),
@@ -257,19 +282,14 @@ export function OnboardingPage() {
               ))}
             </div>
           </fieldset>
-          <div className="mt-6 flex justify-end">
+          <div className="mt-6 flex flex-col items-end gap-2">
+            {missingRegistryFields(registry).length > 0 && (
+              <p className="text-right text-xs text-muted-foreground">
+                Falta preencher: {missingRegistryFields(registry).join(", ")}.
+              </p>
+            )}
             <Button
-              disabled={
-                createMutation.isPending ||
-                !registry.officialName ||
-                !registry.tradeName ||
-                !registry.cnpj ||
-                !registry.serviceType ||
-                !registry.city ||
-                registry.state.length !== 2 ||
-                !registry.manager ||
-                !registry.attributions.length
-              }
+              disabled={createMutation.isPending || missingRegistryFields(registry).length > 0}
               onClick={() => createMutation.mutate()}
             >
               {createMutation.isPending ? <LoaderCircle className="animate-spin" /> : <Rocket />}
@@ -341,7 +361,6 @@ function OnboardingWizard({
   onBack(): void;
   onRefresh(): Promise<unknown>;
 }) {
-  const [step, setStep] = useState(Math.min(item.currentStep, 7));
   const done = [
     item.checklist.registry,
     item.checklist.administrator,
@@ -352,6 +371,11 @@ function OnboardingWizard({
     item.checklist.test,
     item.status === "ACTIVE",
   ];
+  // Abre na primeira etapa ainda pendente (ou na ativação, quando tudo está pronto).
+  const [step, setStep] = useState(() => {
+    const pending = done.findIndex((value) => !value);
+    return pending === -1 ? 7 : pending;
+  });
   return (
     <div className="animate-enter">
       <PageHeader
@@ -380,6 +404,7 @@ function OnboardingWizard({
                 className="group flex items-center gap-2 text-left"
                 onClick={() => setStep(index)}
                 aria-current={step === index ? "step" : undefined}
+                aria-label={`Etapa ${index + 1}: ${label}${done[index] ? " (concluída)" : ""}`}
               >
                 <span
                   className={`grid size-8 shrink-0 place-items-center rounded-full border text-xs font-bold ${done[index] ? "border-success bg-success text-white" : step === index ? "border-primary bg-primary text-primary-foreground" : "bg-background text-muted-foreground"}`}
@@ -457,9 +482,9 @@ function StepContent({
         },
       });
     },
-    onSuccess: async () => {
+    onSuccess: async (_result, kind) => {
       await onRefresh();
-      toast.success("Etapa atualizada com sucesso.");
+      toast.success(STEP_SUCCESS[kind] ?? "Etapa atualizada com sucesso.");
     },
     onError: (e) => toast.error(userMessage(e, "Não foi possível concluir a operação.")),
   });
@@ -610,13 +635,13 @@ function StepContent({
             : "Salve uma pesquisa na etapa anterior."}
         </p>
         {item.survey && (
+          <p className="mt-2 text-sm text-muted-foreground">
+            O administrador do cartório pode ajustar o texto das perguntas em Pesquisas depois do
+            primeiro acesso.
+          </p>
+        )}
+        {item.survey && (
           <div className="mt-5 flex flex-wrap gap-2">
-            <Button variant="outline" asChild>
-              <a href="/pesquisas">
-                Revisar perguntas
-                <ExternalLink />
-              </a>
-            </Button>
             <Button
               disabled={action.isPending || item.survey.questionCount < 1}
               onClick={() => action.mutate("publish")}
@@ -801,7 +826,14 @@ function QrPanel({ url }: { url: string }) {
           <Button
             variant="outline"
             onClick={() =>
-              void navigator.clipboard.writeText(url).then(() => toast.success("Link copiado"))
+              void navigator.clipboard
+                .writeText(url)
+                .then(() => toast.success("Link copiado"))
+                .catch(() =>
+                  toast.error(
+                    "Não foi possível copiar. Use “Abrir” e copie o endereço do navegador.",
+                  ),
+                )
             }
           >
             <Copy />

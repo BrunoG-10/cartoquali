@@ -232,6 +232,7 @@ export function ResetPasswordPage() {
           <Input
             className="mt-1.5"
             type="password"
+            autoComplete="new-password"
             minLength={8}
             required
             value={password}
@@ -243,6 +244,7 @@ export function ResetPasswordPage() {
           <Input
             className="mt-1.5"
             type="password"
+            autoComplete="new-password"
             minLength={8}
             required
             value={confirm}

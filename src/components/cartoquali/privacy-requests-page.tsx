@@ -1,5 +1,7 @@
+import { plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
 import { useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft, ChevronRight, Plus, Save, ShieldCheck } from "lucide-react";
@@ -49,12 +51,16 @@ export function PrivacyRequestsPage() {
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [requestType, setRequestType] = useState("");
-  const [creating, setCreating] = useState(false);
+  // Aberta a partir do detalhe de uma avaliação (?avaliacao=<id>): o formulário já vem vinculado.
+  const linkedEvaluation = useRouterState({
+    select: (state) => new URLSearchParams(state.location.searchStr).get("avaliacao") ?? "",
+  });
+  const [creating, setCreating] = useState(Boolean(linkedEvaluation));
   const [draft, setDraft] = useState({
     requestType: "acesso" as RequestType,
     description: "",
     requesterContact: "",
-    evaluationId: "",
+    evaluationId: linkedEvaluation,
     responsibleUserId: "",
   });
   const query = useQuery({
@@ -167,8 +173,11 @@ export function PrivacyRequestsPage() {
                 onChange={(event) =>
                   setDraft({ ...draft, evaluationId: event.target.value.trim() })
                 }
-                placeholder="UUID, quando aplicável"
+                placeholder="Preenchido ao abrir pela avaliação"
               />
+              <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                Para vincular, abra a avaliação em Avaliações e use “Solicitação de privacidade”.
+              </span>
             </label>
             <label className="text-sm font-medium">
               Responsável
@@ -281,7 +290,7 @@ export function PrivacyRequestsPage() {
           </div>
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Página {page} de {pages} · {query.data.total} solicitações
+              Página {page} de {pages} · {plural(query.data.total, "solicitação", "solicitações")}
             </span>
             <div className="flex gap-2">
               <Button

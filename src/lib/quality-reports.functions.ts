@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { reportCsvFilename } from "@/lib/report-filename";
+import { buildEvaluationsCsv } from "@/lib/report-csv";
 
 const occurrenceStatuses = [
   "nova",
@@ -189,11 +190,6 @@ export const getQualityReport = createServerFn({ method: "POST" })
   .validator((input: unknown) => reportInput.parse(input))
   .handler(async ({ context, data }) => runReport(context, data));
 
-function csvCell(value: string | number | null) {
-  const text = value === null ? "" : String(value);
-  return `"${text.replaceAll('"', '""')}"`;
-}
-
 export const exportQualityReportCsv = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator((input: unknown) => reportInput.parse(input))
@@ -226,18 +222,8 @@ export const exportQualityReportCsv = createServerFn({ method: "POST" })
       _entity_id: null,
       _metadata: { current_start: data.currentStart, current_end: data.currentEnd },
     });
-    const header = ["data", "servico", "ponto", "pesquisa", "nota", "status", "comentario"];
-    const rows = report.evaluations.map((item) => [
-      item.created_at,
-      item.service_name ?? "",
-      item.point_name,
-      item.survey_name,
-      item.rating,
-      item.status,
-      item.comment,
-    ]);
     return {
       filename: reportCsvFilename(data.currentStart, data.currentEnd),
-      content: `\uFEFF${[header, ...rows].map((row) => row.map(csvCell).join(",")).join("\r\n")}`,
+      content: buildEvaluationsCsv(report.evaluations),
     };
   });
