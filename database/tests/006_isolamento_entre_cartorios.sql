@@ -98,8 +98,9 @@ begin
   exception when others then null;
   end;
 
-  -- 1d) sentido inverso: o administrador do DEMO (também administrador da plataforma) não lê nem
-  --     altera linhas do outro cartório pelas tabelas
+  -- 1d) sentido inverso: o administrador do DEMO, que também é administrador da plataforma.
+  --     Como plataforma, ele só pode ver o andamento da implantação dos outros cartórios
+  --     (cartorio_onboarding, usado na tela Implantação); nenhuma outra tabela.
   execute 'reset role';
   perform set_config('request.jwt.claims',
     json_build_object('role','authenticated','sub','d92c734a-9305-4b68-b7cc-67419eb52337')::text, true);
@@ -107,10 +108,34 @@ begin
   for _t in select col.table_name::text from information_schema.columns col
             join information_schema.tables tb on tb.table_schema = col.table_schema and tb.table_name = col.table_name
             where col.table_schema = 'public' and col.column_name = 'cartorio_id' and tb.table_type = 'BASE TABLE'
+              and col.table_name <> 'cartorio_onboarding'
             order by 1 loop
     begin
       execute format('select count(*) from public.%I where cartorio_id = $1', _t) into _n using _b_cartorio;
-      if _n > 0 then _leaks := _leaks || format(' | DEMO LÊ %s linhas do outro cartório em %s', _n, _t); end if;
+      if _n > 0 then _leaks := _leaks || format(' | DEMO (plataforma) LÊ %s linhas do outro cartório em %s', _n, _t); end if;
+    exception when insufficient_privilege then null;
+    end;
+  end loop;
+
+  -- 1e) o mesmo administrador SEM o perfil de plataforma (retirado só nesta transação) não vê
+  --     nada do outro cartório, em nenhuma tabela, nem a implantação
+  execute 'reset role';
+  perform set_config('request.jwt.claims', json_build_object('role','service_role')::text, true);
+  delete from public.user_roles r using public.usuarios u
+  where r.user_id = u.id and u.auth_user_id = 'd92c734a-9305-4b68-b7cc-67419eb52337' and r.role = 'PLATFORM_ADMIN';
+  perform set_config('request.jwt.claims',
+    json_build_object('role','authenticated','sub','d92c734a-9305-4b68-b7cc-67419eb52337')::text, true);
+  execute 'set local role authenticated';
+  if cartoquali_private.has_any_role(array['PLATFORM_ADMIN'::text]) then
+    raise exception 'FALHA pré: o perfil de plataforma do DEMO não foi retirado na transação.';
+  end if;
+  for _t in select col.table_name::text from information_schema.columns col
+            join information_schema.tables tb on tb.table_schema = col.table_schema and tb.table_name = col.table_name
+            where col.table_schema = 'public' and col.column_name = 'cartorio_id' and tb.table_type = 'BASE TABLE'
+            order by 1 loop
+    begin
+      execute format('select count(*) from public.%I where cartorio_id = $1', _t) into _n using _b_cartorio;
+      if _n > 0 then _leaks := _leaks || format(' | DEMO (sem plataforma) LÊ %s linhas do outro cartório em %s', _n, _t); end if;
     exception when insufficient_privilege then null;
     end;
   end loop;
