@@ -111,6 +111,32 @@ export const MODULE_LABELS: Record<AppModule, string> = {
 };
 
 export const APP_MODULES = Object.keys(MODULE_LABELS) as AppModule[];
+
+// Which module each internal page requires. The page itself still relies on server-side
+// authorization; this only keeps a typed URL from opening a screen the role cannot use.
+const ROUTE_MODULES: Record<string, AppModule> = {
+  "/dashboard": "dashboard",
+  "/qualidade": "quality",
+  "/avaliacoes": "evaluations",
+  "/relatorios": "reports",
+  "/visao-executiva": "reports",
+  "/ocorrencias": "occurrences",
+  "/planos-melhoria": "plans",
+  "/pesquisas": "surveys",
+  "/pontos": "points",
+  "/cartorio": "registry",
+  "/usuarios": "users",
+  "/configuracoes": "settings",
+  "/solicitacoes-privacidade": "privacy",
+  "/auditoria": "audit",
+  "/plataforma": "platform",
+  "/implantacoes": "onboarding",
+};
+
+export function moduleForPath(pathname: string): AppModule | undefined {
+  const root = `/${pathname.split("/")[1] ?? ""}`;
+  return ROUTE_MODULES[root];
+}
 export function can(role: UserRole | null, module: AppModule, action: AppAction = "view") {
   if (!role) return false;
   return (action === "view" ? viewByRole : manageByRole)[role].includes(module);

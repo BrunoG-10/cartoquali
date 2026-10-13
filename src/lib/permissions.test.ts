@@ -1,5 +1,49 @@
 import { describe, expect, it } from "vitest";
-import { APP_MODULES, can } from "./permissions";
+import { APP_MODULES, can, moduleForPath } from "./permissions";
+
+describe("moduleForPath", () => {
+  it("maps each internal page to the module that guards it", () => {
+    expect(moduleForPath("/usuarios")).toBe("users");
+    expect(moduleForPath("/auditoria")).toBe("audit");
+    expect(moduleForPath("/cartorio")).toBe("registry");
+    expect(moduleForPath("/configuracoes")).toBe("settings");
+    expect(moduleForPath("/solicitacoes-privacidade")).toBe("privacy");
+    expect(moduleForPath("/pesquisas")).toBe("surveys");
+    expect(moduleForPath("/pontos")).toBe("points");
+    expect(moduleForPath("/plataforma")).toBe("platform");
+    expect(moduleForPath("/implantacoes")).toBe("onboarding");
+    expect(moduleForPath("/visao-executiva")).toBe("reports");
+  });
+
+  it("covers nested paths and trailing slashes", () => {
+    expect(moduleForPath("/relatorios/satisfacao")).toBe("reports");
+    expect(moduleForPath("/usuarios/")).toBe("users");
+  });
+
+  it("does not confuse pages that share a prefix", () => {
+    expect(moduleForPath("/pontos-extra")).toBeUndefined();
+  });
+
+  it("leaves unknown pages unguarded", () => {
+    expect(moduleForPath("/")).toBeUndefined();
+    expect(moduleForPath("/avaliar")).toBeUndefined();
+  });
+
+  it("blocks the manager and operator from administrative pages", () => {
+    for (const path of [
+      "/usuarios",
+      "/auditoria",
+      "/cartorio",
+      "/configuracoes",
+      "/solicitacoes-privacidade",
+    ]) {
+      expect(can("manager", moduleForPath(path)!)).toBe(false);
+      expect(can("operator", moduleForPath(path)!)).toBe(false);
+    }
+    expect(can("operator", moduleForPath("/pesquisas")!)).toBe(false);
+    expect(can("manager", moduleForPath("/pesquisas")!)).toBe(true);
+  });
+});
 
 describe("permission matrix", () => {
   it("denies everything without a role", () => {

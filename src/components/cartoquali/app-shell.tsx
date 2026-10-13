@@ -28,7 +28,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/cartoquali/auth-provider";
 import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { USER_ROLE_LABELS } from "@/constants/cartoquali";
-import { can, type AppModule } from "@/lib/permissions";
+import { can, moduleForPath, type AppModule } from "@/lib/permissions";
+import { InterfaceState } from "@/components/cartoquali/primitives";
 import { guidePageFor } from "@/lib/guide/plan";
 import { GuideButton } from "@/components/cartoquali/guide/guide-button";
 import { useAttentionCounts } from "@/components/cartoquali/use-attention-counts";
@@ -197,8 +198,30 @@ function AppTopbar() {
   );
 }
 
+/** Shown instead of a page the current role cannot open (e.g. a typed URL). */
+function NoAccess() {
+  return (
+    <div className="rounded-xl border border-border bg-card">
+      <InterfaceState
+        kind="error"
+        title="Sem acesso a esta tela"
+        description="Seu perfil não tem permissão para abrir esta página. Fale com o administrador do cartório se precisar desse acesso."
+        action={
+          <Button asChild variant="outline">
+            <Link to="/dashboard">Voltar ao painel</Link>
+          </Button>
+        }
+      />
+    </div>
+  );
+}
+
 export function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const { currentRole } = useAuth();
+  const requiredModule = moduleForPath(pathname);
+  const blocked = Boolean(currentRole && requiredModule && !can(currentRole, requiredModule));
   // overflow-x-clip (not hidden): "hidden" would turn this div into a scroll container and break the sticky sidebar.
   return (
     <div className="relative min-h-screen overflow-x-clip bg-background">
@@ -258,7 +281,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
           <AppTopbar />
           <main className="p-4 sm:p-6 lg:p-8">
-            {children}
+            {blocked ? <NoAccess /> : children}
             <p className="mt-8 text-center text-xs text-muted-foreground">
               Ambiente CartoQuali · solução independente, sem vínculo com ANOREG, PQTA ou CNJ
             </p>
