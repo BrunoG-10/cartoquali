@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -80,8 +81,7 @@ export function PointsPage() {
       close();
       toast.success(selected ? "Ponto atualizado" : "Ponto criado");
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível salvar o ponto."),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível salvar o ponto.")),
   });
   const statusMutation = useMutation({
     mutationFn: (point: EvaluationPoint) =>
@@ -101,9 +101,7 @@ export function PointsPage() {
       toast.success(point.status === "Ativo" ? "Ponto ativado" : "Ponto desativado");
     },
     onError: (error) =>
-      toast.error(
-        error instanceof Error ? error.message : "Não foi possível alterar o status do ponto.",
-      ),
+      toast.error(userMessage(error, "Não foi possível alterar o status do ponto.")),
   });
   const edit = (point: EvaluationPoint) => {
     setSelected(point);

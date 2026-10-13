@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -89,7 +90,7 @@ export function BillingDialog({
       await onChanged();
       toast.success("Cobrança salva.");
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível salvar."),
+    onError: (e) => toast.error(userMessage(e, "Não foi possível salvar.")),
   });
 
   if (!registry) return null;
@@ -246,7 +247,7 @@ function MonthRow({
       setEditing(false);
       toast.success(`Pagamento de ${monthLabel(month.month)} registrado.`);
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível registrar."),
+    onError: (e) => toast.error(userMessage(e, "Não foi possível registrar.")),
   });
   const removeMutation = useMutation({
     mutationFn: () => remove({ data: { paymentId: month.payment!.id } }),
@@ -254,7 +255,7 @@ function MonthRow({
       await onChanged();
       toast.success(`Pagamento de ${monthLabel(month.month)} desfeito.`);
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível desfazer."),
+    onError: (e) => toast.error(userMessage(e, "Não foi possível desfazer.")),
   });
 
   const amount = Number(draft.amount.replace(",", "."));

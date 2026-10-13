@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { KeyRound, LoaderCircle, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
@@ -60,9 +61,7 @@ export function LoginPage({ redirect }: { redirect: string }) {
         await signIn(email, password);
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Não foi possível realizar o login. Tente novamente.",
-      );
+      setError(userMessage(err, "Não foi possível realizar o login. Tente novamente."));
     } finally {
       setBusy(false);
     }
@@ -197,7 +196,7 @@ export function ResetPasswordPage() {
       await updatePassword(password);
       await navigate({ to: "/dashboard", replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível definir a senha.");
+      setError(userMessage(err, "Não foi possível definir a senha."));
     } finally {
       setBusy(false);
     }

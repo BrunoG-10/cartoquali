@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -125,8 +126,7 @@ export function OnboardingPage() {
       setSelectedId((query.data ?? []).find((x) => x.registryId === result.id)?.id);
       toast.success("Cartório criado; a implantação pode continuar.");
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Não foi possível criar o cartório."),
+    onError: (e) => toast.error(userMessage(e, "Não foi possível criar o cartório.")),
   });
   if (query.isLoading)
     return (
@@ -461,8 +461,7 @@ function StepContent({
       await onRefresh();
       toast.success("Etapa atualizada com sucesso.");
     },
-    onError: (e) =>
-      toast.error(e instanceof Error ? e.message : "Não foi possível concluir a operação."),
+    onError: (e) => toast.error(userMessage(e, "Não foi possível concluir a operação.")),
   });
   const next = () => onStep(Math.min(7, step + 1));
   const nav = (

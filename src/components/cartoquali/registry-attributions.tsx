@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -34,14 +35,12 @@ export function RegistryAttributions({ canEdit }: { canEdit: boolean }) {
       await queryClient.invalidateQueries({ queryKey });
       toast.success("Atribuições salvas");
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível salvar."),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível salvar.")),
   });
   const serviceMutation = useMutation({
     mutationFn: (input: { serviceId: string; active: boolean }) => toggleService({ data: input }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey }),
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível atualizar."),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível atualizar.")),
   });
 
   if (query.isLoading)

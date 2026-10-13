@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -465,7 +466,7 @@ function StatusControl({
           : "Situação da avaliação atualizada.",
       );
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Não foi possível atualizar."),
+    onError: (e) => toast.error(userMessage(e, "Não foi possível atualizar.")),
   });
   if (!can(currentRole, "evaluations", "manage")) return null;
   return (

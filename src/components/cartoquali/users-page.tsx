@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -108,8 +109,7 @@ export function UsersPage() {
       close();
       toast.success(selected ? "Usuário atualizado" : "Usuário criado e convite enviado");
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível salvar o usuário."),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível salvar o usuário.")),
   });
   const open = (user?: RealUser) => {
     if (user) {

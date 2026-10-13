@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -93,8 +94,7 @@ export function PrivacyRequestsPage() {
       await refresh();
       toast.success("Solicitação registrada");
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível registrar."),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível registrar.")),
   });
   if (!allowed)
     return (
@@ -351,7 +351,7 @@ function RequestCard({
       setEditing(false);
       toast.success("Solicitação atualizada");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível atualizar.");
+      toast.error(userMessage(error, "Não foi possível atualizar."));
     } finally {
       setPending(false);
     }
@@ -368,7 +368,7 @@ function RequestCard({
       await onMinimize(true);
       toast.success("Dados pessoais minimizados");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Não foi possível minimizar.");
+      toast.error(userMessage(error, "Não foi possível minimizar."));
     } finally {
       setPending(false);
     }
