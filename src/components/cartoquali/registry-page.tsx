@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -65,9 +66,7 @@ export function RegistryPage() {
       toast.success("Dados do cartório atualizados");
     },
     onError: (error) =>
-      toast.error(
-        error instanceof Error ? error.message : "Não foi possível salvar os dados do cartório.",
-      ),
+      toast.error(userMessage(error, "Não foi possível salvar os dados do cartório.")),
   });
 
   if (query.isLoading)

@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
+import { dbTimestamp } from "@/lib/timestamp";
 
 const statuses = ["planejado", "em_andamento", "concluido", "cancelado"] as const;
 const priorities = ["baixa", "media", "alta", "critica"] as const;
@@ -33,9 +34,7 @@ const createInput = z.object({
 });
 const updateInput = z.object({
   id: z.string().uuid(),
-  expectedUpdatedAt: z
-    .string()
-    .refine((value) => !Number.isNaN(Date.parse(value)), "invalid_datetime"),
+  expectedUpdatedAt: dbTimestamp,
   title: z.string().trim().min(1).max(160),
   problem: z.string().trim().min(1).max(4000),
   objective: z.string().trim().min(1).max(4000),

@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -113,8 +114,7 @@ export function SurveysPage() {
       setSelectedId(result.id);
       toast.success("Pesquisa salva");
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível salvar."),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível salvar.")),
   });
   const questionMutation = useMutation({
     mutationFn: () =>
@@ -146,8 +146,7 @@ export function SurveysPage() {
       setQuestionEditor(undefined);
       toast.success("Pergunta salva");
     },
-    onError: (error) =>
-      toast.error(error instanceof Error ? error.message : "Não foi possível salvar."),
+    onError: (error) => toast.error(userMessage(error, "Não foi possível salvar.")),
   });
   const openSurvey = (survey?: Survey) => {
     setSurveyForm(
@@ -342,9 +341,7 @@ export function SurveysPage() {
                       void deactivate({ data: { id: question.id } })
                         .then(refresh)
                         .catch((error) =>
-                          toast.error(
-                            error instanceof Error ? error.message : "Não foi possível desativar.",
-                          ),
+                          toast.error(userMessage(error, "Não foi possível desativar.")),
                         )
                     }
                   >

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { describeAnswer } from "@/lib/multiple-choice";
+import { dbTimestamp } from "@/lib/timestamp";
 
 const statuses = ["nova", "em_analise", "em_tratamento", "resolvida", "encerrada"] as const;
 const priorities = ["baixa", "media", "alta", "critica"] as const;
@@ -50,7 +51,7 @@ const createInput = z.object({
 });
 const updateInput = z.object({
   id: z.string().uuid(),
-  expectedUpdatedAt: z.string().datetime(),
+  expectedUpdatedAt: dbTimestamp,
   title: z.string().trim().min(1).max(160),
   description: z.string().trim().min(1).max(4000),
   category: z.enum(categories),

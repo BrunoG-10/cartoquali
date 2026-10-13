@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
@@ -90,7 +91,7 @@ const emptyFilters: Filters = {
   endDate: "",
 };
 const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Não foi possível concluir a operação.";
+  userMessage(error, "Não foi possível concluir a operação.");
 const formatDate = (value: string) =>
   new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");
 const isOverdue = (plan: Plan) =>

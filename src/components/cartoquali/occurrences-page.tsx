@@ -1,3 +1,4 @@
+import { userMessage } from "@/lib/user-message";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -99,7 +100,7 @@ const formatDate = (value: string) =>
     new Date(value),
   );
 const errorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : "Não foi possível concluir a operação.";
+  userMessage(error, "Não foi possível concluir a operação.");
 
 export function OccurrencesPage() {
   const searchStr = useRouterState({ select: (state) => state.location.searchStr });
