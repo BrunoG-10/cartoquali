@@ -92,7 +92,12 @@ Pendente (depende do acesso de bruno_gabriel1@outlook.com.br).
 
 ## Fase G — Plataforma: painel, cobrança, isolamento
 
-Pendente (depende do login de bg600070@gmail.com e do teste de isolamento no Supabase).
+- ✅ Isolamento (auditoria no Supabase, 13/10/2026): `ISOLAMENTO_OK` — 12 tabelas com `cartorio_id`
+  testadas nos dois sentidos (DEMO x Cartório Piloto (ensaio)); nenhuma função liberada ao anônimo.
+  A primeira rodada apontou que o administrador do DEMO lê `cartorio_onboarding` do piloto: é o
+  acesso previsto do administrador da plataforma (tela Implantação). O teste 006 agora separa os
+  dois casos: como plataforma só a implantação aparece; sem o perfil de plataforma, nada (PR #39).
+- Painel e cobrança: pendente (depende do login de bg600070@gmail.com).
 
 ## Achados e correções
 
@@ -102,8 +107,9 @@ Pendente (depende do login de bg600070@gmail.com e do teste de isolamento no Sup
 | ❌ Edição de ocorrência sempre falhava | PR #34 (`dbTimestamp`) — mesclado |
 | ⚠️ Erros técnicos (JSON) na tela | PR #34 (`userMessage` em 13 telas) — mesclado |
 | ❌ Pesquisas: editar pergunta 1/7/8 e criar pergunta | PR #36 (`question-dimensions`) — mesclado |
-| ❌ Minimização não apagava o texto do "Outro" | PR #35 (migração + teste 011) — aguarda dry run |
+| ❌ Minimização não apagava o texto do "Outro" | PR #35 (migração + teste 011) — dry run OK, mesclado |
 | ⚠️ CSV, números, plurais, telefone, textos, implantação, privacidade, auditoria, senha | PR #36 — mesclado |
-| ⚠️ "Acesso autenticado disponível" para convite pendente | Não corrigido (precisa ler o último acesso no Auth) |
+| ⚠️ "Acesso autenticado disponível" para convite pendente | PR #38 (último acesso real + "Reenviar acesso") — mesclado e conferido em produção |
+| ❌ Convite vence em 24 h sem forma de reenviar | PR #38 — mesclado; reenvio ao gestor conferido em produção |
 | ⚠️ Serviço não gravado na avaliação de teste | Não corrigido (só afeta o teste da implantação) |
 | Observação: cliente pode alterar CNPJ | Decisão do responsável |
