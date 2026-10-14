@@ -108,6 +108,9 @@ function friendly(error: { message: string } | null, fallback: string) {
     return "A pesquisa precisa de pergunta obrigatória e opções válidas antes da publicação.";
   if (message.includes("incomplete_onboarding"))
     return "Conclua todos os itens obrigatórios antes de ativar o cartório.";
+  if (message.includes("survey_unavailable"))
+    return "Publique a pesquisa na etapa 4 (Perguntas) antes de salvar o ponto.";
+  if (message.includes("invalid_point")) return "Preencha o nome e a localização do ponto.";
   if (message.includes("forbidden")) return "Você não possui permissão para esta ação.";
   return fallback;
 }
