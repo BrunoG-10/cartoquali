@@ -368,7 +368,8 @@ function OnboardingWizard({
     item.checklist.registry,
     item.checklist.administrator,
     item.checklist.survey,
-    item.checklist.questions,
+    // Perguntas só conta como concluída com a pesquisa publicada: o ponto depende disso.
+    item.checklist.questions && item.survey?.status === "ativa",
     item.checklist.point,
     item.checklist.qr,
     item.checklist.test,
@@ -506,17 +507,66 @@ function StepContent({
     onError: (e) => toast.error(userMessage(e, "Não foi possível reenviar o convite.")),
   });
   const next = () => onStep(Math.min(7, step + 1));
+  // "OK" conclui a etapa: faz o que falta nela (salvar, enviar, publicar) e segue para a próxima.
+  // Sem pular etapa pendente: a seguinte depende dela (o ponto exige a pesquisa publicada).
+  const published = item.survey?.status === "ativa";
+  const ok: { label: string; kind?: string; blocked?: string } = (() => {
+    switch (step) {
+      case 1:
+        if (item.administrator) return { label: "OK" };
+        return !admin.name || !admin.email
+          ? { label: "OK — enviar convite", kind: "admin", blocked: "Preencha nome e e-mail." }
+          : { label: "OK — enviar convite", kind: "admin" };
+      case 2:
+        return survey.name
+          ? { label: "OK — salvar pesquisa", kind: "survey" }
+          : {
+              label: "OK — salvar pesquisa",
+              kind: "survey",
+              blocked: "Informe o nome da pesquisa.",
+            };
+      case 3:
+        if (!item.survey) return { label: "OK", blocked: "Salve a pesquisa na etapa anterior." };
+        if (published) return { label: "OK" };
+        return item.survey.questionCount < 1
+          ? { label: "OK — publicar pesquisa", blocked: "A pesquisa precisa de perguntas ativas." }
+          : { label: "OK — publicar pesquisa", kind: "publish" };
+      case 4:
+        if (!published)
+          return { label: "OK — salvar ponto", blocked: "Publique a pesquisa na etapa 4." };
+        return point.name && point.location
+          ? { label: "OK — salvar ponto", kind: "point" }
+          : { label: "OK — salvar ponto", blocked: "Preencha nome e localização." };
+      case 5:
+        return item.point ? { label: "OK" } : { label: "OK", blocked: "Salve o ponto na etapa 5." };
+      case 6:
+        return item.checklist.test
+          ? { label: "OK" }
+          : { label: "OK", blocked: "Prepare e responda a avaliação de teste." };
+      default:
+        return { label: "OK" };
+    }
+  })();
+  const confirm = () => {
+    if (ok.blocked) return;
+    if (ok.kind) action.mutate(ok.kind, { onSuccess: next });
+    else next();
+  };
   const nav = (
-    <div className="mt-6 flex justify-between">
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
       <Button variant="outline" disabled={step === 0} onClick={() => onStep(step - 1)}>
         <ChevronLeft />
         Anterior
       </Button>
       {step < 7 && (
-        <Button onClick={next}>
-          Próxima etapa
-          <ChevronRight />
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          {ok.blocked && <span className="text-sm text-muted-foreground">{ok.blocked}</span>}
+          <Button onClick={confirm} disabled={action.isPending || Boolean(ok.blocked)}>
+            {action.isPending ? <LoaderCircle className="animate-spin" /> : <Check />}
+            {action.isPending ? "Salvando…" : ok.label}
+            {!action.isPending && <ChevronRight />}
+          </Button>
+        </div>
       )}
     </div>
   );
@@ -604,13 +654,6 @@ function StepContent({
                 onChange={(phone) => setAdmin({ ...admin, phone })}
               />
             </div>
-            <Button
-              className="mt-5"
-              disabled={action.isPending || !admin.name || !admin.email}
-              onClick={() => action.mutate("admin")}
-            >
-              Enviar convite
-            </Button>
           </>
         )}
         {nav}
@@ -646,13 +689,6 @@ function StepContent({
             Criar com perguntas modelo editáveis
           </label>
         </div>
-        <Button
-          className="mt-5"
-          disabled={action.isPending || !survey.name}
-          onClick={() => action.mutate("survey")}
-        >
-          Salvar pesquisa
-        </Button>
         {nav}
       </GlassPanel>
     );
@@ -672,14 +708,11 @@ function StepContent({
           </p>
         )}
         {item.survey && (
-          <div className="mt-5 flex flex-wrap gap-2">
-            <Button
-              disabled={action.isPending || item.survey.questionCount < 1}
-              onClick={() => action.mutate("publish")}
-            >
-              Validar e publicar
-            </Button>
-          </div>
+          <p className="mt-3">
+            <StatusBadge tone={published ? "positive" : "warning"}>
+              {published ? "Pesquisa publicada" : "Pesquisa ainda não publicada"}
+            </StatusBadge>
+          </p>
         )}
         {nav}
       </GlassPanel>
@@ -688,6 +721,11 @@ function StepContent({
     return (
       <GlassPanel>
         <h2 className="font-display text-xl font-bold">Ponto de avaliação</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          O ponto é o local onde o cartaz do QR Code fica. <b>Nome</b>: como ele aparece nos
+          relatórios (ex.: Atendimento principal). <b>Localização</b>: onde o cartaz é fixado (ex.:
+          Balcão de atendimento). A descrição é opcional. Ao confirmar, o QR Code é gerado.
+        </p>
         <div className="mt-5 grid gap-4">
           <Field
             label="Nome do ponto"
@@ -708,13 +746,6 @@ function StepContent({
             />
           </label>
         </div>
-        <Button
-          className="mt-5"
-          disabled={action.isPending || !point.name || !point.location || !item.survey}
-          onClick={() => action.mutate("point")}
-        >
-          Salvar ponto
-        </Button>
         {nav}
       </GlassPanel>
     );
