@@ -2,6 +2,8 @@
 // vírgula, data/hora de São Paulo e situação por extenso. Textos vindos do público são
 // neutralizados para não virarem fórmula na planilha (injeção de CSV).
 
+import { EVALUATION_STATUS_LABELS } from "@/lib/report-format";
+
 export type CsvEvaluation = {
   created_at: string;
   service_name?: string | null;
@@ -12,11 +14,7 @@ export type CsvEvaluation = {
   comment: string | null;
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  nova: "Nova",
-  em_analise: "Em análise",
-  respondida: "Respondida",
-};
+const STATUS_LABELS = EVALUATION_STATUS_LABELS;
 
 const dateTime = new Intl.DateTimeFormat("pt-BR", {
   timeZone: "America/Sao_Paulo",

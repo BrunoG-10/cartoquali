@@ -192,7 +192,10 @@ function AppTopbar() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const label = guidePageFor(pathname)?.label ?? "CartoQuali";
   return (
-    <div className="sticky top-0 z-30 hidden h-14 items-center justify-between border-b border-border bg-card/95 px-8 backdrop-blur lg:flex">
+    <div
+      data-print="hide"
+      className="sticky top-0 z-30 hidden h-14 items-center justify-between border-b border-border bg-card/95 px-8 backdrop-blur lg:flex"
+    >
       <p className="text-sm font-semibold text-muted-foreground">{label}</p>
       <GuideButton />
     </div>
@@ -258,7 +261,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         )}
         <div className="min-w-0 flex-1">
-          <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card px-4 py-3 lg:hidden">
+          <div
+            data-print="hide"
+            className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card px-4 py-3 lg:hidden"
+          >
             <Button
               variant="ghost"
               size="icon"
@@ -283,7 +289,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <AppTopbar />
           <main className="p-4 sm:p-6 lg:p-8">
             {blocked ? <NoAccess /> : children}
-            <p className="mt-8 text-center text-xs text-muted-foreground">
+            <p data-print="hide" className="mt-8 text-center text-xs text-muted-foreground">
               Ambiente CartoQuali · solução independente, sem vínculo com ANOREG, PQTA ou CNJ
             </p>
           </main>

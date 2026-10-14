@@ -524,51 +524,275 @@
   }
 }
 
+/* Relatório para papel/PDF (report-print.tsx): só existe na impressão. */
+.report-print {
+  display: none;
+}
+
 @media print {
   @page {
-    margin: 14mm;
+    margin: 14mm 14mm 16mm;
     size: A4 portrait;
+    @bottom-left {
+      content: "CartoQuali · documento gerencial";
+      font:
+        7.5pt "Inter",
+        Arial,
+        sans-serif;
+      color: #6b6b6b;
+    }
+    @bottom-right {
+      content: "Página " counter(page) " de " counter(pages);
+      font:
+        7.5pt "Inter",
+        Arial,
+        sans-serif;
+      color: #6b6b6b;
+    }
   }
+  html,
   body {
-    background: white;
-    color: black;
+    background: white !important;
+    color: #1d1d1d;
   }
   aside,
   .print-hidden,
-  body > div > div > div > div > div.sticky {
+  [data-print="hide"] {
     display: none !important;
   }
   main {
     padding: 0 !important;
   }
-  .report-page {
-    width: 100%;
+  .report-screen {
+    display: none !important;
   }
-  .report-page section {
+
+  .report-print {
+    display: block;
+    font:
+      9pt/1.4 "Inter",
+      Arial,
+      sans-serif;
+    color: #1d1d1d;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .report-print h1,
+  .report-print h2 {
+    font-family: "Source Serif 4", Georgia, serif;
+    color: #16294a;
+    margin: 0;
+  }
+  .rp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #b08d57;
+  }
+  .rp-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rp-wordmark {
+    font:
+      600 17pt "Source Serif 4",
+      Georgia,
+      serif;
+    color: #16294a;
+  }
+  .rp-wordmark span {
+    color: #9a7a45;
+  }
+  .rp-title {
+    text-align: right;
+  }
+  .rp-title p {
+    margin: 0;
+    font-size: 7.5pt;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #9a7a45;
+  }
+  .rp-title h1 {
+    font-size: 17pt;
+  }
+  .rp-identification {
+    margin-top: 10px;
+    border: 1px solid #d9d3c5;
+    border-radius: 6px;
+    background: #f7f5f0;
+    padding: 9px 12px;
     break-inside: avoid;
-    box-shadow: none;
-    backdrop-filter: none;
-    background: white;
-    border-color: currentColor;
   }
-  .report-page h1,
-  .report-page h2,
-  .report-page h3 {
+  .rp-registry,
+  .rp-meta {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 6px 16px;
+    margin: 0;
+  }
+  .rp-meta {
+    grid-template-columns: 1fr 2fr 1fr;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #e3ddcf;
+  }
+  .rp-identification dt {
+    font-size: 7pt;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #6b6b6b;
+  }
+  .rp-identification dd {
+    margin: 1px 0 0;
+    font-weight: 600;
+  }
+  .rp-section {
+    margin-top: 14px;
+    break-inside: avoid;
+  }
+  .rp-section h2 {
+    font-size: 11.5pt;
+    padding-bottom: 3px;
+    border-bottom: 1px solid #e3ddcf;
     break-after: avoid;
   }
-  .report-page table,
-  .report-page blockquote {
+  .rp-note {
+    margin: 3px 0 5px;
+    font-size: 7.5pt;
+    color: #6b6b6b;
+  }
+  .rp-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .rp-kpis {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 5px;
+    margin: 0 -5px;
+    table-layout: fixed;
+  }
+  .rp-kpis td {
+    border: 1px solid #d9d3c5;
+    border-top: 3px solid #16294a;
+    border-radius: 4px;
+    padding: 6px 8px;
+    vertical-align: top;
+  }
+  .rp-kpis strong {
+    display: block;
+    margin-top: 2px;
+    font:
+      700 15pt "Source Serif 4",
+      Georgia,
+      serif;
+    color: #16294a;
+  }
+  .rp-kpi-label {
+    font-size: 7.5pt;
+    font-weight: 600;
+    color: #444;
+  }
+  .rp-kpi-hint {
+    display: block;
+    font-size: 7pt;
+    color: #6b6b6b;
+  }
+  .rp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 4px;
+  }
+  .rp-table th {
+    background: #16294a;
+    color: white;
+    font-size: 7.5pt;
+    font-weight: 700;
+    text-align: left;
+    padding: 4px 6px;
+  }
+  .rp-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #e3ddcf;
+    vertical-align: top;
+  }
+  .rp-table tbody tr:nth-child(even) td {
+    background: #f7f5f0;
+  }
+  .rp-table tr {
     break-inside: avoid;
   }
-  .report-page table {
-    font-size: 9pt;
+  .rp-table .rp-num {
+    text-align: right;
+    white-space: nowrap;
   }
-  .report-page .report-kpis {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .rp-evaluations td:first-child {
+    white-space: nowrap;
   }
-  .report-page .report-identification {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .rp-evaluations td:last-child {
+    width: 42%;
+  }
+  .rp-evidence td {
+    width: 33%;
+  }
+  .rp-stack-main,
+  .rp-stack-sub {
+    display: block;
+  }
+  .rp-stack-main {
+    font-weight: 600;
+  }
+  .rp-stack-sub {
+    color: #555;
+    font-size: 8pt;
+  }
+  .rp-stars {
+    color: #b08d57;
+    letter-spacing: 1px;
+  }
+  .rp-stars span {
+    color: #d9d3c5;
+  }
+  .rp-bar {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .rp-bar-track {
+    display: inline-block;
+    width: 60px;
+    height: 6px;
+    border-radius: 3px;
+    background: #e3ddcf;
+    overflow: hidden;
+  }
+  .rp-bar-track span {
+    display: block;
+    height: 100%;
+    background: #16294a;
+  }
+  .rp-empty {
+    margin: 6px 0;
+    color: #6b6b6b;
+    font-style: italic;
+  }
+  .rp-footer {
+    margin-top: 16px;
+    padding-top: 8px;
+    border-top: 1px solid #d9d3c5;
+    font-size: 7.5pt;
+    color: #555;
+    break-inside: avoid;
+  }
+  .rp-footer p {
+    margin: 0 0 3px;
   }
   body:has(.point-qr-sheet) * {
     visibility: hidden;

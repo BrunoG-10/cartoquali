@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -23,6 +23,15 @@ import { Input } from "@/components/ui/input";
 import { exportQualityReportCsv, type QualityReportData } from "@/lib/quality-reports.functions";
 import { cn } from "@/lib/utils";
 import { decimalBR, percentBR, plural } from "@/lib/format";
+import { getMyRegistry } from "@/lib/registry.functions";
+import {
+  OCCURRENCE_STATUS_LABELS as occurrenceLabels,
+  PLAN_STATUS_LABELS as planLabels,
+  deltaLabel as delta,
+  formatDateBR as formatDate,
+  formatDateTimeBR as formatDateTime,
+} from "@/lib/report-format";
+import { ReportPrintDocument } from "./report-print";
 import type { DashboardPeriod, ReportKind } from "@/types/cartoquali";
 import { validatePeriod } from "@/utils/cartoquali-validation";
 import { reportInput, useQualityReport, type RealReportFilters } from "./use-quality-report";
@@ -87,25 +96,6 @@ const periods: DashboardPeriod[] = [
   "Este ano",
   "Personalizado",
 ];
-const occurrenceLabels: Record<string, string> = {
-  nova: "Nova",
-  em_analise: "Em análise",
-  em_tratamento: "Em tratamento",
-  resolvida: "Resolvida",
-  encerrada: "Encerrada",
-};
-const planLabels: Record<string, string> = {
-  planejado: "Planejado",
-  em_andamento: "Em andamento",
-  concluido: "Concluído",
-  cancelado: "Cancelado",
-};
-const priorityLabels: Record<string, string> = {
-  baixa: "Baixa",
-  media: "Média",
-  alta: "Alta",
-  critica: "Crítica",
-};
 
 export function ReportsCatalog() {
   return (
@@ -161,6 +151,9 @@ export function ReportViewer({ kind }: { kind: ReportKind }) {
   const [validationError, setValidationError] = useState<string>();
   const report = useQualityReport(filters);
   const exportFn = useServerFn(exportQualityReportCsv);
+  // Identificação com CNPJ para o PDF; vem do cadastro do próprio cartório (RLS).
+  const fetchRegistry = useServerFn(getMyRegistry);
+  const registry = useQuery({ queryKey: ["registry", "current"], queryFn: () => fetchRegistry() });
   const csv = useMutation({
     mutationFn: exportFn,
     onSuccess: ({ filename, content }) => {
@@ -210,105 +203,116 @@ export function ReportViewer({ kind }: { kind: ReportKind }) {
       </ReportFrame>
     );
   const data = report.data;
+  const printRegistry = registry.data?.registry ?? null;
   return (
     <div className="report-page animate-enter">
-      <div className="print-hidden mb-4">
-        <Button asChild variant="ghost">
-          <Link to="/relatorios">
-            <ArrowLeft />
-            Relatórios disponíveis
-          </Link>
-        </Button>
-      </div>
-      <PageHeader
-        eyebrow="Documento gerencial"
-        title={title}
-        description={`${data.registry.trade_name} · dados atualizados`}
-        action={
-          <div data-tour="report-actions" className="print-hidden flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              onClick={() => void report.refetch()}
-              disabled={report.isFetching}
-            >
-              <RefreshCw className={cn(report.isFetching && "animate-spin")} />
-              Atualizar
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => window.print()}
-              disabled={report.isFetching}
-              title={report.isFetching ? "Aguarde a atualização do relatório" : undefined}
-            >
-              <Printer />
-              Imprimir
-            </Button>
-            <Button
-              onClick={() => csv.mutate({ data: reportInput(filters) })}
-              disabled={csv.isPending}
-            >
-              <Download />
-              {csv.isPending ? "Exportando…" : "Exportar CSV"}
-            </Button>
-          </div>
-        }
-      />
-      <div className="report-identification mb-5 grid gap-3 border-y border-glass-border py-4 text-sm sm:grid-cols-3">
-        <Info label="Cartório" value={data.registry.official_name} />
-        <Info label="Período" value={periodLabel(filters)} />
-        <Info label="Gerado em" value={new Date().toLocaleString("pt-BR")} />
-        <div className="sm:col-span-3">
-          <Info label="Filtros aplicados" value={filtersLabel(filters, data)} />
-        </div>
-      </div>
-      <FilterBar
+      <ReportPrintDocument
         kind={kind}
-        filters={filters}
+        title={title}
         data={data}
-        {...(validationError ? { validationError } : {})}
-        onApply={apply}
+        registry={printRegistry}
+        period={periodLabel(filters)}
+        filters={filtersLabel(filters, data)}
       />
-      {csv.isError && (
-        <p role="alert" className="mt-3 rounded-md bg-danger-soft p-3 text-sm text-destructive">
-          Não foi possível exportar o CSV. Tente novamente.
-        </p>
-      )}
-      {data.summary.total === 0 &&
-      data.management.occurrences_total === 0 &&
-      data.management.plans_total === 0 ? (
-        <GlassPanel className="mt-5">
-          <InterfaceState
-            kind="empty"
-            title="Sem dados no período"
-            description="Altere os filtros para consultar outro recorte."
-          />
-        </GlassPanel>
-      ) : (
-        <div className="mt-5 space-y-5">
-          <Summary data={data} filters={filters} navigate={navigate} />
-          {kind !== "ocorrencias" && kind !== "planos-melhoria" && (
-            <>
-              <Evolution data={data} />
-              <div className="grid gap-5 xl:grid-cols-2">
-                <Distribution data={data} />
-                <Dimensions data={data} />
-              </div>
-              <Points data={data} />
-            </>
-          )}
-          {kind !== "avaliacoes" && (
-            <div className="grid gap-5 xl:grid-cols-2">
-              <Occurrences data={data} navigate={navigate} />
-              <Plans data={data} navigate={navigate} />
-            </div>
-          )}
-          {["qualidade", "avaliacoes", "satisfacao"].includes(kind) && (
-            <Evaluations data={data} navigate={navigate} />
-          )}{" "}
-          {["qualidade", "executivo"].includes(kind) && <Evidence data={data} />}
+      <div className="report-screen">
+        <div className="print-hidden mb-4">
+          <Button asChild variant="ghost">
+            <Link to="/relatorios">
+              <ArrowLeft />
+              Relatórios disponíveis
+            </Link>
+          </Button>
         </div>
-      )}
-      <Footer />
+        <PageHeader
+          eyebrow="Documento gerencial"
+          title={title}
+          description={`${data.registry.trade_name} · dados atualizados`}
+          action={
+            <div data-tour="report-actions" className="print-hidden flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={() => void report.refetch()}
+                disabled={report.isFetching}
+              >
+                <RefreshCw className={cn(report.isFetching && "animate-spin")} />
+                Atualizar
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => window.print()}
+                disabled={report.isFetching}
+                title={report.isFetching ? "Aguarde a atualização do relatório" : undefined}
+              >
+                <Printer />
+                Imprimir
+              </Button>
+              <Button
+                onClick={() => csv.mutate({ data: reportInput(filters) })}
+                disabled={csv.isPending}
+              >
+                <Download />
+                {csv.isPending ? "Exportando…" : "Exportar CSV"}
+              </Button>
+            </div>
+          }
+        />
+        <div className="report-identification mb-5 grid gap-3 border-y border-glass-border py-4 text-sm sm:grid-cols-3">
+          <Info label="Cartório" value={data.registry.official_name} />
+          <Info label="Período" value={periodLabel(filters)} />
+          <Info label="Gerado em" value={new Date().toLocaleString("pt-BR")} />
+          <div className="sm:col-span-3">
+            <Info label="Filtros aplicados" value={filtersLabel(filters, data)} />
+          </div>
+        </div>
+        <FilterBar
+          kind={kind}
+          filters={filters}
+          data={data}
+          {...(validationError ? { validationError } : {})}
+          onApply={apply}
+        />
+        {csv.isError && (
+          <p role="alert" className="mt-3 rounded-md bg-danger-soft p-3 text-sm text-destructive">
+            Não foi possível exportar o CSV. Tente novamente.
+          </p>
+        )}
+        {data.summary.total === 0 &&
+        data.management.occurrences_total === 0 &&
+        data.management.plans_total === 0 ? (
+          <GlassPanel className="mt-5">
+            <InterfaceState
+              kind="empty"
+              title="Sem dados no período"
+              description="Altere os filtros para consultar outro recorte."
+            />
+          </GlassPanel>
+        ) : (
+          <div className="mt-5 space-y-5">
+            <Summary data={data} filters={filters} navigate={navigate} />
+            {kind !== "ocorrencias" && kind !== "planos-melhoria" && (
+              <>
+                <Evolution data={data} />
+                <div className="grid gap-5 xl:grid-cols-2">
+                  <Distribution data={data} />
+                  <Dimensions data={data} />
+                </div>
+                <Points data={data} />
+              </>
+            )}
+            {kind !== "avaliacoes" && (
+              <div className="grid gap-5 xl:grid-cols-2">
+                <Occurrences data={data} navigate={navigate} />
+                <Plans data={data} navigate={navigate} />
+              </div>
+            )}
+            {["qualidade", "avaliacoes", "satisfacao"].includes(kind) && (
+              <Evaluations data={data} navigate={navigate} />
+            )}{" "}
+            {["qualidade", "executivo"].includes(kind) && <Evidence data={data} />}
+          </div>
+        )}
+        <Footer />
+      </div>
     </div>
   );
 }
@@ -522,11 +526,6 @@ function Kpi({
   ) : (
     <GlassPanel className="min-h-24 p-4">{body}</GlassPanel>
   );
-}
-function delta(current: number | null, previous: number | null, suffix = "") {
-  if (current === null || previous === null) return "Período anterior sem dados";
-  const value = current - previous;
-  return `${value > 0 ? "+" : ""}${Number.isInteger(value) ? value : decimalBR(value)}${suffix} vs. período anterior`;
 }
 function Evolution({ data }: { data: QualityReportData }) {
   return (
@@ -955,14 +954,4 @@ function filtersLabel(filters: RealReportFilters, data: QualityReportData) {
   if (filters.planStatus)
     parts.push(`Planos: ${planLabels[filters.planStatus] ?? filters.planStatus}`);
   return parts.join(" · ");
-}
-function formatDate(value: string) {
-  return new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");
-}
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-    timeZone: "America/Sao_Paulo",
-  }).format(new Date(value));
 }
