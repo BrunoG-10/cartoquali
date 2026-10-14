@@ -29,6 +29,7 @@ import {
   saveRegistryBilling,
 } from "@/lib/platform.functions";
 import type { PlatformRegistry } from "@/lib/platform-overview";
+import { moneyInputBR, parseMoneyBR } from "@/lib/format";
 
 export const brl = (value: number) =>
   value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -66,7 +67,7 @@ export function BillingDialog({
     setForm(
       billing
         ? {
-            fee: String(billing.monthlyFee),
+            fee: moneyInputBR(billing.monthlyFee),
             dueDay: String(billing.dueDay),
             start: billing.startMonth,
             active: billing.active,
@@ -80,7 +81,7 @@ export function BillingDialog({
       save({
         data: {
           registryId: registry!.id,
-          monthlyFee: Number(form.fee.replace(",", ".")),
+          monthlyFee: parseMoneyBR(form.fee),
           dueDay: Number(form.dueDay),
           startMonth: form.start,
           active: form.active,
@@ -95,7 +96,7 @@ export function BillingDialog({
 
   if (!registry) return null;
   const status = billingStatus(registry.billing, registry.payments, today);
-  const fee = Number(form.fee.replace(",", "."));
+  const fee = parseMoneyBR(form.fee);
   const dueDay = Number(form.dueDay);
   const valid = fee > 0 && Number.isInteger(dueDay) && dueDay >= 1 && dueDay <= 28 && !!form.start;
 
@@ -224,7 +225,7 @@ function MonthRow({
   const remove = useServerFn(removeRegistryPayment);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
-    amount: String(registry.billing?.monthlyFee ?? ""),
+    amount: registry.billing ? moneyInputBR(registry.billing.monthlyFee) : "",
     paidOn: today,
     method: "pix" as PaymentMethod,
     note: "",
@@ -236,7 +237,7 @@ function MonthRow({
         data: {
           registryId: registry.id,
           month: month.month,
-          amount: Number(draft.amount.replace(",", ".")),
+          amount: parseMoneyBR(draft.amount),
           paidOn: draft.paidOn,
           method: draft.method,
           note: draft.note,
@@ -258,7 +259,7 @@ function MonthRow({
     onError: (e) => toast.error(userMessage(e, "Não foi possível desfazer.")),
   });
 
-  const amount = Number(draft.amount.replace(",", "."));
+  const amount = parseMoneyBR(draft.amount);
   return (
     <li className="p-3 text-sm">
       <div className="flex flex-wrap items-center justify-between gap-2">
