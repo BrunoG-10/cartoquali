@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { dbTimestamp } from "@/lib/timestamp";
+import { loadTeam } from "@/lib/team";
 
 const statuses = ["planejado", "em_andamento", "concluido", "cancelado"] as const;
 const priorities = ["baixa", "media", "alta", "critica"] as const;
@@ -92,50 +93,34 @@ export const listImprovementPlans = createServerFn({ method: "POST" })
       count,
     } = await query.order("created_at", { ascending: false }).range(from, from + data.pageSize - 1);
     if (error) throw new Error("Não foi possível carregar os planos de melhoria.");
-    const ownerIds = [
-      ...new Set(
-        (rows ?? []).flatMap((row: any) => (row.responsavel_id ? [row.responsavel_id] : [])),
-      ),
-    ] as string[];
     const occurrenceIds = [
       ...new Set((rows ?? []).map((row: any) => row.ocorrencia_id)),
     ] as string[];
-    const [
-      { data: owners },
-      { data: occurrences },
-      { data: filterUsers },
-      { data: filterOccurrences },
-    ] = await Promise.all([
-      ownerIds.length
-        ? context.supabase.from("usuarios").select("id, nome").in("id", ownerIds)
-        : Promise.resolve({ data: [] }),
+    const [team, { data: occurrences }, { data: filterOccurrences }] = await Promise.all([
+      loadTeam(context.supabase),
       occurrenceIds.length
         ? context.supabase
             .from("ocorrencias_qualidade")
             .select("id, titulo")
             .in("id", occurrenceIds)
         : Promise.resolve({ data: [] }),
-      context.supabase.from("usuarios").select("id, nome").eq("status", "ativo").order("nome"),
       context.supabase
         .from("ocorrencias_qualidade")
         .select("id, titulo, descricao, prioridade, ponto_id")
         .order("data_abertura", { ascending: false })
         .limit(100),
     ]);
-    const ownerMap = new Map((owners ?? []).map((item: any) => [item.id, item.nome]));
     const occurrenceMap = new Map((occurrences ?? []).map((item: any) => [item.id, item.titulo]));
     return {
       items: (rows ?? []).map((row: any) => ({
         ...row,
-        responsibleName: row.responsavel_id
-          ? (ownerMap.get(row.responsavel_id) ?? "Usuário indisponível")
-          : null,
+        responsibleName: team.nameOf(row.responsavel_id),
         occurrenceTitle: occurrenceMap.get(row.ocorrencia_id) ?? "Ocorrência indisponível",
       })),
       total: count ?? 0,
       page: data.page,
       pageSize: data.pageSize,
-      users: filterUsers ?? [],
+      users: team.active,
       occurrences: filterOccurrences ?? [],
       canManage: access.canManage,
     };
@@ -153,39 +138,13 @@ export const getImprovementPlanDetail = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error("Não foi possível carregar o plano.");
     if (!row) return null;
-    const [
-      { data: occurrence },
-      { data: owner },
-      { data: creator },
-      { data: closer },
-      { data: logs },
-    ] = await Promise.all([
+    const [{ data: occurrence }, team, { data: logs }] = await Promise.all([
       context.supabase
         .from("ocorrencias_qualidade")
         .select("id, titulo, descricao, avaliacao_id")
         .eq("id", row.ocorrencia_id)
         .maybeSingle(),
-      row.responsavel_id
-        ? context.supabase
-            .from("usuarios")
-            .select("id, nome")
-            .eq("id", row.responsavel_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      row.criado_por_id
-        ? context.supabase
-            .from("usuarios")
-            .select("id, nome")
-            .eq("id", row.criado_por_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      row.concluido_por_id
-        ? context.supabase
-            .from("usuarios")
-            .select("id, nome")
-            .eq("id", row.concluido_por_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
+      loadTeam(context.supabase),
       context.supabase
         .from("audit_logs")
         .select("id, user_id, action, metadata, created_at")
@@ -193,18 +152,11 @@ export const getImprovementPlanDetail = createServerFn({ method: "POST" })
         .eq("entity_id", row.id)
         .order("created_at", { ascending: false }),
     ]);
-    const userIds = [
-      ...new Set((logs ?? []).flatMap((log: any) => (log.user_id ? [log.user_id] : []))),
-    ] as string[];
-    const { data: logUsers } = userIds.length
-      ? await context.supabase.from("usuarios").select("id, nome").in("id", userIds)
-      : { data: [] };
-    const userMap = new Map((logUsers ?? []).map((item: any) => [item.id, item.nome]));
     return {
       ...row,
-      responsibleName: owner?.nome ?? null,
-      creatorName: creator?.nome ?? null,
-      closerName: closer?.nome ?? null,
+      responsibleName: team.nameOf(row.responsavel_id),
+      creatorName: team.nameOf(row.criado_por_id),
+      closerName: team.nameOf(row.concluido_por_id),
       occurrence,
       canManage: access.canManage,
       history: (logs ?? []).map((log: any) => ({
@@ -212,7 +164,7 @@ export const getImprovementPlanDetail = createServerFn({ method: "POST" })
         action: log.action,
         metadata: log.metadata as Json,
         createdAt: log.created_at,
-        userName: log.user_id ? (userMap.get(log.user_id) ?? "Usuário indisponível") : "Sistema",
+        userName: team.nameOf(log.user_id) ?? "Sistema",
       })),
     };
   });

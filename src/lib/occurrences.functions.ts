@@ -4,6 +4,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
 import { describeAnswer } from "@/lib/multiple-choice";
 import { dbTimestamp } from "@/lib/timestamp";
+import { loadTeam } from "@/lib/team";
 
 const statuses = ["nova", "em_analise", "em_tratamento", "resolvida", "encerrada"] as const;
 const priorities = ["baixa", "media", "alta", "critica"] as const;
@@ -111,37 +112,25 @@ export const listOccurrences = createServerFn({ method: "POST" })
     const pointIds = [
       ...new Set((rows ?? []).flatMap((row: any) => (row.ponto_id ? [row.ponto_id] : []))),
     ] as string[];
-    const userIds = [
-      ...new Set(
-        (rows ?? []).flatMap((row: any) => (row.responsavel_id ? [row.responsavel_id] : [])),
-      ),
-    ] as string[];
-    const [{ data: points }, { data: owners }, { data: filterPoints }, { data: filterUsers }] =
-      await Promise.all([
-        pointIds.length
-          ? context.supabase.from("pontos_avaliacao").select("id, nome").in("id", pointIds)
-          : Promise.resolve({ data: [] }),
-        userIds.length
-          ? context.supabase.from("usuarios").select("id, nome").in("id", userIds)
-          : Promise.resolve({ data: [] }),
-        context.supabase.from("pontos_avaliacao").select("id, nome").order("nome"),
-        context.supabase.from("usuarios").select("id, nome").eq("status", "ativo").order("nome"),
-      ]);
+    const [{ data: points }, team, { data: filterPoints }] = await Promise.all([
+      pointIds.length
+        ? context.supabase.from("pontos_avaliacao").select("id, nome").in("id", pointIds)
+        : Promise.resolve({ data: [] }),
+      loadTeam(context.supabase),
+      context.supabase.from("pontos_avaliacao").select("id, nome").order("nome"),
+    ]);
     const pointMap = new Map((points ?? []).map((item: any) => [item.id, item.nome]));
-    const ownerMap = new Map((owners ?? []).map((item: any) => [item.id, item.nome]));
     return {
       items: (rows ?? []).map((row: any) => ({
         ...row,
         pointName: row.ponto_id ? (pointMap.get(row.ponto_id) ?? "Ponto indisponível") : null,
-        responsibleName: row.responsavel_id
-          ? (ownerMap.get(row.responsavel_id) ?? "Usuário indisponível")
-          : null,
+        responsibleName: team.nameOf(row.responsavel_id),
       })),
       total: count ?? 0,
       page: data.page,
       pageSize: data.pageSize,
       points: filterPoints ?? [],
-      users: filterUsers ?? [],
+      users: team.active,
       canManage: access.canManage,
       currentUserId: access.profile.id,
     };
@@ -159,14 +148,7 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error("Não foi possível carregar a ocorrência.");
     if (!row) return null;
-    const [
-      { data: point },
-      { data: owner },
-      { data: creator },
-      { data: closer },
-      { data: logs },
-      { data: evaluation },
-    ] = await Promise.all([
+    const [{ data: point }, team, { data: logs }, { data: evaluation }] = await Promise.all([
       row.ponto_id
         ? context.supabase
             .from("pontos_avaliacao")
@@ -174,27 +156,7 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" })
             .eq("id", row.ponto_id)
             .maybeSingle()
         : Promise.resolve({ data: null }),
-      row.responsavel_id
-        ? context.supabase
-            .from("usuarios")
-            .select("id, nome")
-            .eq("id", row.responsavel_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      row.criado_por_id
-        ? context.supabase
-            .from("usuarios")
-            .select("id, nome")
-            .eq("id", row.criado_por_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      row.encerrado_por_id
-        ? context.supabase
-            .from("usuarios")
-            .select("id, nome")
-            .eq("id", row.encerrado_por_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
+      loadTeam(context.supabase),
       context.supabase
         .from("audit_logs")
         .select("id, user_id, action, metadata, created_at")
@@ -281,19 +243,12 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" })
           .sort((a: any, b: any) => a.order - b.order),
       };
     }
-    const logUserIds = [
-      ...new Set((logs ?? []).flatMap((log: any) => (log.user_id ? [log.user_id] : []))),
-    ] as string[];
-    const { data: logUsers } = logUserIds.length
-      ? await context.supabase.from("usuarios").select("id, nome").in("id", logUserIds)
-      : { data: [] };
-    const logUserMap = new Map((logUsers ?? []).map((item: any) => [item.id, item.nome]));
     return {
       ...row,
       pointName: point?.nome ?? null,
-      responsibleName: owner?.nome ?? null,
-      creatorName: creator?.nome ?? null,
-      closerName: closer?.nome ?? null,
+      responsibleName: team.nameOf(row.responsavel_id),
+      creatorName: team.nameOf(row.criado_por_id),
+      closerName: team.nameOf(row.encerrado_por_id),
       canManage: access.canManage,
       evaluation: evaluationDetail,
       history: (logs ?? []).map((log: any) => ({
@@ -301,7 +256,7 @@ export const getOccurrenceDetail = createServerFn({ method: "POST" })
         action: log.action,
         metadata: log.metadata as Json,
         createdAt: log.created_at,
-        userName: log.user_id ? (logUserMap.get(log.user_id) ?? "Usuário indisponível") : "Sistema",
+        userName: team.nameOf(log.user_id) ?? "Sistema",
       })),
     };
   });

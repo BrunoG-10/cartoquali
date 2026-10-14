@@ -163,6 +163,7 @@ export function OccurrencesPage() {
         queryClient.invalidateQueries({ queryKey: ["occurrences"] }),
         queryClient.invalidateQueries({ queryKey: ["occurrence-detail", selectedId] }),
       ]);
+      setSelectedId(undefined);
       toast.success("Ocorrência atualizada");
     },
     onError: (error) => toast.error(errorMessage(error)),

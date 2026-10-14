@@ -151,6 +151,7 @@ export function ImprovementPlansPage() {
         queryClient.invalidateQueries({ queryKey: ["improvement-plans"] }),
         queryClient.invalidateQueries({ queryKey: ["improvement-plan-detail", selectedId] }),
       ]);
+      setSelectedId(undefined);
       toast.success("Plano atualizado");
     },
     onError: (error) => toast.error(errorMessage(error)),
