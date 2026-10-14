@@ -1,5 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { decimalBR, formatPhoneBR, percentBR, plural } from "./format";
+import { decimalBR, formatPhoneBR, moneyInputBR, parseMoneyBR, percentBR, plural } from "./format";
+
+describe("parseMoneyBR", () => {
+  it("reads values the way they are typed in Brazil", () => {
+    expect(parseMoneyBR("199,90")).toBe(199.9);
+    expect(parseMoneyBR("1.500")).toBe(1500);
+    expect(parseMoneyBR("1.500,00")).toBe(1500);
+    expect(parseMoneyBR("12.345.678,9")).toBe(12345678.9);
+    expect(parseMoneyBR("R$ 300")).toBe(300);
+    expect(parseMoneyBR(" 300,5 ")).toBe(300.5);
+  });
+
+  it("still accepts a decimal point that is not a thousands separator", () => {
+    expect(parseMoneyBR("199.9")).toBe(199.9);
+    expect(parseMoneyBR("199.90")).toBe(199.9);
+  });
+
+  it("rejects text that is not a value", () => {
+    expect(parseMoneyBR("")).toBeNaN();
+    expect(parseMoneyBR("abc")).toBeNaN();
+    expect(parseMoneyBR("1,2,3")).toBeNaN();
+  });
+});
+
+describe("moneyInputBR", () => {
+  it("fills an input with a decimal comma and two digits", () => {
+    expect(moneyInputBR(199.9)).toBe("199,90");
+    expect(moneyInputBR(1500)).toBe("1500,00");
+    expect(parseMoneyBR(moneyInputBR(1234.5))).toBe(1234.5);
+  });
+});
 
 describe("number formatting (pt-BR)", () => {
   it("uses a decimal comma with one digit", () => {
