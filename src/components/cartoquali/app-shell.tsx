@@ -30,6 +30,7 @@ import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { USER_ROLE_LABELS } from "@/constants/cartoquali";
 import { can, moduleForPath, type AppModule } from "@/lib/permissions";
 import { InterfaceState } from "@/components/cartoquali/primitives";
+import { UpdateAvailable } from "@/components/cartoquali/update-available";
 import { guidePageFor } from "@/lib/guide/plan";
 import { GuideButton } from "@/components/cartoquali/guide/guide-button";
 import { useAttentionCounts } from "@/components/cartoquali/use-attention-counts";
@@ -288,6 +289,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </main>
         </div>
       </div>
+      <UpdateAvailable />
     </div>
   );
 }
