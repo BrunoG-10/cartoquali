@@ -15,6 +15,7 @@ import { RegistryAttributions } from "@/components/cartoquali/registry-attributi
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { can } from "@/lib/permissions";
+import { formatCnpj } from "@/lib/format";
 import { getMyRegistry, updateMyRegistry } from "@/lib/registry.functions";
 import type { Registry } from "@/types/cartoquali";
 import { firstValidationError, registrySchema } from "@/utils/cartoquali-validation";
@@ -24,11 +25,13 @@ function Field({
   value,
   onChange,
   disabled = false,
+  hint,
 }: {
   label: string;
   value: string;
   onChange(value: string): void;
   disabled?: boolean;
+  hint?: string;
 }) {
   return (
     <label className="text-sm font-medium">
@@ -39,9 +42,13 @@ function Field({
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
       />
+      {hint && <span className="mt-1 block text-xs font-normal text-muted-foreground">{hint}</span>}
     </label>
   );
 }
+
+// Razão social e CNPJ identificam o contrato: só o suporte (implantação) altera.
+const LOCKED_HINT = "Alterado somente pelo suporte CartoQuali.";
 
 export function RegistryPage() {
   const { currentRole } = useAuth();
@@ -174,8 +181,9 @@ export function RegistryPage() {
             <Field
               label="Razão social"
               value={draft.officialName}
-              disabled={!editing}
-              onChange={(officialName) => setDraft({ ...draft, officialName })}
+              disabled
+              hint={LOCKED_HINT}
+              onChange={() => undefined}
             />
             <Field
               label="Nome fantasia"
@@ -185,9 +193,10 @@ export function RegistryPage() {
             />
             <Field
               label="CNPJ"
-              value={draft.cnpj}
-              disabled={!editing}
-              onChange={(cnpj) => setDraft({ ...draft, cnpj })}
+              value={formatCnpj(draft.cnpj)}
+              disabled
+              hint={LOCKED_HINT}
+              onChange={() => undefined}
             />
             <Field
               label="Tipo de serventia"

@@ -107,10 +107,10 @@ export const updateMyRegistry = createServerFn({ method: "POST" })
 
     const { data: updated, error } = await context.supabase
       .from("cartorios")
+      // Razão social e CNPJ não são alterados por aqui: só o suporte (implantação) muda,
+      // e o banco recusa a mudança para quem não é administrador da plataforma.
       .update({
-        razao_social: data.officialName,
         nome_fantasia: data.tradeName,
-        cnpj: data.cnpj,
         tipo: data.serviceType,
         telefone: data.phone || null,
         email: data.email,
