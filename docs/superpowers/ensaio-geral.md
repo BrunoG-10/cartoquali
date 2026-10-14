@@ -88,7 +88,21 @@ Legenda: ✅ passou · ❌ falhou · ⚠️ observação/ajuste.
 
 ## Fase F — Perfis: gestor, operador, desativação
 
-Pendente (depende do acesso de bruno_gabriel1@outlook.com.br).
+Usuário de teste: Gestor Piloto (bruno_gabriel1@outlook.com.br), convite reenviado pelo botão novo.
+
+- ✅ Primeiro acesso pelo convite reenviado; "Último acesso" passou a aparecer para o administrador.
+- ✅ Gestor: menu com 10 itens (sem Cartório, Usuários, Configurações, Privacidade, Auditoria);
+  mudou situação de avaliação, tratou ocorrência e editou pergunta.
+- ❌ Endereço digitado (/usuarios, /auditoria) abria a tela e ela falhava (dados já recusados pelo
+  servidor) → PR #41: "Sem acesso a esta tela".
+- ❌ Janelas não cobriam a tela (animação deixava `transform` na página) → PR #42.
+- ❌ Histórico da ocorrência/plano vazio para gestor/operador (auditoria só para administradores)
+  → PR #43 (política só para essas duas entidades; dry run OK).
+- ❌ Responsável "Não definido", histórico "Usuário indisponível" e lista de responsáveis só com a
+  própria pessoa (RLS de usuarios) → PR #44 (`list_team_members`: só id, nome e ativo; dry run OK).
+- ⚠️ Janela continuava aberta depois de salvar → PR #44 fecha ao salvar (ocorrência e plano).
+- ✅ Operador: menu sem Pesquisas e QR Code, sem "Nova ocorrência", consulta somente.
+- ✅ Desativado: perde o acesso com mensagem clara; "Reenviar acesso" some para inativos.
 
 ## Fase G — Plataforma: painel, cobrança, isolamento
 
@@ -111,5 +125,10 @@ Pendente (depende do acesso de bruno_gabriel1@outlook.com.br).
 | ⚠️ CSV, números, plurais, telefone, textos, implantação, privacidade, auditoria, senha | PR #36 — mesclado |
 | ⚠️ "Acesso autenticado disponível" para convite pendente | PR #38 (último acesso real + "Reenviar acesso") — mesclado e conferido em produção |
 | ❌ Convite vence em 24 h sem forma de reenviar | PR #38 — mesclado; reenvio ao gestor conferido em produção |
+| ❌ Tela restrita abria por endereço digitado | PR #41 — mesclado e conferido |
+| ❌ Janelas presas dentro da página | PR #42 — mesclado e conferido |
+| ❌ Histórico vazio para gestor/operador | PR #43 (migração + teste 012) — mesclado e conferido |
+| ❌ Nomes da equipe indisponíveis para gestor/operador | PR #44 (migração + teste 013) — mesclado e conferido |
+| Pedido: aviso de nova versão | PR #45 — mesclado; balão aparece a partir da publicação seguinte |
 | ⚠️ Serviço não gravado na avaliação de teste | Não corrigido (só afeta o teste da implantação) |
 | Observação: cliente pode alterar CNPJ | Decisão do responsável |
