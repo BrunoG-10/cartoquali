@@ -51,6 +51,7 @@ export function UpdateAvailable() {
   return (
     <div
       role="status"
+      data-print="hide"
       className="fixed bottom-4 left-4 right-4 z-[60] mx-auto flex max-w-md items-center gap-3 rounded-xl border border-primary/30 bg-card p-4 shadow-xl sm:left-auto sm:right-6 sm:mx-0"
     >
       <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
