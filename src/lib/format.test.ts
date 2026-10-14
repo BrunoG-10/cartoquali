@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { decimalBR, formatPhoneBR, moneyInputBR, parseMoneyBR, percentBR, plural } from "./format";
+import {
+  decimalBR,
+  formatCnpj,
+  formatPhoneBR,
+  moneyInputBR,
+  parseMoneyBR,
+  percentBR,
+  plural,
+} from "./format";
 
 describe("parseMoneyBR", () => {
   it("reads values the way they are typed in Brazil", () => {
@@ -20,6 +28,18 @@ describe("parseMoneyBR", () => {
     expect(parseMoneyBR("")).toBeNaN();
     expect(parseMoneyBR("abc")).toBeNaN();
     expect(parseMoneyBR("1,2,3")).toBeNaN();
+  });
+});
+
+describe("formatCnpj", () => {
+  it("formats 14 digits as a CNPJ", () => {
+    expect(formatCnpj("00000000000191")).toBe("00.000.000/0001-91");
+    expect(formatCnpj("00.000.000/0001-91")).toBe("00.000.000/0001-91");
+  });
+  it("keeps anything else as typed", () => {
+    expect(formatCnpj("123")).toBe("123");
+    expect(formatCnpj("")).toBe("");
+    expect(formatCnpj(null)).toBe("");
   });
 });
 

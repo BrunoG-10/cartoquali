@@ -38,6 +38,7 @@ import {
 } from "@/lib/onboarding.functions";
 import { getEvaluationUrl, getPasswordSetupUrl } from "@/lib/public-url";
 import { ATTRIBUTIONS, type AttributionKey } from "@/lib/attributions";
+import { formatCnpj } from "@/lib/format";
 
 const steps = [
   "Cartório",
@@ -314,7 +315,7 @@ export function OnboardingPage() {
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {item.registry.city}/{item.registry.state} · {item.registry.cnpj}
+                    {item.registry.city}/{item.registry.state} · {formatCnpj(item.registry.cnpj)}
                   </p>
                 </div>
                 <StatusBadge tone={tone(item.status)}>{statusLabel[item.status]}</StatusBadge>
@@ -334,7 +335,7 @@ export function OnboardingPage() {
                 variant="outline"
                 onClick={() => setSelectedId(item.id)}
               >
-                Continuar implantação
+                {item.status === "ACTIVE" ? "Ver implantação" : "Continuar implantação"}
                 <ChevronRight />
               </Button>
             </GlassPanel>
@@ -534,7 +535,7 @@ function StepContent({
           </div>
           <div>
             <dt className="text-muted-foreground">CNPJ</dt>
-            <dd className="font-medium">{item.registry.cnpj}</dd>
+            <dd className="font-medium">{formatCnpj(item.registry.cnpj)}</dd>
           </div>
           <div>
             <dt className="text-muted-foreground">Localidade</dt>

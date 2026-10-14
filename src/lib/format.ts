@@ -30,6 +30,14 @@ export function parseMoneyBR(text: string): number {
 /** Valor para preencher um campo: "199,90". */
 export const moneyInputBR = (value: number) => value.toFixed(2).replace(".", ",");
 
+/** 00.000.000/0001-91 para 14 dígitos; outros formatos ficam como digitados. */
+export function formatCnpj(value: string | null | undefined): string {
+  if (!value) return "";
+  const d = value.replace(/\D/g, "");
+  if (d.length !== 14) return value;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
+
 /** (86) 99999-9999 ou (86) 3222-0000 para números com DDD; outros formatos ficam como digitados. */
 export function formatPhoneBR(value: string | null | undefined): string {
   if (!value) return "";
