@@ -298,8 +298,8 @@ export function ReportPrintDocument({
           entram nos números.
         </p>
         <p>
-          Emitido pelo CartoQuali · cartoquali.com.br · solução independente, sem vínculo com
-          ANOREG, PQTA ou CNJ.
+          Emitido pelo CartoQuali · cartoquali.com.br · A voz de quem é atendido, transformada em
+          gestão da qualidade.
         </p>
       </footer>
     </article>

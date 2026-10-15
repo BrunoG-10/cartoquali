@@ -290,7 +290,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           <main className="p-4 sm:p-6 lg:p-8">
             {blocked ? <NoAccess /> : children}
             <p data-print="hide" className="mt-8 text-center text-xs text-muted-foreground">
-              Ambiente CartoQuali · solução independente, sem vínculo com ANOREG, PQTA ou CNJ
+              <Wordmark className="text-xs" /> · A voz de quem é atendido, transformada em gestão da
+              qualidade.
             </p>
           </main>
         </div>
