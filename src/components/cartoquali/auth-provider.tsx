@@ -37,7 +37,7 @@ type AuthValue = {
   status: AuthStatus;
   signIn(email: string, password: string): Promise<void>;
   signOut(): Promise<void>;
-  resetPassword(email: string): Promise<void>;
+  resetPassword(email: string, kind?: "invite" | "recovery"): Promise<void>;
   updatePassword(password: string): Promise<void>;
   refresh(): Promise<void>;
   /** Progresso do guia de uso; null = desconhecido (não abre o tour sozinho). */
@@ -139,11 +139,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus("unauthenticated");
     await navigate({ to: "/login", replace: true });
   };
-  const resetPassword = async (email: string) => {
+  const resetPassword = async (email: string, kind: "invite" | "recovery" = "recovery") => {
+    // Para quem ainda não criou a senha (convite), o link de recuperação também confirma o
+    // e-mail; "invite" só mantém o texto de primeiro acesso na tela de senha.
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: getPasswordSetupUrl("recovery"),
+      redirectTo: getPasswordSetupUrl(kind),
     });
-    if (error) throw new Error("Não foi possível enviar o email de recuperação.");
+    if (error)
+      throw new Error(
+        error.status === 429 || /rate|seconds/i.test(error.message)
+          ? "Aguarde um minuto antes de pedir outro link."
+          : "Não foi possível enviar o email de recuperação.",
+      );
   };
   const updatePassword = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });

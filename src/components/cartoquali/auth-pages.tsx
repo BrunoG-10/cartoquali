@@ -177,9 +177,7 @@ export function ResetPasswordPage() {
       typeof window !== "undefined" &&
       new URLSearchParams(window.location.search).get("origem") === "convite",
   );
-  const retry = invite
-    ? "Peça ao administrador do cartório um novo convite, ou use “Esqueci minha senha” com o seu e-mail."
-    : "Peça um novo em “Esqueci minha senha”.";
+  const retry = "Peça um novo link abaixo: ele chega no seu e-mail em instantes.";
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (password.length < 8) {
@@ -223,10 +221,16 @@ export function ResetPasswordPage() {
             ? `Este link expirou ou já foi usado. ${retry}`
             : link === "invalid"
               ? `Não foi possível validar este link. ${retry}`
-              : "Abra esta página pelo link mais recente recebido no email."}
+              : `Abra esta página pelo link mais recente recebido no e-mail, ou ${retry.charAt(0).toLowerCase()}${retry.slice(1)}`}
         </p>
       )}
-      <form className="mt-6 space-y-4" onSubmit={submit}>
+      {(link === "expired" || link === "invalid" || link === "missing") && (
+        <NewLinkForm kind={invite ? "invite" : "recovery"} />
+      )}
+      <form
+        className={recovery || link === "checking" ? "mt-6 space-y-4" : "hidden"}
+        onSubmit={submit}
+      >
         <label className="block text-sm font-medium">
           Nova senha
           <Input
@@ -266,6 +270,65 @@ export function ResetPasswordPage() {
     </AuthFrame>
   );
 }
+/**
+ * Link vencido ou já usado: a própria pessoa pede outro, sem depender de um novo convite.
+ * O link do Supabase vale no máximo 24 horas; a mensagem não revela se o e-mail tem cadastro.
+ */
+function NewLinkForm({ kind }: { kind: "invite" | "recovery" }) {
+  const { resetPassword } = useAuth();
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [sent, setSent] = useState("");
+  const [error, setError] = useState("");
+  const submit = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await resetPassword(email.trim(), kind);
+      setSent(email.trim());
+    } catch (err) {
+      setError(userMessage(err, "Não foi possível enviar o novo link."));
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (sent)
+    return (
+      <p role="status" className="mt-5 rounded-md bg-success-soft p-3 text-sm text-success">
+        Pronto! Se <strong>{sent}</strong> tiver acesso ao CartoQuali, um novo link chega em alguns
+        minutos. Abra o e-mail mais recente (confira também o spam). O link vale por 24 horas.
+      </p>
+    );
+  return (
+    <form className="mt-5 space-y-3" onSubmit={submit}>
+      <label className="block text-sm font-medium">
+        Seu e-mail
+        <div className="relative mt-1.5">
+          <Mail className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            type="email"
+            autoComplete="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+      </label>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <Button className="w-full" disabled={busy}>
+        {busy ? <LoaderCircle className="animate-spin" /> : <Mail />}
+        Receber novo link
+      </Button>
+    </form>
+  );
+}
+
 export function AuthAccessState() {
   const { status, signOut } = useAuth();
   const copy: Record<string, [string, string]> = {
