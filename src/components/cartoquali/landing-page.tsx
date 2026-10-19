@@ -111,7 +111,20 @@ const audiences: Array<[LucideIcon, string, string]> = [
   [Users, "Equipe", "Sabe com clareza quais pontos do atendimento precisam de atenção."],
 ];
 
+const trialOffer = {
+  title: "Teste grátis por 7 dias.",
+  detail: "Depois, cancele quando quiser, sem multa.",
+};
+
 const faqs = [
+  [
+    "Posso testar antes de contratar?",
+    "Sim. Você usa o CartoQuali gratuitamente por 7 dias, com o seu cartório, antes de decidir.",
+  ],
+  [
+    "Existe fidelidade ou multa para cancelar?",
+    "Não. Você pode cancelar a qualquer momento, sem multa.",
+  ],
   ["Preciso instalar um aplicativo?", "Não. A avaliação funciona no navegador do celular."],
   [
     "O usuário precisa criar uma conta?",
@@ -155,7 +168,8 @@ const emptyLead = {
 type LeadDraft = typeof emptyLead;
 
 const commercialWhatsappNumber = "5586981846766";
-const defaultWhatsappMessage = "Olá! Quero conhecer o CartoQuali e solicitar uma demonstração.";
+const defaultWhatsappMessage =
+  "Olá! Quero conhecer o CartoQuali e começar o teste grátis de 7 dias.";
 const createWhatsappUrl = (message = defaultWhatsappMessage) =>
   `https://wa.me/${commercialWhatsappNumber}?text=${encodeURIComponent(message)}`;
 
@@ -320,7 +334,11 @@ function Hero() {
             O cidadão avalia o atendimento pelo QR Code, em poucos instantes. Sua equipe acompanha
             os indicadores e transforma cada problema em ação de melhoria.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <p className="mt-6 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-brand-gold/50 bg-brand-gold/10 px-4 py-2.5 text-sm">
+            <span className="font-display font-bold">{trialOffer.title}</span>
+            <span className="text-muted-foreground">{trialOffer.detail}</span>
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <AnchorCta>
               Solicitar demonstração <ArrowRight />
             </AnchorCta>
@@ -331,14 +349,18 @@ function Hero() {
             </Button>
           </div>
           <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
-            {["Sem aplicativo", "Sem cadastro do cidadão", "Desenvolvido com base na LGPD"].map(
-              (item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <Check className="size-4 text-success" aria-hidden="true" />
-                  {item}
-                </li>
-              ),
-            )}
+            {[
+              "7 dias grátis",
+              "Sem multa para cancelar",
+              "Sem aplicativo",
+              "Sem cadastro do cidadão",
+              "Desenvolvido com base na LGPD",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <Check className="size-4 text-success" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
         <div className="animate-enter pb-10 sm:px-8 lg:pb-0">
@@ -612,7 +634,7 @@ function DemoForm() {
       await submitLead({ data: checked.data });
       setStatus("success");
       const whatsappMessage = [
-        "Olá! Quero conhecer o CartoQuali e solicitar uma demonstração.",
+        defaultWhatsappMessage,
         "",
         `Nome: ${checked.data.name}`,
         `Cartório: ${checked.data.registryName}`,
@@ -644,6 +666,7 @@ function DemoForm() {
               "Conheça a avaliação pelo QR Code",
               "Veja os indicadores em contexto",
               "Entenda o fluxo de ocorrências e planos",
+              "Teste grátis por 7 dias, sem multa se cancelar",
             ].map((item) => (
               <li key={item} className="flex gap-2">
                 <Check className="size-4 text-brand-gold" aria-hidden="true" />
@@ -754,6 +777,9 @@ function DemoForm() {
                 {status === "sending" ? "Enviando..." : "Enviar e conversar no WhatsApp"}
                 <ArrowRight />
               </Button>
+              <p className="text-center text-sm font-semibold">
+                {trialOffer.title} {trialOffer.detail}
+              </p>
               <p className="text-center text-xs leading-4 text-muted-foreground">
                 Seus dados serão usados apenas para responder à solicitação comercial pelo WhatsApp.
               </p>
