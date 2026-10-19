@@ -26,6 +26,7 @@ type AuthStatus =
   | "missing_role"
   | "inactive_user"
   | "inactive_registry"
+  | "trial_expired"
   | "error";
 type AuthValue = {
   user: User | null;

@@ -341,6 +341,10 @@ export function AuthAccessState() {
     missing_role: ["Perfil sem permissão", "Solicite ao administrador a definição do seu perfil."],
     inactive_user: ["Usuário inativo", "Seu acesso administrativo está inativo."],
     inactive_registry: ["Cartório inativo", "O acesso deste cartório está inativo."],
+    trial_expired: [
+      "Período de teste encerrado",
+      "Os 7 dias de teste gratuito deste cartório terminaram. Entre em contato com o administrador para continuar usando o CartoQuali.",
+    ],
     error: ["Não foi possível validar o acesso", "Tente novamente em instantes."],
   };
   const item = copy[status] ??

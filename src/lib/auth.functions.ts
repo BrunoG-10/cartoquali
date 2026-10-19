@@ -15,6 +15,15 @@ const roleMap = {
 export const getCurrentAuthContext = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    // Inicia o período de teste no primeiro login; vencido sem cobrança ativa, o banco já fecha a RLS.
+    const { data: trial, error: trialError } = await untypedDb(context.supabase).rpc(
+      "start_registry_trial",
+    );
+    if (trialError) throw new Error("Não foi possível verificar o período de teste.");
+    if ((trial as { expired?: boolean } | null)?.expired) {
+      return { status: "trial_expired" as const };
+    }
+
     const { data: usuario, error } = await context.supabase
       .from("usuarios")
       .select(
