@@ -64,8 +64,11 @@ begin
   if cartoquali_private.current_cartorio_id() is not null then
     raise exception 'FALHA e: RLS continuou liberada após o teste';
   end if;
-  select count(*) into _n from public.usuarios;
-  if _n <> 0 then raise exception 'FALHA e: usuário bloqueado ainda lê dados do cartório'; end if;
+  -- o próprio cadastro continua legível (política de perfil próprio); o resto do cartório, não
+  select count(*) into _n from public.usuarios where auth_user_id is distinct from _auth;
+  if _n <> 0 then raise exception 'FALHA e: usuário bloqueado ainda lê outros usuários'; end if;
+  select count(*) into _n from public.pesquisas;
+  if _n <> 0 then raise exception 'FALHA e: usuário bloqueado ainda lê pesquisas do cartório'; end if;
   execute 'reset role';
 
   -- f) com cobrança ativa configurada pela plataforma, o acesso volta
