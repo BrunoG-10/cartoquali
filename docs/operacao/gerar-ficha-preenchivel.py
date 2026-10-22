@@ -254,9 +254,10 @@ def build():
 
     story = [Spacer(1, 40), intro, Spacer(1, 8)]
     story.extend(section(1, "Dados do cartório",
-        Paragraph("Razão social e CNPJ são cadastrados pelo suporte; depois da implantação, a alteração é feita somente a pedido.", hint),
+        Paragraph("Razão social e CNPJ só mudam a pedido após a implantação. "
+                  "<b>Ofício</b>: “Ofício Único” ou o número (ex.: 2º Ofício).", hint),
         row(("Razão social", 4, True), ("CNPJ", 2, True)),
-        row(("Nome fantasia (como aparece para o cidadão na pesquisa)", 4, True), ("Tipo de serventia", 2, True)),
+        row(("Nome fantasia (como aparece para o cidadão na pesquisa)", 4, True), ("Ofício (Único ou nº do ofício)", 2, True)),
         row(("Responsável pela serventia (titular, interino ou substituto)", 4, True), ("Telefone", 2, False)),
         row(("E-mail institucional", 1, False)),
         row(("CEP", 2, False), ("Logradouro", 5, False), ("Número", 1, False), ("Complemento", 2, False)),

@@ -83,7 +83,7 @@ function missingRegistryFields(value: typeof blankRegistry): string[] {
   if (!value.officialName.trim()) missing.push("razão social");
   if (!value.tradeName.trim()) missing.push("nome fantasia");
   if (!value.cnpj.trim()) missing.push("CNPJ");
-  if (!value.serviceType.trim()) missing.push("tipo de serventia");
+  if (!value.serviceType.trim()) missing.push("ofício");
   if (!value.city.trim()) missing.push("cidade");
   if (value.state.trim().length !== 2) missing.push("UF (2 letras)");
   if (!value.manager.trim()) missing.push("responsável");
@@ -259,7 +259,8 @@ export function OnboardingPage() {
               onChange={(cnpj) => setRegistry({ ...registry, cnpj })}
             />
             <Field
-              label="Tipo de serventia"
+              label="Ofício (Único ou nº do ofício)"
+              placeholder="Ex.: Ofício Único, 1º Ofício"
               value={registry.serviceType}
               onChange={(serviceType) => setRegistry({ ...registry, serviceType })}
             />

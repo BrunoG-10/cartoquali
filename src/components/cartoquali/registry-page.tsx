@@ -199,7 +199,7 @@ export function RegistryPage() {
               onChange={() => undefined}
             />
             <Field
-              label="Tipo de serventia"
+              label="Ofício (Único ou nº do ofício)"
               value={draft.serviceType}
               disabled={!editing}
               onChange={(serviceType) => setDraft({ ...draft, serviceType })}
