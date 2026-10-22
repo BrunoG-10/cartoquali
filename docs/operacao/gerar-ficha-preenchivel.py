@@ -2,6 +2,7 @@
 
 Uso: python docs/operacao/gerar-ficha-preenchivel.py
 Saída: public/ficha-de-implantacao.pdf (baixada pelo botão "Baixar ficha" em /implantacoes)
+Versão enviada ao cliente: só os dados do cadastro (cartório, atribuições, administrador, ponto/QR e privacidade).
 Mesmo conteúdo de ficha-de-implantacao.html (versão para imprimir); mantenha os dois iguais.
 """
 
@@ -10,7 +11,6 @@ import unicodedata
 from pathlib import Path
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
@@ -43,7 +43,6 @@ hint = ParagraphStyle("hint", parent=body, fontSize=8, leading=10.5, textColor=M
 label = ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=7.5, leading=9, textColor=colors.HexColor("#333333"))
 cell = ParagraphStyle("cell", parent=body, fontSize=8, leading=10)
 head = ParagraphStyle("head", parent=cell, fontName="Helvetica-Bold")
-small_center = ParagraphStyle("sc", parent=body, fontSize=8, alignment=TA_CENTER, textColor=MUTED)
 
 _names: set[str] = set()
 
@@ -190,62 +189,13 @@ def checks(texts, columns=2, pad_bottom=3):
     return grid(rows, [col_w] * columns, pad_bottom)
 
 
-def form_table(headers, widths, body_rows):
-    """Tabela com cabeçalho; células com texto fixo (str) ou campo preenchível (None)."""
-    data = [[Paragraph(h, head) for h in headers]]
-    for r_index, r in enumerate(body_rows):
-        line = []
-        for c_index, value in enumerate(r):
-            if value is None:
-                title = f"{headers[c_index]} {r_index + 1}"
-                line.append(TextBox(title, widths[c_index] - 6, show_label=False))
-            else:
-                line.append(Paragraph(value, cell))
-        data.append(line)
-    t = Table(data, colWidths=widths)
-    t.setStyle(
-        TableStyle(
-            [
-                ("GRID", (0, 0), (-1, -1), 0.5, LINE),
-                ("BACKGROUND", (0, 0), (-1, 0), SOFT),
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("LEFTPADDING", (0, 0), (-1, -1), 3),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 3),
-                ("TOPPADDING", (0, 0), (-1, -1), 3),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-            ]
-        )
-    )
-    t.hAlign = "LEFT"
-    return t
 
 
 def section(number, title, *content):
     """O título fica junto do primeiro bloco (e do segundo, quando o primeiro é a explicação)."""
     keep = 2 if isinstance(content[0], Paragraph) and len(content) > 1 else 1
-    return [KeepTogether([SectionTitle(number, title), *content[:keep]]), *content[keep:], Spacer(1, 6)]
+    return [KeepTogether([SectionTitle(number, title), *content[:keep]]), *content[keep:], Spacer(1, 3)]
 
-
-def services_block():
-    groups = [
-        ("Tabelionato de Notas", ["Reconhecimento de firma", "Autenticação de cópias", "Escritura", "Procuração", "Testamento", "Ata notarial", "Inventário ou divórcio em cartório"]),
-        ("Tabelionato de Protesto", ["Protesto de título", "Cancelamento de protesto", "Certidão de protesto"]),
-        ("Registro de Imóveis", ["Registro ou averbação", "Certidão de matrícula", "Usucapião extrajudicial"]),
-        ("Registro Civil das Pessoas Naturais", ["Nascimento", "Casamento", "Óbito", "Certidões", "Habilitação de casamento"]),
-        ("Títulos e Documentos e Pessoas Jurídicas", ["Registro de documentos", "Registro de pessoa jurídica", "Notificação"]),
-        ("Contratos Marítimos e Distribuição", ["Registro de contrato marítimo", "Distribuição", "Certidão de distribuição"]),
-    ]
-    col_w = WIDTH / 2
-    gstyle = ParagraphStyle("g", parent=body, fontName="Helvetica-Bold", fontSize=8, textColor=NAVY, spaceBefore=3)
-
-    def column(selected):
-        flow = []
-        for title, items in selected:
-            flow.append(Paragraph(title, gstyle))
-            flow += [Check(item, col_w - 10) for item in items]
-        return flow
-
-    return grid([[column(groups[0:1] + groups[3:4]), column(groups[1:3] + groups[4:6])]], [col_w, col_w])
 
 
 def header_footer(c, doc):
@@ -277,7 +227,7 @@ def header_footer(c, doc):
         c.line(MARGIN, y - 7, PAGE_W - MARGIN, y - 7)
     c.setFont("Helvetica", 7.5)
     c.setFillColor(MUTED)
-    c.drawString(MARGIN, 10 * mm, "CartoQuali · Ficha de implantação · cartoquali@gmail.com")
+    c.drawString(MARGIN, 10 * mm, "CartoQuali · solução independente, sem vínculo com ANOREG, PQTA ou CNJ · cartoquali@gmail.com")
     c.drawRightString(PAGE_W - MARGIN, 10 * mm, f"Página {doc.page}")
     c.restoreState()
 
@@ -309,9 +259,8 @@ def build():
         row(("Nome fantasia (como aparece para o cidadão na pesquisa)", 4, True), ("Tipo de serventia", 2, True)),
         row(("Responsável pela serventia (titular, interino ou substituto)", 4, True), ("Telefone", 2, False)),
         row(("E-mail institucional", 1, False)),
-        row(("CEP", 2, False), ("Logradouro", 4, False)),
-        row(("Número", 1, False), ("Complemento", 2, False), ("Bairro", 3, False)),
-        row(("Cidade", 4, True), ("UF", 2, True)),
+        row(("CEP", 2, False), ("Logradouro", 5, False), ("Número", 1, False), ("Complemento", 2, False)),
+        row(("Bairro", 4, False), ("Cidade", 5, True), ("UF", 1, True)),
     ))
     story.extend(section(2, "Atribuições *",
         Paragraph("Marque todas as atribuições da serventia (Lei 8.935/1994, art. 5º). Elas definem os serviços que o cidadão poderá escolher na pesquisa.", hint),
@@ -322,85 +271,20 @@ def build():
             "Registro de Contratos Marítimos", "Registro de Distribuição",
         ]),
     ))
-    story.extend(section(3, "Serviços que aparecerão na pesquisa",
-        Paragraph("Sugerimos os serviços abaixo para cada atribuição. Marque os que o cartório oferece e indique outros, se houver.", hint),
-        services_block(),
-        Spacer(1, 4),
-        grid([[TextBox("Outros serviços (um por linha)", WIDTH, lines=3)]], [WIDTH]),
-    ))
-    story.extend(section(4, "Administrador do sistema *",
+    story.extend(section(3, "Administrador do sistema *",
         Paragraph("Pessoa que vai gerenciar o CartoQuali no cartório. Ela recebe por e-mail um convite para criar a senha, válido por 24 horas (podemos reenviar). Use um e-mail de uso individual, não compartilhado.", hint),
         row(("Nome completo do administrador", 4, True), ("Telefone / WhatsApp do administrador", 2, False)),
         row(("E-mail do administrador", 1, True)),
     ))
-    story.extend(section(5, "Equipe (opcional)",
-        Paragraph("<b>Gestor:</b> acompanha resultados, trata avaliações, ocorrências e planos, e ajusta pesquisa e QR Code. "
-                  "<b>Operador:</b> consulta painéis, avaliações, ocorrências, planos e relatórios, sem alterar. "
-                  "Também pode ser cadastrada depois pelo administrador.", hint),
-        form_table(["Nome", "E-mail", "Perfil (Gestor ou Operador)"], [WIDTH * 0.36, WIDTH * 0.4, WIDTH * 0.24], [[None, None, None]] * 4),
-    ))
-    questions = [
-        "Como você avalia sua experiência geral hoje? <i>(1 a 5 estrelas)</i>",
-        "Como você avalia a cordialidade e o respeito no atendimento? <i>(escala)</i>",
-        "As informações foram claras e fáceis de entender? <i>(escala)</i>",
-        "Como você avalia o tempo de espera e o cumprimento dos prazos informados? <i>(escala)</i>",
-        "Como você avalia as instalações (conforto, limpeza, sinalização e acessibilidade)? <i>(escala, opcional para o cidadão)</i>",
-        "Seu atendimento foi resolvido? <i>(sim ou não)</i>",
-    ]
-    story.extend(section(6, "Pesquisa de satisfação",
-        Paragraph("A pesquisa já vem com seis perguntas essenciais, usadas nos indicadores. O texto delas pode ser ajustado; o tema e o tipo de resposta, não. "
-                  "Depois delas, a pesquisa pergunta o que poderia melhorar e abre espaço para um comentário.", hint),
-        row(("Nome da pesquisa (sugestão: Pesquisa de satisfação)", 1, False), ("Mensagem de abertura para o cidadão (opcional)", 1, False)),
-        form_table(["#", "Pergunta essencial", "Novo texto, se quiser ajustar"], [WIDTH * 0.05, WIDTH * 0.5, WIDTH * 0.45],
-                   [[str(i + 1), q, None] for i, q in enumerate(questions)]),
-        Spacer(1, 6),
-        grid([[TextBox("Perguntas adicionais desejadas (opcional)", WIDTH, lines=3)]], [WIDTH]),
-    ))
-    story.extend(section(7, "Ponto de atendimento e QR Code *",
+    story.extend(section(4, "Ponto de atendimento e QR Code *",
         Paragraph("Um único QR Code atende o cartório inteiro: o cidadão escolhe o serviço na própria pesquisa. Informe onde o cartaz ficará.", hint),
         row(("Nome do ponto (ex.: Atendimento principal)", 1, True), ("Localização (ex.: recepção, térreo)", 1, True)),
         row(("Onde os cartazes serão fixados (balcão, sala de espera, guichês)", 4, False), ("Quantidade de cartazes", 2, False)),
     ))
-    story.extend(section(8, "Privacidade (LGPD)",
+    story.extend(section(5, "Privacidade (LGPD)",
         Paragraph("O cartório é o controlador dos dados das avaliações; o CartoQuali atua como operador. Indique quem responde por privacidade no cartório.", hint),
         row(("Encarregado de dados (DPO) ou contato de privacidade", 1, False), ("E-mail do encarregado", 1, False)),
     ))
-    story.extend(section(9, "Cobrança",
-        row(("Valor mensal acordado (R$)", 1, True), ("Dia de vencimento (1 a 28)", 1, True), ("Início da cobrança (mês/ano)", 1, True)),
-        Paragraph("Forma de pagamento preferida:", hint),
-        checks(["PIX", "Boleto", "Transferência", "Outra forma"], columns=4, pad_bottom=6),
-        row(("Outra forma de pagamento (qual)", 1, False)),
-        row(("Contato financeiro (nome)", 1, False), ("E-mail do contato financeiro", 1, False), ("Telefone do contato financeiro", 1, False)),
-    ))
-    story.extend(section(10, "Confirmação",
-        Paragraph("Declaro que as informações acima estão corretas e autorizo seu uso para a implantação do CartoQuali.", hint),
-        row(("Nome e cargo de quem preencheu", 3, True), ("Data", 1, True)),
-    ))
-    steps = [
-        ("1. Cartório", "Seções 1 e 2; CNPJ e razão social conferidos"),
-        ("2. Administrador", "Convite enviado; reenviar se não aceito em 24 h"),
-        ("3. Pesquisa", "Nome e mensagem da seção 6"),
-        ("4. Perguntas", "Ajustes de texto e perguntas adicionais"),
-        ("5. Ponto", "Nome e localização da seção 7"),
-        ("6. QR Code", "Cartazes impressos e entregues"),
-        ("7. Teste", "Avaliação de teste pelo celular (não entra nos números)"),
-        ("8. Ativação", "Cartório ativo; cobrança cadastrada no Painel da plataforma"),
-    ]
-    widths = [WIDTH * 0.06, WIDTH * 0.24, WIDTH * 0.52, WIDTH * 0.18]
-    rows = [[Paragraph(h, head) for h in ["Feito", "Etapa no sistema", "O que conferir", "Data"]]]
-    for step, check in steps:
-        rows.append([Check(f"Feito {step}", 14, size=9, show_text=False), Paragraph(step, cell), Paragraph(check, cell), TextBox(f"Data {step}", widths[3] - 6, show_label=False)])
-    internal = Table(rows, colWidths=widths)
-    internal.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.5, LINE),
-        ("BACKGROUND", (0, 0), (-1, 0), SOFT),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("LEFTPADDING", (0, 0), (-1, -1), 3),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 3),
-    ]))
-    story.extend(section(None, "Uso interno CartoQuali · checklist da implantação", internal))
-    story.append(Spacer(1, 8))
-    story.append(Paragraph("CartoQuali · solução independente, sem vínculo com ANOREG, PQTA ou CNJ · cartoquali@gmail.com", small_center))
 
     doc = SimpleDocTemplate(
         str(OUT), pagesize=A4, leftMargin=MARGIN, rightMargin=MARGIN, topMargin=MARGIN, bottomMargin=16 * mm,
