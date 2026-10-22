@@ -96,7 +96,7 @@ export const MODULE_LABELS: Record<AppModule, string> = {
   dashboard: "Painel",
   evaluations: "Avaliações",
   surveys: "Pesquisas",
-  points: "Pontos",
+  points: "QR Code",
   quality: "Qualidade",
   occurrences: "Ocorrências",
   plans: "Planos de melhoria",
