@@ -8,6 +8,7 @@ import { useAuth } from "@/components/cartoquali/auth-provider";
 import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { supabase } from "@/integrations/supabase/client";
 import { recoveryLinkError } from "@/lib/recovery-link";
+import { validatePassword } from "@/utils/cartoquali-validation";
 import { AuthShowcase, AuthShowcaseCompact } from "./auth-scene";
 
 function AuthFrame({ children }: { children: ReactNode }) {
@@ -140,7 +141,7 @@ export function LoginPage({ redirect }: { redirect: string }) {
   );
 }
 export function ResetPasswordPage() {
-  const { updatePassword } = useAuth();
+  const { updatePassword, user } = useAuth();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -180,8 +181,9 @@ export function ResetPasswordPage() {
   const retry = "Peça um novo link abaixo: ele chega no seu e-mail em instantes.";
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (password.length < 8) {
-      setError("Use uma senha com pelo menos 8 caracteres.");
+    const passwordError = validatePassword(password, user?.email);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
     if (password !== confirm) {
@@ -242,6 +244,9 @@ export function ResetPasswordPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">
+            Pelo menos 8 caracteres, com letras e números.
+          </span>
         </label>
         <label className="block text-sm font-medium">
           Confirmar senha

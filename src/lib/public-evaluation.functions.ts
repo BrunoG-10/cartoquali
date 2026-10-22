@@ -28,13 +28,20 @@ export const submissionSchema = z.object({
   code: codeSchema,
   idempotencyKey: z.string().uuid(),
   submissionSession: z.string().uuid(),
+  pass: z.string().max(100),
   answers: answersSchema,
-  contact: z.object({
-    requested: z.boolean(),
-    name: z.string().trim().max(100).optional(),
-    phone: z.string().trim().max(30).optional(),
-    email: z.string().trim().email().max(255).optional(),
-  }),
+  contact: z
+    .object({
+      requested: z.boolean(),
+      /** The citizen ticked the authorization; recorded by the database with the notice version. */
+      consent: z.boolean().optional(),
+      name: z.string().trim().max(100).optional(),
+      phone: z.string().trim().max(30).optional(),
+      email: z.string().trim().email().max(255).optional(),
+    })
+    .refine((contact) => !contact.requested || contact.consent === true, {
+      message: "Marque a autorização para que o cartório possa entrar em contato.",
+    }),
   testToken: z.string().uuid().optional(),
   serviceId: z.string().uuid().optional(),
   serviceOther: z.boolean().optional(),
@@ -72,8 +79,12 @@ export type PublicEvaluationContext =
         allowContactRequest: boolean;
         thankYouMessage: string | null;
         privacyNoticeVersion: string;
+        /** Registry's privacy channel / encarregado (LGPD art. 41); null until configured. */
+        privacyContactChannel: string | null;
       };
       questions: PublicQuestion[];
+      /** Signed by the server when the survey opens; required to submit (src/lib/evaluation-pass.ts). */
+      pass?: string;
     };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -174,6 +185,11 @@ export function parseContext(value: unknown): PublicEvaluationContext {
         typeof rawSettings["privacyNoticeVersion"] === "string"
           ? rawSettings["privacyNoticeVersion"]
           : "1.0",
+      privacyContactChannel:
+        typeof rawSettings["privacyContactChannel"] === "string" &&
+        rawSettings["privacyContactChannel"].trim()
+          ? rawSettings["privacyContactChannel"].trim()
+          : null,
     },
     questions,
   };
@@ -197,7 +213,13 @@ export const getPublicEvaluation = createServerFn({ method: "GET" })
       console.error("[public-evaluation] context lookup failed", error.code);
       throw new Error("Não foi possível carregar esta pesquisa.");
     }
-    return parseContext(result) as PublicEvaluationContext;
+    const context = parseContext(result);
+    if (context.status !== "ready") return context;
+    const { issueEvaluationPass } = await import("@/lib/evaluation-pass");
+    return {
+      ...context,
+      pass: await issueEvaluationPass(process.env["SUPABASE_SERVICE_ROLE_KEY"]!, data.code),
+    } satisfies PublicEvaluationContext;
   });
 
 export const submitPublicEvaluation = createServerFn({ method: "POST" })
@@ -206,6 +228,18 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
     setResponseHeader("Cache-Control", "no-store, max-age=0");
     setResponseHeader("X-Content-Type-Options", "nosniff");
     const secret = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
+    const { checkEvaluationPass } = await import("@/lib/evaluation-pass");
+    const passCheck = await checkEvaluationPass(secret, data.code, data.pass);
+    if (passCheck !== "ok") {
+      console.error("[public-evaluation] submission rejected", "pass", passCheck);
+      throw new Error(
+        passCheck === "too_fast"
+          ? "Responda com calma: aguarde alguns segundos e envie novamente."
+          : passCheck === "expired"
+            ? "Esta página ficou aberta por muito tempo. Recarregue a página e envie de novo."
+            : "Não foi possível validar este envio. Recarregue a página e tente novamente.",
+      );
+    }
     const sourceBytes = new TextEncoder().encode(`${secret}:${data.submissionSession}`);
     const digest = await crypto.subtle.digest("SHA-256", sourceBytes);
     const sourceHash = Array.from(new Uint8Array(digest), (byte) =>

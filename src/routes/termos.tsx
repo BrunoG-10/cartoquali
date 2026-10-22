@@ -28,9 +28,9 @@ function TermsPage() {
     <div className="min-h-screen bg-background px-4 py-10">
       <main className="mx-auto max-w-3xl">
         <Button asChild variant="ghost">
-          <Link to="/avaliar">
+          <Link to="/">
             <ArrowLeft />
-            Voltar à avaliação
+            Início
           </Link>
         </Button>
         <div className="mt-5">
@@ -98,8 +98,8 @@ function TermsPage() {
                 </h2>
                 <p>
                   Responsabilidades, foro, nível de serviço e dados formais das partes são definidos
-                  no contrato firmado entre o CartoQuali e cada cartório. Este texto está sujeito a
-                  revisão jurídica.
+                  no contrato firmado entre o CartoQuali e cada cartório, que também regula o
+                  tratamento de dados feito pelo CartoQuali como operador.
                 </p>
               </section>
             </div>

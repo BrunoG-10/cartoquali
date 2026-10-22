@@ -49,6 +49,32 @@ export function firstValidationError(result: z.SafeParseReturnType<unknown, unkn
   return result.success ? undefined : result.error.issues[0]?.message;
 }
 
+const COMMON_PASSWORDS = new Set([
+  "12345678",
+  "123456789",
+  "1234567890",
+  "senha123",
+  "senha1234",
+  "password1",
+  "cartorio1",
+  "cartorio123",
+  "abc12345",
+  "qwerty123",
+]);
+
+/** Senha de acesso administrativo: o mínimo que o próprio app cobra antes do Supabase Auth. */
+export function validatePassword(password: string, email?: string | null) {
+  if (password.length < 8) return "Use uma senha com pelo menos 8 caracteres.";
+  if (password.length > 72) return "Use uma senha com no máximo 72 caracteres.";
+  if (!/\p{L}/u.test(password) || !/\d/.test(password)) return "Combine letras e números na senha.";
+  const lower = password.toLowerCase();
+  if (COMMON_PASSWORDS.has(lower)) return "Essa senha é muito comum. Escolha outra.";
+  const user = email?.split("@")[0]?.toLowerCase();
+  if (user && user.length >= 3 && lower.includes(user))
+    return "A senha não pode conter o seu e-mail.";
+  return undefined;
+}
+
 export function validatePeriod(startDate?: string, endDate?: string) {
   if (!startDate || !endDate) return "Informe as datas inicial e final.";
   return startDate <= endDate

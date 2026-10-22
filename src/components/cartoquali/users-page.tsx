@@ -32,7 +32,6 @@ import {
   updateRegistryUser,
 } from "@/lib/users.functions";
 import { APP_MODULES, MODULE_LABELS, can } from "@/lib/permissions";
-import { getPasswordSetupUrl } from "@/lib/public-url";
 import type { RegistryUser, UserRole } from "@/types/cartoquali";
 import { firstValidationError, userSchema } from "@/utils/cartoquali-validation";
 
@@ -128,7 +127,6 @@ export function UsersPage() {
             data: {
               ...form,
               role: form.role === "platform_admin" ? "operator" : form.role,
-              redirectTo: getPasswordSetupUrl("invite"),
             },
           }),
     onSuccess: async () => {
@@ -140,14 +138,7 @@ export function UsersPage() {
   });
   const resendAccess = useServerFn(resendUserAccess);
   const resend = useMutation({
-    mutationFn: (user: RealUser) =>
-      resendAccess({
-        data: {
-          id: user.id,
-          inviteUrl: getPasswordSetupUrl("invite"),
-          recoveryUrl: getPasswordSetupUrl("recovery"),
-        },
-      }),
+    mutationFn: (user: RealUser) => resendAccess({ data: { id: user.id } }),
     onSuccess: (_result, user) =>
       toast.success(`Novo link de acesso enviado para ${user.email}. Ele vale por 24 horas.`),
     onError: (error) => toast.error(userMessage(error, "Não foi possível reenviar o acesso.")),

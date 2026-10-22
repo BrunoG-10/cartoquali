@@ -23,6 +23,10 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
       fetchEvaluation({ data: { code: code ?? "", ...(testToken ? { testToken } : {}) } }),
     enabled: Boolean(code),
     retry: 1,
+    // Keep the pass issued when the survey opened: a refetch on focus (e.g. back from the privacy
+    // tab) would restart its minimum-time clock and reject a quick "Enviar".
+    refetchOnWindowFocus: false,
+    staleTime: Infinity,
   });
   const [started, setStarted] = useState(false);
   const [serviceChoice, setServiceChoice] = useState<ServiceChoice>();
@@ -169,10 +173,12 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
           code,
           idempotencyKey: getIdempotencyKey(),
           submissionSession: getSubmissionSession(),
+          pass: context.pass ?? "",
           answers,
           contact: contactRequested
             ? {
                 requested: true,
+                consent,
                 name: name.trim(),
                 ...(phone.trim() ? { phone: phone.trim() } : {}),
                 ...(email.trim() ? { email: email.trim() } : {}),
@@ -225,6 +231,12 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
           <strong className="text-foreground">Privacidade por padrão.</strong> A avaliação não exige
           conta nem identificação no cadastro do CartoQuali. Não informe dados pessoais seus ou de
           terceiros nos campos de comentário.
+          {/* LGPD art. 41, §1º: the controller's privacy contact must be public. */}
+          <span className="mt-2 block">
+            <strong className="text-foreground">Dúvidas sobre seus dados:</strong>{" "}
+            {context.settings.privacyContactChannel ??
+              "fale com a equipe do cartório ou escreva para cartoquali@gmail.com, que encaminha o pedido ao cartório."}
+          </span>
         </div>
         <Button className="mt-6 min-h-12 w-full" size="lg" onClick={() => setStarted(true)}>
           Iniciar avaliação

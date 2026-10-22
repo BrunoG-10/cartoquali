@@ -258,16 +258,16 @@ export const createOnboardingAdministrator = createServerFn({ method: "POST" })
         name: z.string().trim().min(1).max(100),
         email: z.string().trim().email().max(255),
         phone: z.string().trim().max(30),
-        redirectTo: z.string().url(),
       })
       .parse(v),
   )
   .handler(async ({ context, data }) => {
     await platformAccess(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { officialSetupUrl } = await import("@/lib/access-email.server");
     const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       data.email,
-      { redirectTo: data.redirectTo },
+      { redirectTo: officialSetupUrl("invite") },
     );
     if (inviteError || !invited.user)
       throw new Error(
@@ -296,9 +296,7 @@ export const createOnboardingAdministrator = createServerFn({ method: "POST" })
 // O convite expira em 24 h: reenvia o acesso do administrador inicial do cartório em implantação.
 export const resendOnboardingAdministrator = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((v: unknown) =>
-    idInput.extend({ inviteUrl: z.string().url(), recoveryUrl: z.string().url() }).parse(v),
-  )
+  .validator((v: unknown) => idInput.parse(v))
   .handler(async ({ context, data }) => {
     await platformAccess(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -316,8 +314,6 @@ export const resendOnboardingAdministrator = createServerFn({ method: "POST" })
     const kind = await resendAccessEmail({
       authUserId: admin.auth_user_id,
       email: admin.email,
-      inviteUrl: data.inviteUrl,
-      recoveryUrl: data.recoveryUrl,
     });
     return { kind, email: admin.email };
   });

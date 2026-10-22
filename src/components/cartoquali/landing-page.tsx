@@ -799,6 +799,11 @@ function DemoForm() {
               </p>
               <p className="text-center text-xs leading-4 text-muted-foreground">
                 Seus dados serão usados apenas para responder à solicitação comercial pelo WhatsApp.
+                Veja o{" "}
+                <Link to="/privacidade" target="_blank" rel="noopener" className="underline">
+                  aviso de privacidade
+                </Link>
+                .
               </p>
             </form>
           )}

@@ -36,7 +36,7 @@ import {
   setOnboardingStatus,
   type OnboardingItem,
 } from "@/lib/onboarding.functions";
-import { getEvaluationUrl, getPasswordSetupUrl } from "@/lib/public-url";
+import { getEvaluationUrl } from "@/lib/public-url";
 import { ATTRIBUTIONS, type AttributionKey } from "@/lib/attributions";
 import { formatCnpj } from "@/lib/format";
 
@@ -468,7 +468,6 @@ function StepContent({
           data: {
             registryId: item.registryId,
             ...admin,
-            redirectTo: getPasswordSetupUrl("invite"),
           },
         });
       if (kind === "survey") return surveyFn({ data: { registryId: item.registryId, ...survey } });
@@ -494,14 +493,7 @@ function StepContent({
   });
   const resendFn = useServerFn(resendOnboardingAdministrator);
   const resend = useMutation({
-    mutationFn: () =>
-      resendFn({
-        data: {
-          registryId: item.registryId,
-          inviteUrl: getPasswordSetupUrl("invite"),
-          recoveryUrl: getPasswordSetupUrl("recovery"),
-        },
-      }),
+    mutationFn: () => resendFn({ data: { registryId: item.registryId } }),
     onSuccess: (result) =>
       toast.success(`Novo link de acesso enviado para ${result.email}. Ele vale por 24 horas.`),
     onError: (e) => toast.error(userMessage(e, "Não foi possível reenviar o convite.")),

@@ -1,7 +1,20 @@
 // Só no servidor. Lê a situação do acesso no Supabase Auth e reenvia o e-mail de acesso.
 // Chamar SOMENTE depois de confirmar, pela RLS, que quem pede administra o cartório do usuário.
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getPasswordSetupUrl } from "@/lib/public-url";
 import { resendKind } from "@/lib/user-access";
+
+/**
+ * Endereço para onde os e-mails de convite e recuperação levam: sempre o endereço oficial
+ * (VITE_PUBLIC_APP_URL), definido aqui no servidor. Nunca vem do navegador, para que ninguém
+ * consiga fazer um e-mail legítimo do CartoQuali apontar para outro site.
+ */
+export function officialSetupUrl(kind: "invite" | "recovery") {
+  const url = getPasswordSetupUrl(kind);
+  if (!/^https:\/\/|^http:\/\/localhost[:/]/.test(url))
+    throw new Error("Endereço oficial do CartoQuali não configurado.");
+  return url;
+}
 
 export async function readLastSignIn(authUserIds: string[]): Promise<Map<string, string | null>> {
   const result = new Map<string, string | null>();
@@ -17,9 +30,8 @@ export async function readLastSignIn(authUserIds: string[]): Promise<Map<string,
 export async function resendAccessEmail(input: {
   authUserId: string;
   email: string;
-  inviteUrl: string;
-  recoveryUrl: string;
 }): Promise<"invite" | "recovery"> {
+  const inviteUrl = officialSetupUrl("invite");
   const { data, error } = await supabaseAdmin.auth.admin.getUserById(input.authUserId);
   if (error || !data.user) throw new Error("Acesso não encontrado para este usuário.");
   const kind = resendKind({
@@ -28,13 +40,13 @@ export async function resendAccessEmail(input: {
   });
   if (kind === "invite") {
     const invite = await supabaseAdmin.auth.admin.inviteUserByEmail(input.email, {
-      redirectTo: input.inviteUrl,
+      redirectTo: inviteUrl,
     });
     if (!invite.error) return "invite";
     // Se o Auth não aceitar reenviar o convite, o link de definir senha resolve do mesmo jeito.
   }
   const recovery = await supabaseAdmin.auth.resetPasswordForEmail(input.email, {
-    redirectTo: kind === "invite" ? input.inviteUrl : input.recoveryUrl,
+    redirectTo: kind === "invite" ? inviteUrl : officialSetupUrl("recovery"),
   });
   if (recovery.error)
     throw new Error(

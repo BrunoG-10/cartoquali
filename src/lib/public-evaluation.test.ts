@@ -6,6 +6,7 @@ const validSubmission = {
   code: "CQ-BAL-001",
   idempotencyKey: uuid(1),
   submissionSession: uuid(2),
+  pass: `${Date.UTC(2026, 9, 21)}.${"a".repeat(64)}`,
   answers: { [uuid(10)]: 5, [uuid(11)]: true, [uuid(12)]: "Atendimento rápido" },
   contact: { requested: false },
 };
@@ -47,6 +48,7 @@ describe("public submission validation", () => {
     expect(
       submissionSchema.safeParse({ ...validSubmission, submissionSession: undefined }).success,
     ).toBe(false);
+    expect(submissionSchema.safeParse({ ...validSubmission, pass: undefined }).success).toBe(false);
   });
 
   it("validates optional contact email", () => {
@@ -59,9 +61,16 @@ describe("public submission validation", () => {
     expect(
       submissionSchema.safeParse({
         ...validSubmission,
-        contact: { requested: true, email: "pessoa@example.com" },
+        contact: { requested: true, consent: true, email: "pessoa@example.com" },
       }).success,
     ).toBe(true);
+    // A contact request without the explicit authorization is refused by the server.
+    expect(
+      submissionSchema.safeParse({
+        ...validSubmission,
+        contact: { requested: true, email: "pessoa@example.com" },
+      }).success,
+    ).toBe(false);
   });
 });
 

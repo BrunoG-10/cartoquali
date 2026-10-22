@@ -193,12 +193,12 @@ export function SettingsPage() {
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <label className="text-sm font-medium sm:col-span-2 xl:col-span-3">
-              Canal público de privacidade
+              Encarregado de dados (DPO) e canal de privacidade
               <Textarea
                 className="mt-1.5"
                 maxLength={500}
                 value={draft.privacyContactChannel ?? ""}
-                placeholder="Pendente de configuração"
+                placeholder="Ex.: Encarregada: Maria Souza — privacidade@cartorio.com.br — (11) 0000-0000"
                 onChange={(e) =>
                   setDraft({
                     ...draft,
@@ -206,6 +206,10 @@ export function SettingsPage() {
                   })
                 }
               />
+              <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                Aparece para o cidadão na tela da avaliação. A LGPD (art. 41) e o Provimento CNJ
+                134/2022 pedem que o nome e o contato do encarregado do cartório sejam públicos.
+              </span>
             </label>
             <Field
               label="Versão do aviso"

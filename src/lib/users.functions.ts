@@ -106,11 +106,7 @@ export const listRegistryUsers = createServerFn({ method: "GET" })
 
 export const resendUserAccess = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) =>
-    z
-      .object({ id: z.string().uuid(), inviteUrl: z.string().url(), recoveryUrl: z.string().url() })
-      .parse(input),
-  )
+  .validator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
     await requireRegistryAdmin(context);
     const { data: user } = await context.supabase
@@ -125,15 +121,13 @@ export const resendUserAccess = createServerFn({ method: "POST" })
     const kind = await resendAccessEmail({
       authUserId: user.auth_user_id,
       email: user.email,
-      inviteUrl: data.inviteUrl,
-      recoveryUrl: data.recoveryUrl,
     });
     return { kind };
   });
 
 export const createRegistryUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator((input: unknown) => userInput.extend({ redirectTo: z.string().url() }).parse(input))
+  .validator((input: unknown) => userInput.parse(input))
   .handler(async ({ context, data }) => {
     await requireRegistryAdmin(context);
     const { data: duplicate } = await context.supabase
@@ -144,9 +138,10 @@ export const createRegistryUser = createServerFn({ method: "POST" })
     if (duplicate) throw new Error("Este e-mail já está em uso.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { officialSetupUrl } = await import("@/lib/access-email.server");
     const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       data.email,
-      { redirectTo: data.redirectTo },
+      { redirectTo: officialSetupUrl("invite") },
     );
     if (inviteError || !invited.user)
       throw new Error("Não foi possível criar o acesso e enviar o convite.");

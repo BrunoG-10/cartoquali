@@ -28,10 +28,11 @@ function PrivacyPage() {
   return (
     <div className="min-h-screen bg-background px-4 py-10">
       <main className="mx-auto max-w-3xl">
+        {/* Opened in a new tab from the survey, so "back" would land on an empty /avaliar. */}
         <Button asChild variant="ghost">
-          <Link to="/avaliar">
+          <Link to="/">
             <ArrowLeft />
-            Voltar à avaliação
+            Início
           </Link>
         </Button>
         <div className="mt-5">
@@ -44,8 +45,8 @@ function PrivacyPage() {
                 <p className="text-xs font-semibold uppercase text-primary">CartoQuali</p>
                 <h1 className="font-display text-3xl font-bold">Aviso de privacidade</h1>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Versão 1.0 · conforme a Lei Geral de Proteção de Dados (Lei nº 13.709/2018) ·
-                  texto sujeito a revisão jurídica
+                  Versão 1.1 · atualizado em outubro de 2026 · conforme a Lei Geral de Proteção de
+                  Dados (Lei nº 13.709/2018)
                 </p>
               </div>
             </div>
@@ -74,6 +75,11 @@ function PrivacyPage() {
                     <strong className="text-foreground">Operador:</strong> o CartoQuali, que trata
                     os dados em nome do cartório e somente conforme as instruções dele, para operar
                     a plataforma.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Encarregado do cartório:</strong> o nome e o
+                    contato aparecem na tela inicial da avaliação. Se não aparecerem, use o contato
+                    de privacidade do CartoQuali no fim desta página.
                   </li>
                 </ul>
               </section>
@@ -125,21 +131,93 @@ function PrivacyPage() {
               </section>
               <section>
                 <h2 className="font-display text-lg font-bold text-foreground">
+                  Equipe do cartório
+                </h2>
+                <p>
+                  Para quem usa o painel administrativo, tratamos nome, e-mail, telefone, perfil de
+                  acesso, data do último acesso e o registro das ações feitas no sistema
+                  (auditoria). A finalidade é controlar o acesso, dar segurança e manter o histórico
+                  das decisões de qualidade, conforme o contrato com o cartório (art. 7º, V e IX, e
+                  art. 46 da LGPD).
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Pedido de demonstração (site comercial)
+                </h2>
+                <p>
+                  No formulário da página inicial, o CartoQuali é o controlador. Recebemos nome,
+                  cartório, cidade/UF, cargo, WhatsApp e e-mail somente para responder ao pedido e
+                  conduzir a conversa comercial (art. 7º, V). Os dados ficam apenas pelo tempo
+                  necessário para isso, e você pode pedir a exclusão a qualquer momento pelo contato
+                  abaixo. Ao enviar, a conversa continua no WhatsApp, que tem a própria política de
+                  privacidade.
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Fornecedores e local dos dados
+                </h2>
+                <p>Para funcionar, o CartoQuali usa fornecedores que tratam dados em seu nome:</p>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>
+                    <strong className="text-foreground">Supabase:</strong> banco de dados,
+                    autenticação e envio dos e-mails de convite e de senha;
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Cloudflare e Lovable:</strong> hospedagem e
+                    entrega do site, proteção contra ataques e estatísticas técnicas de acesso às
+                    páginas.
+                  </li>
+                </ul>
+                <p className="mt-2">
+                  Esses fornecedores podem manter servidores fora do Brasil. Quando houver
+                  transferência internacional, ela segue o art. 33 da LGPD e as regras da ANPD.
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Cookies e armazenamento no navegador
+                </h2>
+                <ul className="list-disc space-y-1 pl-5">
+                  <li>
+                    <strong className="text-foreground">Proteção do site:</strong> um cookie técnico
+                    da Cloudflare ajuda a distinguir pessoas de robôs.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Avaliação:</strong> identificadores
+                    temporários guardados na aba do navegador evitam envios duplicados e abusos.
+                    Eles não identificam você e somem ao fechar a aba.
+                  </li>
+                  <li>
+                    <strong className="text-foreground">Painel administrativo:</strong> a sessão de
+                    login da equipe fica guardada no navegador até a saída.
+                  </li>
+                </ul>
+                <p className="mt-2">
+                  Não usamos cookies de publicidade nem compartilhamos dados para anúncios.
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
                   Armazenamento e segurança
                 </h2>
                 <p>
-                  Os dados são armazenados no Supabase conectado ao CartoQuali. Há isolamento por
-                  cartório, controle de acesso e auditoria. Logs técnicos de infraestrutura podem
-                  existir para segurança e disponibilidade; por isso, não prometemos anonimato
-                  absoluto.
+                  Há isolamento por cartório, controle de acesso por perfil, conexão criptografada
+                  (HTTPS) e auditoria das ações administrativas. Logs técnicos de infraestrutura
+                  podem existir para segurança e disponibilidade; por isso, não prometemos anonimato
+                  absoluto. Se ocorrer um incidente de segurança que possa trazer risco relevante, o
+                  cartório e o CartoQuali comunicam a ANPD e as pessoas afetadas, como a lei
+                  determina (art. 48).
                 </p>
               </section>
               <section>
                 <h2 className="font-display text-lg font-bold text-foreground">Retenção</h2>
                 <p>
-                  Não existe exclusão automática sem regra aprovada. Prazo pendente de definição
-                  jurídica/contratual. Quando aplicável, o cartório pode remover contato e redigir
-                  textos livres preservando notas e indicadores agregados.
+                  Os dados são mantidos enquanto forem necessários para as finalidades acima e pelo
+                  prazo definido pelo cartório em contrato. Os dados de contato servem apenas ao
+                  retorno pedido. A qualquer momento, o cartório pode remover o contato e redigir
+                  textos livres, preservando notas e indicadores agregados.
                 </p>
               </section>
               <section>
