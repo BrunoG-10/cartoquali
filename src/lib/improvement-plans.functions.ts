@@ -59,6 +59,11 @@ const updateInput = z.object({
 const columns =
   "id, ocorrencia_id, ponto_id, dimensao, titulo, problema, objetivo, acao, responsavel_id, prioridade, prazo, status, progresso, resultado_esperado, resultado, observacao_resultado, indicador_nome, indicador_antes, indicador_depois, concluido_em, created_at, updated_at, criado_por_id, concluido_por_id";
 
+/** Calendar date (YYYY-MM-DD) in Brasília, the reference for overdue deadlines. */
+function todayInSaoPaulo(now = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(now);
+}
+
 async function permissions(context: { supabase: any; userId: string }) {
   const { data: profile } = await context.supabase
     .from("usuarios")
@@ -80,19 +85,42 @@ export const listImprovementPlans = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const access = await permissions(context);
     const from = (data.page - 1) * data.pageSize;
-    let query = context.supabase.from("planos_melhoria").select(columns, { count: "exact" });
-    if (data.status) query = query.eq("status", data.status);
-    if (data.priority) query = query.eq("prioridade", data.priority);
-    if (data.responsibleId) query = query.eq("responsavel_id", data.responsibleId);
-    if (data.occurrenceId) query = query.eq("ocorrencia_id", data.occurrenceId);
-    if (data.startDate) query = query.gte("prazo", data.startDate);
-    if (data.endDate) query = query.lte("prazo", data.endDate);
-    const {
-      data: rows,
-      error,
-      count,
-    } = await query.order("created_at", { ascending: false }).range(from, from + data.pageSize - 1);
-    if (error) throw new Error("Não foi possível carregar os planos de melhoria.");
+    const filtered = (query: any) => {
+      if (data.status) query = query.eq("status", data.status);
+      if (data.priority) query = query.eq("prioridade", data.priority);
+      if (data.responsibleId) query = query.eq("responsavel_id", data.responsibleId);
+      if (data.occurrenceId) query = query.eq("ocorrencia_id", data.occurrenceId);
+      if (data.startDate) query = query.gte("prazo", data.startDate);
+      if (data.endDate) query = query.lte("prazo", data.endDate);
+      return query;
+    };
+    // Summary cards cover every plan matching the filters, not only the current page.
+    const [{ data: rows, error, count }, { data: allPlans, error: summaryError }] =
+      await Promise.all([
+        filtered(context.supabase.from("planos_melhoria").select(columns, { count: "exact" }))
+          .order("created_at", { ascending: false })
+          .range(from, from + data.pageSize - 1),
+        filtered(context.supabase.from("planos_melhoria").select("status, prazo, progresso")),
+      ]);
+    if (error || summaryError) throw new Error("Não foi possível carregar os planos de melhoria.");
+    const today = todayInSaoPaulo();
+    const summaryRows = (allPlans ?? []) as Array<{
+      status: string;
+      prazo: string;
+      progresso: number;
+    }>;
+    const summary = {
+      inProgress: summaryRows.filter((plan) => plan.status === "em_andamento").length,
+      concluded: summaryRows.filter((plan) => plan.status === "concluido").length,
+      overdue: summaryRows.filter(
+        (plan) => !["concluido", "cancelado"].includes(plan.status) && plan.prazo < today,
+      ).length,
+      averageProgress: summaryRows.length
+        ? Math.round(
+            summaryRows.reduce((sum, plan) => sum + plan.progresso, 0) / summaryRows.length,
+          )
+        : 0,
+    };
     const occurrenceIds = [
       ...new Set((rows ?? []).map((row: any) => row.ocorrencia_id)),
     ] as string[];
@@ -118,6 +146,7 @@ export const listImprovementPlans = createServerFn({ method: "POST" })
         occurrenceTitle: occurrenceMap.get(row.ocorrencia_id) ?? "Ocorrência indisponível",
       })),
       total: count ?? 0,
+      summary,
       page: data.page,
       pageSize: data.pageSize,
       users: team.active,

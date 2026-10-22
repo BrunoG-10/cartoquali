@@ -1,6 +1,6 @@
 import { plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
@@ -97,7 +97,8 @@ const formatDate = (value: string) =>
   new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");
 const isOverdue = (plan: Plan) =>
   !["concluido", "cancelado"].includes(plan.status) &&
-  plan.prazo < new Date().toLocaleDateString("en-CA");
+  plan.prazo <
+    new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
 
 export function ImprovementPlansPage() {
   const searchStr = useRouterState({ select: (state) => state.location.searchStr });
@@ -161,20 +162,13 @@ export function ImprovementPlansPage() {
   }, [linkedOccurrence]);
   const items = (list.data?.items ?? []) as Plan[];
   const totalPages = Math.max(1, Math.ceil((list.data?.total ?? 0) / pageSize));
-  const metrics = useMemo(
-    () =>
-      [
-        ["Em andamento", items.filter((p) => p.status === "em_andamento").length, Clock3],
-        ["Concluídos", items.filter((p) => p.status === "concluido").length, CheckCircle2],
-        ["Atrasados", items.filter(isOverdue).length, TriangleAlert],
-        [
-          "Progresso médio",
-          `${Math.round(items.reduce((sum, p) => sum + p.progresso, 0) / Math.max(1, items.length))}%`,
-          Target,
-        ],
-      ] as const,
-    [items],
-  );
+  const summary = list.data?.summary;
+  const metrics = [
+    ["Em andamento", summary?.inProgress ?? "—", Clock3],
+    ["Concluídos", summary?.concluded ?? "—", CheckCircle2],
+    ["Atrasados", summary?.overdue ?? "—", TriangleAlert],
+    ["Progresso médio", summary ? `${summary.averageProgress}%` : "—", Target],
+  ] as const;
   const setFilter = (key: keyof Filters, value: string) => setFilters({ ...filters, [key]: value });
   const clear = () => {
     setFilters(emptyFilters);

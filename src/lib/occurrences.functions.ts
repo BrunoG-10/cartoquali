@@ -91,24 +91,39 @@ export const listOccurrences = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     const access = await permissions(context);
     const from = (data.page - 1) * data.pageSize;
-    let query = context.supabase
-      .from("ocorrencias_qualidade")
-      .select(occurrenceColumns, { count: "exact" });
-    if (data.status) query = query.eq("status", data.status);
-    if (data.priority) query = query.eq("prioridade", data.priority);
-    if (data.category) query = query.eq("categoria", data.category);
-    if (data.responsibleId) query = query.eq("responsavel_id", data.responsibleId);
-    if (data.evaluationId) query = query.eq("avaliacao_id", data.evaluationId);
-    if (data.startDate) query = query.gte("data_abertura", data.startDate);
-    if (data.endDate) query = query.lte("data_abertura", data.endDate);
-    const {
-      data: rows,
-      error,
-      count,
-    } = await query
-      .order("data_abertura", { ascending: false })
-      .range(from, from + data.pageSize - 1);
-    if (error) throw new Error("Não foi possível carregar as ocorrências.");
+    const filtered = (query: any) => {
+      if (data.status) query = query.eq("status", data.status);
+      if (data.priority) query = query.eq("prioridade", data.priority);
+      if (data.category) query = query.eq("categoria", data.category);
+      if (data.responsibleId) query = query.eq("responsavel_id", data.responsibleId);
+      if (data.evaluationId) query = query.eq("avaliacao_id", data.evaluationId);
+      if (data.startDate) query = query.gte("data_abertura", data.startDate);
+      if (data.endDate) query = query.lte("data_abertura", data.endDate);
+      return query;
+    };
+    // Summary cards count every occurrence matching the filters, not only the current page.
+    const countWhere = (narrow: (query: any) => any) =>
+      narrow(
+        filtered(
+          context.supabase
+            .from("ocorrencias_qualidade")
+            .select("id", { count: "exact", head: true }),
+        ),
+      );
+    const [{ data: rows, error, count }, inTreatment, critical, concluded] = await Promise.all([
+      filtered(
+        context.supabase
+          .from("ocorrencias_qualidade")
+          .select(occurrenceColumns, { count: "exact" }),
+      )
+        .order("data_abertura", { ascending: false })
+        .range(from, from + data.pageSize - 1),
+      countWhere((query) => query.eq("status", "em_tratamento")),
+      countWhere((query) => query.eq("prioridade", "critica")),
+      countWhere((query) => query.in("status", ["resolvida", "encerrada"])),
+    ]);
+    if (error || inTreatment.error || critical.error || concluded.error)
+      throw new Error("Não foi possível carregar as ocorrências.");
     const pointIds = [
       ...new Set((rows ?? []).flatMap((row: any) => (row.ponto_id ? [row.ponto_id] : []))),
     ] as string[];
@@ -127,6 +142,11 @@ export const listOccurrences = createServerFn({ method: "POST" })
         responsibleName: team.nameOf(row.responsavel_id),
       })),
       total: count ?? 0,
+      summary: {
+        inTreatment: inTreatment.count ?? 0,
+        critical: critical.count ?? 0,
+        concluded: concluded.count ?? 0,
+      },
       page: data.page,
       pageSize: data.pageSize,
       points: filterPoints ?? [],

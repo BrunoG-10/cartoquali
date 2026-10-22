@@ -1,6 +1,6 @@
 import { formatPhoneBR, plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link, useRouterState } from "@tanstack/react-router";
@@ -25,7 +25,9 @@ import {
   updateOccurrence,
 } from "@/lib/occurrences.functions";
 import { getEvaluationDetail } from "@/lib/evaluations.functions";
+import { can } from "@/lib/permissions";
 import { cn } from "@/lib/utils";
+import { useAuth } from "./auth-provider";
 import { GlassPanel, InterfaceState, PageHeader, Stars, StatusBadge } from "./primitives";
 import { QualityNavigation } from "./quality-navigation";
 
@@ -105,7 +107,10 @@ const errorMessage = (error: unknown) =>
 
 export function OccurrencesPage() {
   const searchStr = useRouterState({ select: (state) => state.location.searchStr });
-  const linkedEvaluationId = new URLSearchParams(searchStr).get("review") ?? "";
+  const { currentRole } = useAuth();
+  const canManage = can(currentRole, "occurrences", "manage");
+  // Read-only profiles never open the form, even when arriving from an evaluation link.
+  const linkedEvaluationId = canManage ? (new URLSearchParams(searchStr).get("review") ?? "") : "";
   const queryClient = useQueryClient();
   const fetchList = useServerFn(listOccurrences);
   const fetchDetail = useServerFn(getOccurrenceDetail);
@@ -173,20 +178,13 @@ export function OccurrencesPage() {
   }, [linkedEvaluationId]);
   const items = (list.data?.items ?? []) as ListItem[];
   const totalPages = Math.max(1, Math.ceil((list.data?.total ?? 0) / pageSize));
-  const metrics = useMemo(
-    () =>
-      [
-        ["Nesta página", items.length, AlertCircle],
-        ["Em tratamento", items.filter((item) => item.status === "em_tratamento").length, Clock3],
-        ["Críticas", items.filter((item) => item.prioridade === "critica").length, AlertCircle],
-        [
-          "Concluídas",
-          items.filter((item) => ["resolvida", "encerrada"].includes(item.status)).length,
-          CheckCircle2,
-        ],
-      ] as const,
-    [items],
-  );
+  const summary = list.data?.summary;
+  const metrics = [
+    ["Total", list.data?.total ?? "—", AlertCircle],
+    ["Em tratamento", summary?.inTreatment ?? "—", Clock3],
+    ["Críticas", summary?.critical ?? "—", AlertCircle],
+    ["Concluídas", summary?.concluded ?? "—", CheckCircle2],
+  ] as const;
   const applyFilters = () => {
     setApplied(filters);
     setPage(1);
@@ -203,10 +201,12 @@ export function OccurrencesPage() {
         title="Ocorrências de Qualidade"
         description="Registre, analise e trate problemas com histórico preservado."
         action={
-          <Button onClick={() => setCreating(true)} data-tour="occurrences-new">
-            <Plus />
-            Nova ocorrência
-          </Button>
+          canManage ? (
+            <Button onClick={() => setCreating(true)} data-tour="occurrences-new">
+              <Plus />
+              Nova ocorrência
+            </Button>
+          ) : undefined
         }
       />
       <QualityNavigation />
@@ -291,7 +291,7 @@ export function OccurrencesPage() {
           </div>
         </>
       )}
-      {creating && (
+      {creating && canManage && (
         <OccurrenceForm
           evaluation={sourceEvaluation.data ?? null}
           evaluationId={linkedEvaluationId}

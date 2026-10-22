@@ -81,7 +81,12 @@ export function SurveysPage() {
   const previewServiceStep = resolveServiceStep(
     (servicesQuery.data?.services ?? []).filter((service) => service.active),
   );
-  const [surveyForm, setSurveyForm] = useState({ name: "", description: "", version: "1.0" });
+  const [surveyForm, setSurveyForm] = useState<SurveyForm>({
+    name: "",
+    description: "",
+    version: "1.0",
+    status: "Rascunho",
+  });
   const [questionForm, setQuestionForm] = useState({
     text: "",
     type: "scale" as QuestionType,
@@ -108,7 +113,7 @@ export function SurveysPage() {
           name: surveyForm.name,
           description: surveyForm.description,
           version: surveyForm.version,
-          status: current?.status ?? "Rascunho",
+          status: surveyForm.status,
           settings: current?.settings,
         },
       });
@@ -156,8 +161,13 @@ export function SurveysPage() {
   const openSurvey = (survey?: Survey) => {
     setSurveyForm(
       survey
-        ? { name: survey.name, description: survey.description, version: survey.version }
-        : { name: "", description: "", version: "1.0" },
+        ? {
+            name: survey.name,
+            description: survey.description,
+            version: survey.version,
+            status: survey.status,
+          }
+        : { name: "", description: "", version: "1.0", status: "Rascunho" },
     );
     setSurveyEditor(survey ?? "new");
   };
@@ -402,6 +412,18 @@ export function SurveysPage() {
   );
 }
 
+type SurveyForm = {
+  name: string;
+  description: string;
+  version: string;
+  status: Survey["status"];
+};
+const SURVEY_STATUS_HINTS: Record<Survey["status"], string> = {
+  Ativa: "Pode ser usada no QR Code e recebe avaliações.",
+  Rascunho: "Em preparação: ainda não aparece para escolha no QR Code.",
+  Inativa: "Arquivada: não recebe avaliações; o histórico é preservado.",
+};
+
 function SurveyModal({
   form,
   setForm,
@@ -409,8 +431,8 @@ function SurveyModal({
   onSave,
   onClose,
 }: {
-  form: { name: string; description: string; version: string };
-  setForm(value: { name: string; description: string; version: string }): void;
+  form: SurveyForm;
+  setForm(value: SurveyForm): void;
   saving: boolean;
   onSave(): void;
   onClose(): void;
@@ -442,6 +464,21 @@ function SurveyModal({
             value={form.version}
             onChange={(e) => setForm({ ...form, version: e.target.value })}
           />
+        </label>
+        <label className="text-sm font-medium">
+          Situação
+          <select
+            className="mt-1.5 h-9 w-full rounded-md border bg-background px-3"
+            value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value as Survey["status"] })}
+          >
+            <option value="Ativa">Ativa</option>
+            <option value="Rascunho">Rascunho</option>
+            <option value="Inativa">Inativa</option>
+          </select>
+          <span className="mt-1 block text-xs font-normal text-muted-foreground">
+            {SURVEY_STATUS_HINTS[form.status]}
+          </span>
         </label>
       </div>
       <div className="mt-6 flex justify-end gap-2">

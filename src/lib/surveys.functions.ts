@@ -116,6 +116,19 @@ export const saveSurvey = createServerFn({ method: "POST" })
     const status =
       data.status === "Ativa" ? "ativa" : data.status === "Rascunho" ? "rascunho" : "inativa";
     if (data.id) {
+      // The public QR Code only serves active surveys: keep the one in use from going dark.
+      if (status !== "ativa") {
+        const { data: inUse } = await context.supabase
+          .from("pontos_avaliacao")
+          .select("id")
+          .eq("pesquisa_id", data.id)
+          .eq("status", "ativo")
+          .limit(1);
+        if (inUse?.length)
+          throw new Error(
+            "Esta pesquisa está em uso no QR Code ativo. Troque a pesquisa do QR Code antes de desativá-la.",
+          );
+      }
       const { data: row, error } = await context.supabase
         .from("pesquisas")
         .update({

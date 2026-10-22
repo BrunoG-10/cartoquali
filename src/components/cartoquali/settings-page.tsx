@@ -86,6 +86,22 @@ export function SettingsPage() {
     },
     onError: (error) => toast.error(userMessage(error, "Não foi possível salvar.")),
   });
+  // Error first: without data the draft never fills, so checking loading first would spin forever.
+  if (query.isError)
+    return (
+      <GlassPanel>
+        <InterfaceState
+          kind="error"
+          title="Não foi possível carregar as configurações"
+          description="Verifique sua conexão e tente novamente."
+          action={
+            <Button variant="outline" onClick={() => void query.refetch()}>
+              Tentar novamente
+            </Button>
+          }
+        />
+      </GlassPanel>
+    );
   if (query.isLoading || !draft || !query.data)
     return (
       <GlassPanel>
@@ -96,21 +112,6 @@ export function SettingsPage() {
         />
       </GlassPanel>
     );
-  if (query.isError)
-    return (
-      <GlassPanel>
-        <InterfaceState
-          kind="error"
-          title="Configurações indisponíveis"
-          description={query.error instanceof Error ? query.error.message : "Tente novamente."}
-        />
-      </GlassPanel>
-    );
-  const toggles = [
-    ["anonymousEvaluations", "Permitir avaliações sem identificação cadastral"],
-    ["allowComments", "Permitir comentários"],
-    ["allowContact", "Permitir solicitação de contato"],
-  ] as const;
   return (
     <div className="animate-enter">
       <PageHeader
@@ -129,77 +130,60 @@ export function SettingsPage() {
         }
       />
       <div data-tour="settings-form" className="grid gap-4 xl:grid-cols-2">
+        {/* Only preferences the public evaluation really reads are editable here; the other
+            stored columns are kept as they are and sent back unchanged on save. */}
         <GlassPanel>
           <div className="flex items-center gap-2">
             <Settings2 className="text-primary" />
-            <h2 className="font-display text-lg font-bold">Plataforma e pesquisa</h2>
+            <h2 className="font-display text-lg font-bold">Avaliação pública</h2>
           </div>
           <div className="mt-5 grid gap-4">
-            <Field
-              label="Nome exibido"
-              value={draft.displayName}
-              onChange={(displayName) => setDraft({ ...draft, displayName })}
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="Idioma"
-                value={draft.language}
-                onChange={(language) => setDraft({ ...draft, language })}
-              />
-              <Field
-                label="Formato de data"
-                value={draft.dateFormat}
-                onChange={(dateFormat) => setDraft({ ...draft, dateFormat })}
-              />
-            </div>
-            <Field
-              label="Fuso horário"
-              value={draft.timezone}
-              onChange={(timezone) => setDraft({ ...draft, timezone })}
-            />
             <label className="text-sm font-medium">
               Mensagem de agradecimento
               <Textarea
                 className="mt-1.5"
+                maxLength={500}
                 value={draft.thankYouMessage}
                 onChange={(e) => setDraft({ ...draft, thankYouMessage: e.target.value })}
+              />
+              <span className="mt-1 block text-xs font-normal text-muted-foreground">
+                Aparece para o cidadão logo depois de enviar a avaliação.
+              </span>
+            </label>
+            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border p-3">
+              <span>
+                <span className="block text-sm font-medium">Permitir pedido de retorno</span>
+                <span className="block text-xs text-muted-foreground">
+                  O cidadão pode deixar telefone ou e-mail para o cartório entrar em contato.
+                </span>
+              </span>
+              <Switch
+                checked={draft.allowContact}
+                onCheckedChange={(allowContact) => setDraft({ ...draft, allowContact })}
               />
             </label>
           </div>
         </GlassPanel>
         <GlassPanel>
-          <h2 className="font-display text-lg font-bold">Coleta e metodologia</h2>
-          <div className="mt-5 grid gap-4">
-            <label className="text-sm font-medium">
-              Pesquisa padrão
-              <select
-                className="mt-1.5 h-9 w-full rounded-md border bg-background px-3"
-                value={draft.defaultSurveyId ?? ""}
-                onChange={(e) => setDraft({ ...draft, defaultSurveyId: e.target.value || null })}
-              >
-                <option value="">Nenhuma</option>
-                {query.data.surveys.map((survey) => (
-                  <option key={survey.id} value={survey.id}>
-                    {survey.nome}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {toggles.map(([key, label]) => (
-              <div key={key} className="flex items-center justify-between rounded-lg border p-3">
-                <span className="text-sm font-medium">{label}</span>
-                <Switch
-                  checked={draft[key]}
-                  onCheckedChange={(value) => setDraft({ ...draft, [key]: value })}
-                />
-              </div>
-            ))}
-            <Field
-              label="Metodologia ativa"
-              value={draft.activeMethodology}
-              onChange={(activeMethodology) => setDraft({ ...draft, activeMethodology })}
-            />
-          </div>
+          <h2 className="font-display text-lg font-bold">Definido pelo CartoQuali</h2>
+          <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+            <li>
+              <strong className="text-foreground">Horário:</strong> todos os indicadores e
+              relatórios usam o horário de Brasília.
+            </li>
+            <li>
+              <strong className="text-foreground">Pesquisa usada no QR Code:</strong> escolhida na
+              tela QR Code, ao editar o QR Code do cartório.
+            </li>
+            <li>
+              <strong className="text-foreground">Identificação:</strong> a avaliação é sempre feita
+              sem conta; o contato só existe se o cidadão pedir retorno.
+            </li>
+            <li>
+              <strong className="text-foreground">Metodologia:</strong> a mesma para todos os
+              cartórios; veja o cálculo de cada indicador em Qualidade › Metodologia.
+            </li>
+          </ul>
         </GlassPanel>
         <GlassPanel className="xl:col-span-2">
           <h2 className="font-display text-lg font-bold">Privacidade e retenção</h2>

@@ -529,6 +529,18 @@ function PrivacyRequestButton({ evaluationId }: { evaluationId: string }) {
   );
 }
 
+/** Só aparece para perfis que podem registrar ocorrências (o Operador apenas consulta). */
+function CreateOccurrenceButton({ onClick }: { onClick(): void }) {
+  const { currentRole } = useAuth();
+  if (!can(currentRole, "occurrences", "manage")) return null;
+  return (
+    <Button onClick={onClick}>
+      <AlertCircle />
+      Criar ocorrência
+    </Button>
+  );
+}
+
 function EvaluationDialogContent({
   evaluation,
   onClose,
@@ -636,10 +648,7 @@ function EvaluationDialogContent({
       )}
       <div className="mt-6 flex flex-wrap justify-end gap-2">
         <PrivacyRequestButton evaluationId={evaluation.id} />
-        <Button onClick={() => onCreateOccurrence(evaluation.id)}>
-          <AlertCircle />
-          Criar ocorrência
-        </Button>
+        <CreateOccurrenceButton onClick={() => onCreateOccurrence(evaluation.id)} />
       </div>
     </>
   );

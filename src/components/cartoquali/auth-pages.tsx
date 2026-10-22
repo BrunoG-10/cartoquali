@@ -1,7 +1,7 @@
 import { userMessage } from "@/lib/user-message";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { KeyRound, LoaderCircle, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { KeyRound, LoaderCircle, LockKeyhole, Mail, RotateCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/components/cartoquali/auth-provider";
@@ -330,7 +330,16 @@ function NewLinkForm({ kind }: { kind: "invite" | "recovery" }) {
 }
 
 export function AuthAccessState() {
-  const { status, signOut } = useAuth();
+  const { status, signOut, refresh } = useAuth();
+  const [retrying, setRetrying] = useState(false);
+  const retry = async () => {
+    setRetrying(true);
+    try {
+      await refresh();
+    } finally {
+      setRetrying(false);
+    }
+  };
   const copy: Record<string, [string, string]> = {
     loading: ["Verificando acesso", "Aguarde enquanto validamos sua sessão."],
     missing_profile: [
@@ -365,7 +374,18 @@ export function AuthAccessState() {
     <AuthFrame>
       <h1 className="font-display text-2xl font-bold">{item[0]}</h1>
       <p className="mt-2 text-sm text-muted-foreground">{item[1]}</p>
-      <Button className="mt-6 w-full" variant="outline" onClick={() => void signOut()}>
+      {/* A connection hiccup is not a reason to sign out: let the user try again first. */}
+      {status === "error" && (
+        <Button className="mt-6 w-full" disabled={retrying} onClick={() => void retry()}>
+          {retrying ? <LoaderCircle className="animate-spin" /> : <RotateCw />}
+          Tentar novamente
+        </Button>
+      )}
+      <Button
+        className={status === "error" ? "mt-2 w-full" : "mt-6 w-full"}
+        variant="outline"
+        onClick={() => void signOut()}
+      >
         Sair
       </Button>
     </AuthFrame>
