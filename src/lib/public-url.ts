@@ -30,6 +30,13 @@ export function getPasswordSetupUrl(kind: "invite" | "recovery") {
   return `${getPublicAppBaseUrl()}${path}`;
 }
 
+/** Ficha de implantação preenchível (PDF estático em /public), enviada ao cartório antes do cadastro. */
+export const ONBOARDING_FORM_PATH = "/ficha-de-implantacao.pdf";
+
+export function getOnboardingFormUrl() {
+  return `${getPublicAppBaseUrl()}${ONBOARDING_FORM_PATH}`;
+}
+
 export function getEvaluationUrl(code: string) {
   const path = `/avaliar/${encodeURIComponent(code)}`;
   const baseUrl = getPublicAppBaseUrl();

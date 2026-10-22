@@ -47,6 +47,11 @@ describe("public evaluation URL", () => {
     expect(getPasswordSetupUrl("recovery")).toBe("https://cartoquali.com.br/reset-password");
   });
 
+  it("links the onboarding form on the canonical address", async () => {
+    const { getOnboardingFormUrl } = await loadWith("https://cartoquali.com.br");
+    expect(getOnboardingFormUrl()).toBe("https://cartoquali.com.br/ficha-de-implantacao.pdf");
+  });
+
   it("encodes the point code", async () => {
     const { getEvaluationUrl } = await loadWith("https://cartoquali.com.br");
     expect(getEvaluationUrl("A/B C")).toBe("https://cartoquali.com.br/avaliar/A%2FB%20C");

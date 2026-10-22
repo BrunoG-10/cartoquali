@@ -1,7 +1,7 @@
 """Gera a ficha de implantação com campos preenchíveis (AcroForm).
 
 Uso: python docs/operacao/gerar-ficha-preenchivel.py
-Saída: docs/operacao/ficha-de-implantacao-preenchivel.pdf
+Saída: public/ficha-de-implantacao.pdf (baixada pelo botão "Baixar ficha" em /implantacoes)
 Mesmo conteúdo de ficha-de-implantacao.html (versão para imprimir); mantenha os dois iguais.
 """
 
@@ -24,7 +24,7 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-OUT = Path(__file__).with_name("ficha-de-implantacao-preenchivel.pdf")
+OUT = Path(__file__).resolve().parents[2] / "public" / "ficha-de-implantacao.pdf"
 NAVY = colors.HexColor("#16294a")
 GOLD = colors.HexColor("#b08d57")
 GOLD_LIGHT = colors.HexColor("#c9a86a")

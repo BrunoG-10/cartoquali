@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Copy,
+  Download,
   ExternalLink,
   LoaderCircle,
   Plus,
@@ -36,7 +37,11 @@ import {
   setOnboardingStatus,
   type OnboardingItem,
 } from "@/lib/onboarding.functions";
-import { getEvaluationUrl } from "@/lib/public-url";
+import {
+  getEvaluationUrl,
+  getOnboardingFormUrl,
+  ONBOARDING_FORM_PATH,
+} from "@/lib/public-url";
 import { ATTRIBUTIONS, type AttributionKey } from "@/lib/attributions";
 import { formatCnpj } from "@/lib/format";
 
@@ -126,6 +131,32 @@ const statusLabel = {
   BLOCKED: "Bloqueado",
 };
 
+/** Ficha preenchível que o suporte envia ao cartório; os dados dela alimentam o cadastro abaixo. */
+function OnboardingFormActions() {
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getOnboardingFormUrl());
+      toast.success("Link da ficha copiado. Envie ao cartório para preencher.");
+    } catch {
+      toast.error("Não foi possível copiar. Use “Baixar ficha” e envie o arquivo.");
+    }
+  };
+  return (
+    <>
+      <Button variant="outline" asChild>
+        <a href={ONBOARDING_FORM_PATH} download="ficha-de-implantacao-cartoquali.pdf">
+          <Download />
+          Baixar ficha
+        </a>
+      </Button>
+      <Button variant="outline" onClick={() => void copyLink()}>
+        <Copy />
+        Copiar link da ficha
+      </Button>
+    </>
+  );
+}
+
 export function OnboardingPage() {
   const load = useServerFn(listOnboardings),
     createRegistry = useServerFn(createOnboardingRegistry);
@@ -196,10 +227,13 @@ export function OnboardingPage() {
         title="Implantações"
         description="Cadastre, teste e ative novos cartórios sem operações manuais."
         action={
-          <Button onClick={() => setCreating(!creating)} data-tour="onboarding-new">
-            {creating ? <ChevronLeft /> : <Plus />}
-            {creating ? "Voltar" : "Novo cartório"}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <OnboardingFormActions />
+            <Button onClick={() => setCreating(!creating)} data-tour="onboarding-new">
+              {creating ? <ChevronLeft /> : <Plus />}
+              {creating ? "Voltar" : "Novo cartório"}
+            </Button>
+          </div>
         }
       />
       {creating ? (
