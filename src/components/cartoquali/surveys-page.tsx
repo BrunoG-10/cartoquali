@@ -1,3 +1,4 @@
+import { plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -203,7 +204,7 @@ export function SurveysPage() {
         <InterfaceState
           kind="loading"
           title="Carregando pesquisas"
-          description="Buscando pesquisas e perguntas reais."
+          description="Buscando as pesquisas e perguntas do cartório."
         />
       </GlassPanel>
     );
@@ -212,8 +213,13 @@ export function SurveysPage() {
       <GlassPanel>
         <InterfaceState
           kind="error"
-          title="Pesquisas indisponíveis"
-          description={query.error instanceof Error ? query.error.message : "Tente novamente."}
+          title="Não foi possível carregar as pesquisas"
+          description="Verifique sua conexão e tente novamente."
+          action={
+            <Button variant="outline" onClick={() => void query.refetch()}>
+              Tentar novamente
+            </Button>
+          }
         />
       </GlassPanel>
     );
@@ -245,8 +251,11 @@ export function SurveysPage() {
               </div>
               <p className="mt-5 text-sm">
                 Versão {survey.version} ·{" "}
-                {query.data.questions.filter((item) => item.surveyId === survey.id).length}{" "}
-                perguntas
+                {plural(
+                  query.data.questions.filter((item) => item.surveyId === survey.id).length,
+                  "pergunta",
+                  "perguntas",
+                )}
               </p>
               <div className="mt-5 flex gap-2">
                 <Button
@@ -295,7 +304,7 @@ export function SurveysPage() {
             {query.data?.canManage && (
               <Button data-tour="surveys-add-question" onClick={() => openQuestion()}>
                 <ListPlus />
-                Pergunta
+                Nova pergunta
               </Button>
             )}
           </div>
@@ -304,7 +313,7 @@ export function SurveysPage() {
       <div className="mb-5 flex items-center gap-3">
         <StatusBadge tone={tone(selected.status)}>{selected.status}</StatusBadge>
         <span className="text-sm text-muted-foreground">
-          Versão {selected.version} · {questions.length} perguntas
+          Versão {selected.version} · {plural(questions.length, "pergunta", "perguntas")}
         </span>
       </div>
       <div className="space-y-3">

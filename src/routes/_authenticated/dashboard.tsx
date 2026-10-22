@@ -4,9 +4,9 @@ import { DashboardPage } from "@/components/cartoquali/dashboard";
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — CartoQuali" },
+      { title: "Painel — CartoQuali" },
       { name: "description", content: "Visão geral de satisfação e qualidade do CartoQuali." },
-      { property: "og:title", content: "Dashboard — CartoQuali" },
+      { property: "og:title", content: "Painel — CartoQuali" },
       {
         property: "og:description",
         content: "Indicadores de satisfação e qualidade para cartórios.",

@@ -603,6 +603,7 @@ function DemoForm() {
   const submitLead = useServerFn(submitCommercialLead);
   const [draft, setDraft] = useState<LeadDraft>(emptyLead);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [whatsappLink, setWhatsappLink] = useState("");
   const [message, setMessage] = useState("");
   const change = (key: keyof LeadDraft, value: string) =>
     setDraft((current) => ({ ...current, [key]: value }));
@@ -643,7 +644,10 @@ function DemoForm() {
         `WhatsApp: ${checked.data.whatsapp}`,
         `E-mail: ${checked.data.email}`,
       ].join("\n");
-      window.location.assign(createWhatsappUrl(whatsappMessage));
+      const url = createWhatsappUrl(whatsappMessage);
+      // Kept for the success panel: if WhatsApp does not open, the visitor still has the link.
+      setWhatsappLink(url);
+      window.location.assign(url);
     } catch (reason) {
       setStatus("error");
       setMessage(
@@ -696,6 +700,19 @@ function DemoForm() {
               <CheckCircle2 className="mx-auto size-9" />
               <p className="mt-3 font-display text-xl font-bold">Solicitação recebida.</p>
               <p className="mt-2 text-sm">Abrindo a conversa no WhatsApp.</p>
+              <p className="mt-4 text-sm text-foreground">
+                Não abriu?{" "}
+                <a
+                  href={whatsappLink || createWhatsappUrl()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-primary underline underline-offset-2"
+                >
+                  Abrir conversa no WhatsApp
+                </a>
+                <br />
+                <span className="text-muted-foreground">ou escreva para cartoquali@gmail.com</span>
+              </p>
             </div>
           ) : (
             <form className="mt-7 grid gap-4" onSubmit={handleSubmit} noValidate>

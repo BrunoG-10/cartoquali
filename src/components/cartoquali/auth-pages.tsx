@@ -56,7 +56,7 @@ export function LoginPage({ redirect }: { redirect: string }) {
     try {
       if (recovering) {
         await resetPassword(email);
-        setMessage("Email de recuperação enviado.");
+        setMessage("E-mail de recuperação enviado. Confira também a caixa de spam.");
       } else {
         await signIn(email, password);
       }
@@ -75,13 +75,13 @@ export function LoginPage({ redirect }: { redirect: string }) {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           {recovering
-            ? "Informe seu email para receber as instruções."
-            : "Entre com seu email e senha."}
+            ? "Informe seu e-mail para receber as instruções."
+            : "Entre com seu e-mail e senha."}
         </p>
       </div>
       <form className="mt-7 space-y-4" onSubmit={submit}>
         <label className="block text-sm font-medium">
-          Email
+          E-mail
           <div className="relative mt-1.5">
             <Mail className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
             <Input

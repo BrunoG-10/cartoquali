@@ -127,7 +127,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       setStatus("unauthenticated");
-      throw new Error("Email ou senha inválidos.");
+      throw new Error("E-mail ou senha inválidos.");
     }
     await refresh();
   };
@@ -150,7 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw new Error(
         error.status === 429 || /rate|seconds/i.test(error.message)
           ? "Aguarde um minuto antes de pedir outro link."
-          : "Não foi possível enviar o email de recuperação.",
+          : "Não foi possível enviar o e-mail de recuperação.",
       );
   };
   const updatePassword = async (password: string) => {

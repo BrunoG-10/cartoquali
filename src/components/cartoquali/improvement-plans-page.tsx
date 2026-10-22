@@ -395,8 +395,15 @@ function PlanList({ items, onSelect }: { items: Plan[]; onSelect: (id: string) =
             {items.map((p) => (
               <tr
                 key={p.id}
-                className="cursor-pointer border-b border-glass-border last:border-0 hover:bg-glass-strong"
+                tabIndex={0}
+                className="cursor-pointer border-b border-glass-border last:border-0 hover:bg-glass-strong focus-visible:bg-glass-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                 onClick={() => onSelect(p.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(p.id);
+                  }
+                }}
               >
                 <td className="max-w-72 px-4 py-4">
                   <p className="font-medium">{p.titulo}</p>
@@ -686,8 +693,20 @@ function PlanEditor({
     indicatorBefore: data.indicador_antes?.toString() ?? "",
     indicatorAfter: data.indicador_depois?.toString() ?? "",
   });
-  const set = (k: string, v: string | number) => setForm((f) => ({ ...f, [k]: v }));
-  const save = () =>
+  const [formError, setFormError] = useState("");
+  const set = (k: string, v: string | number) => {
+    setFormError("");
+    setForm((f) => ({ ...f, [k]: v }));
+  };
+  const save = () => {
+    // Same rule the database enforces, checked here so the user sees it next to the fields.
+    if (
+      form.status === "concluido" &&
+      (!form.responsibleId || !form.result.trim() || !form.resultObservation.trim())
+    ) {
+      setFormError("Para concluir, informe o responsável, o resultado obtido e a observação.");
+      return;
+    }
     onSave({
       id: data.id,
       expectedUpdatedAt: data.updated_at,
@@ -707,6 +726,7 @@ function PlanEditor({
       indicatorBefore: form.indicatorBefore === "" ? null : Number(form.indicatorBefore),
       indicatorAfter: form.indicatorAfter === "" ? null : Number(form.indicatorAfter),
     });
+  };
   const terminal = ["concluido", "cancelado"].includes(data.status);
   return (
     <Overlay title={`${data.id.slice(0, 8)} · ${data.titulo}`} onClose={onClose}>
@@ -821,6 +841,14 @@ function PlanEditor({
                     </Field>
                   </div>
                 </>
+              )}
+              {formError && (
+                <p
+                  role="alert"
+                  className="rounded-md bg-danger-soft p-3 text-sm text-destructive sm:col-span-2"
+                >
+                  {formError}
+                </p>
               )}
               <div className="flex gap-2 sm:col-span-2">
                 <Button disabled={saving} onClick={save}>

@@ -52,7 +52,7 @@ const catalog: Array<{
   {
     kind: "avaliacoes",
     title: "Relatório de Avaliações",
-    description: "Avaliações reais do período, sem expor dados de contato.",
+    description: "Avaliações do período, sem expor dados de contato.",
     icon: MessageSquareText,
   },
   {
@@ -103,7 +103,7 @@ export function ReportsCatalog() {
       <PageHeader
         eyebrow="Análise gerencial"
         title="Relatórios"
-        description="Consulte informações reais do ciclo de qualidade do seu cartório."
+        description="Consulte as informações do ciclo de qualidade do seu cartório."
       />
       <GlassPanel className="border-primary/25">
         <div className="flex items-start gap-3">
@@ -179,7 +179,7 @@ export function ReportViewer({ kind }: { kind: ReportKind }) {
           <InterfaceState
             kind="loading"
             title="Calculando relatório"
-            description="Consolidando os dados reais do período selecionado."
+            description="Consolidando os dados do período selecionado."
           />
         </GlassPanel>
       </ReportFrame>

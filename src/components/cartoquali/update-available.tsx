@@ -47,7 +47,10 @@ function useNewVersionAvailable() {
  */
 export function UpdateAvailable() {
   const available = useNewVersionAvailable();
-  if (!available) return null;
+  // "Depois" hides it for this screen, so a form being filled is not lost to a reload; the
+  // balloon comes back on the next screen (each page mounts its own AppShell).
+  const [postponed, setPostponed] = useState(false);
+  if (!available || postponed) return null;
   return (
     <div
       role="status"
@@ -60,12 +63,18 @@ export function UpdateAvailable() {
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold">Nova versão do CartoQuali disponível</p>
         <p className="text-xs text-muted-foreground">
-          Atualize para receber as melhorias. Você continua conectado e nesta tela.
+          Atualize para receber as melhorias. Você continua conectado e nesta tela; salve antes o
+          que estiver preenchendo.
         </p>
       </div>
-      <Button size="sm" onClick={() => window.location.reload()}>
-        Atualizar agora
-      </Button>
+      <div className="flex shrink-0 flex-col gap-1.5">
+        <Button size="sm" onClick={() => window.location.reload()}>
+          Atualizar agora
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => setPostponed(true)}>
+          Depois
+        </Button>
+      </div>
     </div>
   );
 }

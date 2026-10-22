@@ -28,6 +28,7 @@ import { useAuth } from "@/components/cartoquali/auth-provider";
 import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { USER_ROLE_LABELS } from "@/constants/cartoquali";
 import { can, moduleForPath, type AppModule } from "@/lib/permissions";
+import { DialogLayer } from "@/components/cartoquali/dialog-layer";
 import { InterfaceState } from "@/components/cartoquali/primitives";
 import { UpdateAvailable } from "@/components/cartoquali/update-available";
 import { guidePageFor } from "@/lib/guide/plan";
@@ -236,9 +237,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           <UserCard />
         </aside>
         {mobileOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
+          <DialogLayer
+            label="Menu"
+            onClose={() => setMobileOpen(false)}
+            closeOnBackdrop={false}
+            className="fixed inset-0 z-50 lg:hidden"
+          >
             <button
               aria-label="Fechar menu"
+              tabIndex={-1}
               className="absolute inset-0 bg-foreground/30"
               onClick={() => setMobileOpen(false)}
             />
@@ -257,7 +264,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Navigation onNavigate={() => setMobileOpen(false)} />
               <UserCard />
             </aside>
-          </div>
+          </DialogLayer>
         )}
         <div className="min-w-0 flex-1">
           <div

@@ -54,6 +54,9 @@ const statusTone = (status: string) =>
     : status === "Respondida"
       ? ("positive" as const)
       : ("neutral" as const);
+/** Classificação: 4–5 satisfeita (verde), 3 atenção (amarelo), 1–2 nota ruim (vermelho). */
+const ratingTone = (rating: number) =>
+  rating >= 4 ? ("positive" as const) : rating === 3 ? ("warning" as const) : ("danger" as const);
 const formatDate = (value: string) =>
   new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(
     new Date(value),
@@ -184,7 +187,7 @@ export function ReviewsPage() {
             <option value="">Todas as notas</option>
             {[5, 4, 3, 2, 1].map((value) => (
               <option key={value} value={value}>
-                {value} estrelas
+                {plural(value, "estrela", "estrelas")}
               </option>
             ))}
           </select>
@@ -323,7 +326,7 @@ export function ReviewsPage() {
                     </td>
                     <td className="px-4 py-4">{item.surveyName}</td>
                     <td className="px-4 py-4">
-                      <StatusBadge tone={item.rating >= 4 ? "positive" : "danger"}>
+                      <StatusBadge tone={ratingTone(item.rating)}>
                         {item.classification}
                       </StatusBadge>
                     </td>
@@ -570,7 +573,7 @@ function EvaluationDialogContent({
           <Stars value={evaluation.rating} size="sm" />
         </Info>
         <Info label="Classificação">
-          <StatusBadge tone={evaluation.rating >= 4 ? "positive" : "danger"}>
+          <StatusBadge tone={ratingTone(evaluation.rating)}>
             {evaluation.classification}
           </StatusBadge>
         </Info>

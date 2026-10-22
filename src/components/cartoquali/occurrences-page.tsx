@@ -445,8 +445,15 @@ function OccurrenceList({
             {items.map((item) => (
               <tr
                 key={item.id}
-                className="cursor-pointer border-b border-glass-border last:border-0 hover:bg-glass-strong"
+                tabIndex={0}
+                className="cursor-pointer border-b border-glass-border last:border-0 hover:bg-glass-strong focus-visible:bg-glass-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
                 onClick={() => onSelect(item.id)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onSelect(item.id);
+                  }
+                }}
               >
                 <td className="max-w-72 px-3 py-4">
                   <p className="font-medium">{item.titulo}</p>

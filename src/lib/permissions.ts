@@ -93,7 +93,7 @@ const manageByRole: Record<UserRole, readonly AppModule[]> = {
 };
 
 export const MODULE_LABELS: Record<AppModule, string> = {
-  dashboard: "Dashboard",
+  dashboard: "Painel",
   evaluations: "Avaliações",
   surveys: "Pesquisas",
   points: "Pontos",

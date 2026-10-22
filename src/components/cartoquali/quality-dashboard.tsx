@@ -71,7 +71,7 @@ export function QualityDashboard() {
       <PageHeader
         eyebrow="Gestão da experiência"
         title="Qualidade"
-        description="Indicadores objetivos calculados a partir das avaliações reais."
+        description="Indicadores objetivos calculados a partir das avaliações recebidas."
         action={
           <div className="flex gap-2">
             <Button
@@ -383,7 +383,7 @@ function EvolutionChart({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-display text-lg font-bold">Evolução da qualidade</h2>
-          <p className="text-sm text-muted-foreground">Dados reais do período selecionado</p>
+          <p className="text-sm text-muted-foreground">Dados do período selecionado</p>
         </div>
         <div className="flex flex-wrap gap-1">
           {(Object.keys(metricLabels) as Metric[]).map((item) => (
@@ -511,7 +511,7 @@ function RealDataNotice() {
     <GlassPanel>
       <h2 className="font-display text-lg font-bold">Fonte dos indicadores</h2>
       <p className="mt-3 text-sm text-muted-foreground">
-        Todos os números desta página vêm das avaliações e respostas registradas no Supabase.
+        Todos os números desta página vêm das avaliações e respostas registradas no CartoQuali.
         Ocorrências e planos de melhoria permanecem nos módulos próprios e não entram nestes
         cálculos nesta etapa.
       </p>

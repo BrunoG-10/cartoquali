@@ -6,7 +6,7 @@ export const Route = createFileRoute("/avaliar/$cartorio/$ponto")({
       { title: "Avalie seu atendimento — CartoQuali" },
       {
         name: "description",
-        content: "Avaliação rápida e anônima do atendimento no Cartório Modelo.",
+        content: "Avaliação rápida e anônima do atendimento no cartório.",
       },
       { property: "og:title", content: "Avalie seu atendimento — CartoQuali" },
       {

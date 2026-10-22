@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { plural } from "@/lib/format";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft, ChevronRight, RotateCw } from "lucide-react";
@@ -147,8 +148,13 @@ export function AuditPage() {
         <GlassPanel>
           <InterfaceState
             kind="error"
-            title="Auditoria indisponível"
-            description={query.error instanceof Error ? query.error.message : "Tente novamente."}
+            title="Não foi possível carregar a auditoria"
+            description="Verifique sua conexão e tente novamente."
+            action={
+              <Button variant="outline" onClick={() => void query.refetch()}>
+                Tentar novamente
+              </Button>
+            }
           />
         </GlassPanel>
       ) : query.data?.rows.length ? (
@@ -180,7 +186,7 @@ export function AuditPage() {
           </div>
           <div className="mt-4 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">
-              Página {page} de {pages} · {query.data.total} eventos
+              Página {page} de {pages} · {plural(query.data.total, "evento", "eventos")}
             </span>
             <div className="flex gap-2">
               <Button

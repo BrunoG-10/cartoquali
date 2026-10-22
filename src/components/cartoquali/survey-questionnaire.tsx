@@ -226,12 +226,13 @@ export function SurveyQuestionnaire({
                 ))}
                 {showOther && (
                   <label className="mt-1 block text-left text-sm font-medium">
-                    Conte o que poderia melhorar
+                    {/* Neutral wording: "Outro" can appear in any multiple-choice question. */}
+                    Conte com suas palavras
                     <Textarea
                       className="mt-1.5 min-h-20"
                       maxLength={OTHER_TEXT_MAX}
                       value={other}
-                      placeholder="Ex.: sinalização das filas, horário de atendimento…"
+                      placeholder="Escreva aqui…"
                       onChange={(event) => setAnswer(choiceAnswer(values, event.target.value))}
                     />
                     <span className="mt-1 block text-xs font-normal text-muted-foreground">

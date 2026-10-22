@@ -38,7 +38,7 @@ export function DialogLayer({
     node.focus();
     const focusables = () =>
       Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-        (element) => element.offsetParent !== null,
+        (element) => element.tabIndex >= 0 && element.offsetParent !== null,
       );
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
