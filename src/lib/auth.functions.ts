@@ -15,44 +15,45 @@ const roleMap = {
 export const getCurrentAuthContext = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
+    // Consultas independentes saem juntas: esta verificação roda a cada carregamento de página.
     // Inicia o período de teste no primeiro login; vencido sem cobrança ativa, o banco já fecha a RLS.
-    const { data: trial, error: trialError } = await untypedDb(context.supabase).rpc(
-      "start_registry_trial",
-    );
+    const [{ data: trial, error: trialError }, { data: usuario, error }] = await Promise.all([
+      untypedDb(context.supabase).rpc("start_registry_trial"),
+      context.supabase
+        .from("usuarios")
+        .select(
+          "id, cartorio_id, auth_user_id, nome, email, telefone, status, created_at, updated_at",
+        )
+        .eq("auth_user_id", context.userId)
+        .maybeSingle(),
+    ]);
     if (trialError) throw new Error("Não foi possível verificar o período de teste.");
     if ((trial as { expired?: boolean } | null)?.expired) {
       return { status: "trial_expired" as const };
     }
-
-    const { data: usuario, error } = await context.supabase
-      .from("usuarios")
-      .select(
-        "id, cartorio_id, auth_user_id, nome, email, telefone, status, created_at, updated_at",
-      )
-      .eq("auth_user_id", context.userId)
-      .maybeSingle();
     if (error) throw new Error("Não foi possível carregar o usuário.");
     if (!usuario) return { status: "missing_profile" as const };
 
-    const [{ data: cartorio }, { data: roles }] = await Promise.all([
-      context.supabase
-        .from("cartorios")
-        .select("id, nome_fantasia, razao_social, status")
-        .eq("id", usuario.cartorio_id)
-        .maybeSingle(),
-      context.supabase.from("user_roles").select("role").eq("user_id", usuario.id),
-    ]);
+    const [{ data: cartorio }, { data: roles }, { data: progress, error: progressError }] =
+      await Promise.all([
+        context.supabase
+          .from("cartorios")
+          .select("id, nome_fantasia, razao_social, status")
+          .eq("id", usuario.cartorio_id)
+          .maybeSingle(),
+        context.supabase.from("user_roles").select("role").eq("user_id", usuario.id),
+        untypedDb(context.supabase)
+          .from("guia_progresso")
+          .select("etapa, concluido_em")
+          .eq("usuario_id", usuario.id)
+          .maybeSingle(),
+      ]);
     if (!cartorio) return { status: "missing_registry" as const };
     if (usuario.status !== "ativo") return { status: "inactive_user" as const };
     if (cartorio.status !== "ativo") return { status: "inactive_registry" as const };
     const dbRole = primaryDbRole(roles);
     if (!dbRole || !roleMap[dbRole]) return { status: "missing_role" as const };
     // Guia de uso: linha ausente = nunca começou; erro de leitura = null (o tour não abre sozinho).
-    const { data: progress, error: progressError } = await untypedDb(context.supabase)
-      .from("guia_progresso")
-      .select("etapa, concluido_em")
-      .eq("usuario_id", usuario.id)
-      .maybeSingle();
     const guide: GuideProgress | null = progressError
       ? null
       : {

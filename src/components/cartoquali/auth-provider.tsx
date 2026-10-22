@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -64,17 +65,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setCartorio(null);
     setCurrentRole(null);
   }, []);
+  const inFlight = useRef<Promise<void> | null>(null);
+  const userId = useRef<string | null>(null);
   // Background re-checks (tab focus, timer, auth events) keep the current screen while they run;
   // only the first check shows the "Verificando acesso" state.
-  const refresh = useCallback(async () => {
+  const check = useCallback(async () => {
     setStatus((current) => (current === "authenticated" ? current : "loading"));
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data.user) {
+    // The stored session needs no network round trip; the server function validates the token.
+    const { data } = await supabase.auth.getSession();
+    const sessionUser = data.session?.user;
+    if (!sessionUser) {
+      userId.current = null;
       clear();
       setStatus("unauthenticated");
       return;
     }
-    setUser(data.user);
+    userId.current = sessionUser.id;
+    setUser(sessionUser);
     try {
       const result = await fetchContext();
       if (result.status === "active") {
@@ -90,22 +97,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus(result.status);
       }
     } catch {
-      // A transient network failure during a background re-check must not log the user out.
+      // A transient network failure during a background re-check must not log the user out,
+      // but a stored session the server rejects (revoked user) is a real sign-out.
+      const { data: confirmed } = await supabase.auth.getUser();
+      if (!confirmed.user) {
+        userId.current = null;
+        clear();
+        setStatus("unauthenticated");
+        return;
+      }
       setStatus((current) => (current === "authenticated" ? current : "error"));
     }
   }, [clear, fetchContext]);
+  // Concurrent triggers (page load plus the SIGNED_IN replayed from storage) share one check.
+  const refresh = useCallback(() => {
+    inFlight.current ??= check().finally(() => {
+      inFlight.current = null;
+    });
+    return inFlight.current;
+  }, [check]);
   useEffect(() => {
     void refresh();
-    const { data } = supabase.auth.onAuthStateChange((event) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) return;
       if (event === "SIGNED_OUT") {
         // Also on session expiry or sign-out in another tab, not only via signOut().
+        userId.current = null;
         clearGuidePostponed();
         clear();
         setStatus("unauthenticated");
         void router.invalidate();
         return;
       }
+      // Supabase replays SIGNED_IN for the stored session on every page load: same user, nothing to redo.
+      if (event === "SIGNED_IN" && session?.user.id === userId.current) return;
       void refresh();
       void router.invalidate();
       void queryClient.invalidateQueries();
@@ -174,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       guide,
       setGuide,
     }),
-    [user, usuario, cartorio, currentRole, status, guide],
+    [user, usuario, cartorio, currentRole, status, guide, refresh],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
