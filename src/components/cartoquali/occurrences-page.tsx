@@ -3,7 +3,7 @@ import { userMessage } from "@/lib/user-message";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   AlertCircle,
   CheckCircle2,
@@ -26,8 +26,10 @@ import {
 } from "@/lib/occurrences.functions";
 import { getEvaluationDetail } from "@/lib/evaluations.functions";
 import { can } from "@/lib/permissions";
+import { endOfDayBrasilia, startOfDayBrasilia, todayBrasilia } from "@/lib/timestamp";
 import { cn } from "@/lib/utils";
 import { useAuth } from "./auth-provider";
+import { DialogLayer } from "./dialog-layer";
 import { GlassPanel, InterfaceState, PageHeader, Stars, StatusBadge } from "./primitives";
 import { QualityNavigation } from "./quality-navigation";
 
@@ -107,6 +109,7 @@ const errorMessage = (error: unknown) =>
 
 export function OccurrencesPage() {
   const searchStr = useRouterState({ select: (state) => state.location.searchStr });
+  const navigate = useNavigate();
   const { currentRole } = useAuth();
   const canManage = can(currentRole, "occurrences", "manage");
   // Read-only profiles never open the form, even when arriving from an evaluation link.
@@ -131,12 +134,8 @@ export function OccurrencesPage() {
     ...(applied.responsibleId ? { responsibleId: applied.responsibleId } : {}),
     ...(applied.category ? { category: applied.category as Category } : {}),
     ...(applied.evaluationId ? { evaluationId: applied.evaluationId } : {}),
-    ...(applied.startDate
-      ? { startDate: new Date(`${applied.startDate}T00:00:00`).toISOString() }
-      : {}),
-    ...(applied.endDate
-      ? { endDate: new Date(`${applied.endDate}T23:59:59.999`).toISOString() }
-      : {}),
+    ...(applied.startDate ? { startDate: startOfDayBrasilia(applied.startDate) } : {}),
+    ...(applied.endDate ? { endDate: endOfDayBrasilia(applied.endDate) } : {}),
   };
   const list = useQuery({
     queryKey: ["occurrences", params],
@@ -152,11 +151,16 @@ export function OccurrencesPage() {
     queryFn: () => fetchEvaluation({ data: { id: linkedEvaluationId } }),
     enabled: Boolean(linkedEvaluationId),
   });
+  // The ?review= link only opens the form once: drop it so a later "Nova ocorrência" starts blank.
+  const closeForm = () => {
+    setCreating(false);
+    if (linkedEvaluationId) void navigate({ to: "/ocorrencias", search: {}, replace: true });
+  };
   const createMutation = useMutation({
     mutationFn: createFn,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["occurrences"] });
-      setCreating(false);
+      closeForm();
       toast.success("Ocorrência criada com sucesso");
     },
     onError: (error) => toast.error(errorMessage(error)),
@@ -291,14 +295,15 @@ export function OccurrencesPage() {
           </div>
         </>
       )}
-      {creating && canManage && (
+      {/* Waits for the linked evaluation: the form reads it only once, to pre-fill its fields. */}
+      {creating && canManage && !(linkedEvaluationId && sourceEvaluation.isLoading) && (
         <OccurrenceForm
           evaluation={sourceEvaluation.data ?? null}
           evaluationId={linkedEvaluationId}
           users={list.data?.users ?? []}
           points={list.data?.points ?? []}
           saving={createMutation.isPending}
-          onClose={() => setCreating(false)}
+          onClose={closeForm}
           onSubmit={(data) => createMutation.mutate({ data })}
         />
       )}
@@ -634,7 +639,7 @@ function OccurrenceForm({
           <Input
             type="date"
             value={form.dueDate}
-            min={new Date().toISOString().slice(0, 10)}
+            min={todayBrasilia()}
             onChange={(e) => set("dueDate", e.target.value)}
           />
         </Field>
@@ -1067,12 +1072,10 @@ function Overlay({
   onClose(): void;
 }) {
   return (
-    <div
+    <DialogLayer
+      label={title}
+      onClose={onClose}
       className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      onMouseDown={onClose}
     >
       <div
         className="mx-auto my-6 w-full max-w-5xl rounded-lg border border-glass-border bg-background p-5 shadow-xl"
@@ -1086,6 +1089,6 @@ function Overlay({
         </div>
         {children}
       </div>
-    </div>
+    </DialogLayer>
   );
 }

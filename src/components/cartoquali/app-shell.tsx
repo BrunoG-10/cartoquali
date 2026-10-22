@@ -14,7 +14,6 @@ import {
   Users,
   X,
   QrCode,
-  ExternalLink,
   ListChecks,
   BriefcaseBusiness,
   LogOut,
@@ -274,17 +273,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Menu />
             </Button>
             <Brand />
-            <div className="flex items-center">
-              <GuideButton />
-              <Link
-                to="/avaliar"
-                aria-label="Abrir avaliação pública"
-                title="Abrir avaliação pública"
-                className="grid size-9 place-items-center rounded-md text-primary hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <ExternalLink className="size-4" />
-              </Link>
-            </div>
+            <GuideButton />
           </div>
           <AppTopbar />
           <main className="p-4 sm:p-6 lg:p-8">

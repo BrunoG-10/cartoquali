@@ -2,7 +2,7 @@ import { plural } from "@/lib/format";
 import { userMessage } from "@/lib/user-message";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   CheckCircle2,
@@ -25,9 +25,11 @@ import {
   listImprovementPlans,
   updateImprovementPlan,
 } from "@/lib/improvement-plans.functions";
+import { todayBrasilia } from "@/lib/timestamp";
 import { cn } from "@/lib/utils";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
 import { QualityNavigation } from "./quality-navigation";
+import { DialogLayer } from "./dialog-layer";
 
 const labels = {
   status: {
@@ -96,12 +98,11 @@ const errorMessage = (error: unknown) =>
 const formatDate = (value: string) =>
   new Date(`${value.slice(0, 10)}T12:00:00`).toLocaleDateString("pt-BR");
 const isOverdue = (plan: Plan) =>
-  !["concluido", "cancelado"].includes(plan.status) &&
-  plan.prazo <
-    new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(new Date());
+  !["concluido", "cancelado"].includes(plan.status) && plan.prazo < todayBrasilia();
 
 export function ImprovementPlansPage() {
   const searchStr = useRouterState({ select: (state) => state.location.searchStr });
+  const navigate = useNavigate();
   const initialSearch = new URLSearchParams(searchStr);
   const linkedOccurrence = initialSearch.get("occurrence") ?? "";
   const linkedStatus = initialSearch.get("status") ?? "";
@@ -136,11 +137,21 @@ export function ImprovementPlansPage() {
     queryFn: () => detailFn({ data: { id: selectedId ?? "" } }),
     enabled: Boolean(selectedId),
   });
+  // The ?occurrence= link only opens the form once: drop it so a later "Novo plano" starts blank.
+  const closeForm = () => {
+    setCreating(false);
+    if (linkedOccurrence)
+      void navigate({
+        to: "/planos-melhoria",
+        search: linkedStatus ? { status: linkedStatus } : {},
+        replace: true,
+      });
+  };
   const createMutation = useMutation({
     mutationFn: createFn,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["improvement-plans"] });
-      setCreating(false);
+      closeForm();
       toast.success("Plano criado com sucesso");
     },
     onError: (error) => toast.error(errorMessage(error)),
@@ -337,13 +348,13 @@ export function ImprovementPlansPage() {
           </div>
         </>
       )}
-      {creating && list.data && (
+      {creating && list.data?.canManage && (
         <PlanForm
           occurrenceId={linkedOccurrence}
           occurrences={list.data.occurrences ?? []}
           users={list.data.users ?? []}
           saving={createMutation.isPending}
-          onClose={() => setCreating(false)}
+          onClose={closeForm}
           onSubmit={(data) => createMutation.mutate({ data })}
         />
       )}{" "}
@@ -547,7 +558,7 @@ function PlanForm({
           <Input
             required
             type="date"
-            min={new Date().toLocaleDateString("en-CA")}
+            min={todayBrasilia()}
             value={form.dueDate}
             onChange={(e) => set("dueDate", e.target.value)}
           />
@@ -1012,12 +1023,10 @@ function Overlay({
   onClose(): void;
 }) {
   return (
-    <div
+    <DialogLayer
+      label={title}
+      onClose={onClose}
       className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-label={title}
-      onMouseDown={onClose}
     >
       <div
         className="mx-auto my-6 w-full max-w-5xl rounded-lg border border-glass-border bg-background p-5 shadow-xl"
@@ -1031,6 +1040,6 @@ function Overlay({
         </div>
         {children}
       </div>
-    </div>
+    </DialogLayer>
   );
 }

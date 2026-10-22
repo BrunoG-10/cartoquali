@@ -1,5 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { dbTimestamp } from "./timestamp";
+import { dbTimestamp, endOfDayBrasilia, startOfDayBrasilia, todayBrasilia } from "./timestamp";
+
+describe("Brasília day boundaries", () => {
+  it("map a calendar day to Brasília midnight regardless of the browser time zone", () => {
+    expect(startOfDayBrasilia("2026-10-21")).toBe("2026-10-21T03:00:00.000Z");
+    expect(endOfDayBrasilia("2026-10-21")).toBe("2026-10-22T02:59:59.999Z");
+  });
+
+  it("keeps today's date in Brasília late at night (UTC already on the next day)", () => {
+    expect(todayBrasilia(new Date("2026-10-22T01:30:00Z"))).toBe("2026-10-21");
+  });
+});
 
 describe("dbTimestamp", () => {
   it("accepts timestamps exactly as Postgres returns them (microseconds and offset)", () => {

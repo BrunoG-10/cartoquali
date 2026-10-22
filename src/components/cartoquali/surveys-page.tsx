@@ -2,7 +2,7 @@ import { userMessage } from "@/lib/user-message";
 import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Eye, ListPlus, LoaderCircle, Lock, Pencil, Plus, Save, Trash2 } from "lucide-react";
+import { Eye, ListPlus, LoaderCircle, Lock, Pencil, Plus, PowerOff, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,8 @@ import { ESSENTIAL_LABELS } from "@/lib/attributions";
 import { getRegistryServices } from "@/lib/registry-services.functions";
 import { resolveServiceStep } from "@/lib/service-step";
 import { ServicePicker } from "./service-picker";
+import { ConfirmDialog } from "./confirm-dialog";
+import { DialogLayer } from "./dialog-layer";
 import {
   deactivateSurveyQuestion,
   listSurveys,
@@ -30,19 +32,20 @@ import { SurveyQuestionnaire } from "./survey-questionnaire";
 
 function Modal({
   children,
+  label,
   onClose,
   wide = false,
 }: {
   children: ReactNode;
+  label: string;
   onClose(): void;
   wide?: boolean;
 }) {
   return (
-    <div
+    <DialogLayer
+      label={label}
+      onClose={onClose}
       className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/25 p-4"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={onClose}
     >
       <div
         className={`my-4 w-full ${wide ? "max-w-4xl" : "max-w-xl"} rounded-xl border bg-background p-6 shadow-xl`}
@@ -50,7 +53,7 @@ function Modal({
       >
         {children}
       </div>
-    </div>
+    </DialogLayer>
   );
 }
 const tone = (status: Survey["status"]) =>
@@ -70,6 +73,7 @@ export function SurveysPage() {
   const [selectedId, setSelectedId] = useState<string>();
   const [surveyEditor, setSurveyEditor] = useState<Survey | "new">();
   const [questionEditor, setQuestionEditor] = useState<SurveyQuestion | "new">();
+  const [confirmQuestion, setConfirmQuestion] = useState<SurveyQuestion>();
   const [preview, setPreview] = useState(false);
   const [previewServiceDone, setPreviewServiceDone] = useState(false);
   const loadServices = useServerFn(getRegistryServices);
@@ -349,15 +353,9 @@ export function SurveysPage() {
                     variant="ghost"
                     aria-label="Desativar pergunta"
                     disabled={!question.active}
-                    onClick={() =>
-                      void deactivate({ data: { id: question.id } })
-                        .then(refresh)
-                        .catch((error) =>
-                          toast.error(userMessage(error, "Não foi possível desativar.")),
-                        )
-                    }
+                    onClick={() => setConfirmQuestion(question)}
                   >
-                    <Trash2 />
+                    <PowerOff />
                   </Button>
                 )}
               </div>
@@ -365,6 +363,26 @@ export function SurveysPage() {
           </GlassPanel>
         ))}
       </div>
+      <ConfirmDialog
+        open={Boolean(confirmQuestion)}
+        title="Desativar esta pergunta?"
+        description="Ela deixa de aparecer para o cidadão. As respostas já registradas continuam guardadas, e você pode reativá-la editando a pergunta."
+        confirmLabel="Desativar pergunta"
+        onOpenChange={(next) => {
+          if (!next) setConfirmQuestion(undefined);
+        }}
+        onConfirm={() => {
+          const target = confirmQuestion;
+          setConfirmQuestion(undefined);
+          if (!target) return;
+          void deactivate({ data: { id: target.id } })
+            .then(async () => {
+              await refresh();
+              toast.success("Pergunta desativada");
+            })
+            .catch((error) => toast.error(userMessage(error, "Não foi possível desativar.")));
+        }}
+      />
       {questionEditor && (
         <QuestionModal
           essential={questionEditor !== "new" && Boolean(questionEditor.essentialKey)}
@@ -378,6 +396,7 @@ export function SurveysPage() {
       {preview && (
         <Modal
           wide
+          label="Prévia da pesquisa"
           onClose={() => {
             setPreview(false);
             setPreviewServiceDone(false);
@@ -438,7 +457,7 @@ function SurveyModal({
   onClose(): void;
 }) {
   return (
-    <Modal onClose={onClose}>
+    <Modal label="Dados da pesquisa" onClose={onClose}>
       <h2 className="font-display text-xl font-bold">Dados da pesquisa</h2>
       <div className="mt-5 grid gap-4">
         <label className="text-sm font-medium">
@@ -515,7 +534,7 @@ function QuestionModal({
   onClose(): void;
 }) {
   return (
-    <Modal onClose={onClose}>
+    <Modal label="Pergunta" onClose={onClose}>
       <h2 className="font-display text-xl font-bold">Pergunta</h2>
       {essential && (
         <p className="mt-3 flex items-start gap-2 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">

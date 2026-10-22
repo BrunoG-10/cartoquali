@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Copy, ExternalLink, LoaderCircle, Pencil, Plus, Power, QrCode, Save } from "lucide-react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/cartoquali/confirm-dialog";
+import { DialogLayer } from "@/components/cartoquali/dialog-layer";
 import { PointQrDialog } from "@/components/cartoquali/point-qr-dialog";
 import {
   GlassPanel,
@@ -33,13 +35,20 @@ const emptyForm: Form = {
   surveyId: "",
   status: "Ativo",
 };
-function Modal({ children, onClose }: { children: ReactNode; onClose(): void }) {
+function Modal({
+  children,
+  label,
+  onClose,
+}: {
+  children: ReactNode;
+  label: string;
+  onClose(): void;
+}) {
   return (
-    <div
+    <DialogLayer
+      label={label}
+      onClose={onClose}
       className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/20 p-4"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={onClose}
     >
       <div
         className="my-4 w-full max-w-lg rounded-xl border border-glass-border bg-background p-6 shadow-xl"
@@ -47,7 +56,7 @@ function Modal({ children, onClose }: { children: ReactNode; onClose(): void }) 
       >
         {children}
       </div>
-    </div>
+    </DialogLayer>
   );
 }
 
@@ -63,6 +72,7 @@ export function PointsPage() {
   });
   const [selected, setSelected] = useState<EvaluationPoint>();
   const [qrPoint, setQrPoint] = useState<EvaluationPoint>();
+  const [confirmDeactivate, setConfirmDeactivate] = useState<EvaluationPoint>();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Form>(emptyForm);
   useEffect(() => {
@@ -256,7 +266,11 @@ export function PointsPage() {
                   <Button
                     variant="outline"
                     disabled={statusMutation.isPending}
-                    onClick={() => statusMutation.mutate(point)}
+                    onClick={() =>
+                      point.status === "Ativo"
+                        ? setConfirmDeactivate(point)
+                        : statusMutation.mutate(point)
+                    }
                   >
                     <Power />
                     {point.status === "Ativo" ? "Desativar" : "Ativar"}
@@ -280,7 +294,7 @@ export function PointsPage() {
         </GlassPanel>
       )}
       {open && (
-        <Modal onClose={close}>
+        <Modal label={selected ? "Editar QR Code" : "Criar QR Code do cartório"} onClose={close}>
           <h2 className="font-display text-lg font-bold">
             {selected ? "Editar QR Code" : "Criar QR Code do cartório"}
           </h2>
@@ -370,6 +384,19 @@ export function PointsPage() {
           </div>
         </Modal>
       )}
+      <ConfirmDialog
+        open={Boolean(confirmDeactivate)}
+        title="Desativar o QR Code?"
+        description="Enquanto estiver desativado, ninguém consegue avaliar o atendimento pelo QR Code ou pelo link. Você pode ativar de novo a qualquer momento."
+        confirmLabel="Desativar QR Code"
+        onOpenChange={(next) => {
+          if (!next) setConfirmDeactivate(undefined);
+        }}
+        onConfirm={() => {
+          if (confirmDeactivate) statusMutation.mutate(confirmDeactivate);
+          setConfirmDeactivate(undefined);
+        }}
+      />
       <PointQrDialog
         point={qrPoint}
         officialName={registry?.officialName}

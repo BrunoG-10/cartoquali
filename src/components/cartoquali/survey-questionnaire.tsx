@@ -25,25 +25,33 @@ const matchesCondition = (question: SurveyQuestion, answers: SurveyAnswers) =>
       Number(answers[question.condition.sourceQuestionId]) <= Number(question.condition.value)
     : String(answers[question.condition.sourceQuestionId]) === String(question.condition.value));
 
+const visibleQuestions = (questions: SurveyQuestion[], answers: SurveyAnswers) =>
+  questions
+    .filter((item) => item.active && matchesCondition(item, answers))
+    .sort((a, b) => a.order - b.order);
+
 export function SurveyQuestionnaire({
   questions,
   preview = false,
+  initialAnswers,
+  onBack,
   onComplete,
 }: {
   questions: SurveyQuestion[];
   preview?: boolean;
+  /** Answers already given: the citizen came back from the final step to review them. */
+  initialAnswers?: SurveyAnswers;
+  /** "Voltar" on the first question leaves the questionnaire (e.g. back to the service step). */
+  onBack?(): void;
   onComplete?(answers: SurveyAnswers): void;
 }) {
-  const [answers, setAnswers] = useState<SurveyAnswers>({});
-  const [step, setStep] = useState(0);
-  const [complete, setComplete] = useState(false);
-  const visible = useMemo(
-    () =>
-      questions
-        .filter((item) => item.active && matchesCondition(item, answers))
-        .sort((a, b) => a.order - b.order),
-    [questions, answers],
+  const [answers, setAnswers] = useState<SurveyAnswers>(initialAnswers ?? {});
+  // Returning with answers reopens on the last question, where the citizen left off.
+  const [step, setStep] = useState(() =>
+    initialAnswers ? Math.max(0, visibleQuestions(questions, initialAnswers).length - 1) : 0,
   );
+  const [complete, setComplete] = useState(false);
+  const visible = useMemo(() => visibleQuestions(questions, answers), [questions, answers]);
   const question = visible[step];
   const questionHeading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -239,8 +247,8 @@ export function SurveyQuestionnaire({
         <Button
           className="min-h-11"
           variant="outline"
-          disabled={step === 0}
-          onClick={() => setStep((current) => Math.max(0, current - 1))}
+          disabled={step === 0 && !onBack}
+          onClick={() => (step === 0 ? onBack?.() : setStep((current) => Math.max(0, current - 1)))}
         >
           <ArrowLeft />
           Voltar

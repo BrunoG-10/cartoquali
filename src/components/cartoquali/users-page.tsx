@@ -2,9 +2,20 @@ import { userMessage } from "@/lib/user-message";
 import { useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { Check, LoaderCircle, Plus, Save, Send, ShieldCheck, UserRound, X } from "lucide-react";
+import {
+  Check,
+  Eye,
+  LoaderCircle,
+  Plus,
+  Save,
+  Send,
+  ShieldCheck,
+  UserRound,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/components/cartoquali/auth-provider";
+import { DialogLayer } from "@/components/cartoquali/dialog-layer";
 import {
   GlassPanel,
   InterfaceState,
@@ -26,6 +37,10 @@ import type { RegistryUser, UserRole } from "@/types/cartoquali";
 import { firstValidationError, userSchema } from "@/utils/cartoquali-validation";
 
 type RealUser = RegistryUser & { hasAuthAccess: boolean };
+// Platform-only modules (implantações, painel da plataforma) never apply to a registry team.
+const REGISTRY_MODULES = APP_MODULES.filter(
+  (module) => module !== "onboarding" && module !== "platform",
+);
 const emptyUser: Pick<RegistryUser, "name" | "email" | "phone" | "role" | "status"> = {
   name: "",
   email: "",
@@ -56,13 +71,20 @@ function Field({
     </label>
   );
 }
-function Modal({ children, onClose }: { children: ReactNode; onClose(): void }) {
+function Modal({
+  children,
+  label,
+  onClose,
+}: {
+  children: ReactNode;
+  label: string;
+  onClose(): void;
+}) {
   return (
-    <div
+    <DialogLayer
+      label={label}
+      onClose={onClose}
       className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/25 p-4"
-      role="dialog"
-      aria-modal="true"
-      onMouseDown={onClose}
     >
       <div
         className="my-4 w-full max-w-2xl rounded-xl border border-glass-border bg-background p-6 shadow-xl"
@@ -70,7 +92,7 @@ function Modal({ children, onClose }: { children: ReactNode; onClose(): void }) 
       >
         {children}
       </div>
-    </div>
+    </DialogLayer>
   );
 }
 
@@ -245,10 +267,21 @@ export function UsersPage() {
         </GlassPanel>
       )}
       <GlassPanel className="mt-5 overflow-x-auto">
-        <div className="mb-4 flex items-center gap-2">
+        <div className="mb-2 flex items-center gap-2">
           <ShieldCheck className="text-primary" />
           <h2 className="font-display text-lg font-bold">Matriz de permissões</h2>
         </div>
+        <p className="mb-4 flex flex-wrap gap-x-5 gap-y-1 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <Check className="size-4 text-success" aria-hidden /> Consulta e altera
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Eye className="size-4 text-primary" aria-hidden /> Somente consulta
+          </span>
+          <span className="flex items-center gap-1.5">
+            <X className="size-4 text-muted-foreground/40" aria-hidden /> Sem acesso
+          </span>
+        </p>
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b text-left">
@@ -261,15 +294,23 @@ export function UsersPage() {
             </tr>
           </thead>
           <tbody>
-            {APP_MODULES.map((module) => (
+            {REGISTRY_MODULES.map((module) => (
               <tr key={module} className="border-b border-glass-border">
                 <td className="py-3 font-medium">{MODULE_LABELS[module]}</td>
                 {(["registry_admin", "manager", "operator"] as UserRole[]).map((role) => (
                   <td key={role} className="px-3 text-center">
-                    {can(role, module) ? (
-                      <Check className="mx-auto size-4 text-success" />
+                    {can(role, module, "manage") ? (
+                      <Check
+                        className="mx-auto size-4 text-success"
+                        aria-label="Consulta e altera"
+                      />
+                    ) : can(role, module) ? (
+                      <Eye className="mx-auto size-4 text-primary" aria-label="Somente consulta" />
                     ) : (
-                      <X className="mx-auto size-4 text-muted-foreground/40" />
+                      <X
+                        className="mx-auto size-4 text-muted-foreground/40"
+                        aria-label="Sem acesso"
+                      />
                     )}
                   </td>
                 ))}
@@ -279,7 +320,7 @@ export function UsersPage() {
         </table>
       </GlassPanel>
       {(selected || creating) && (
-        <Modal onClose={close}>
+        <Modal label={selected ? "Editar usuário" : "Novo usuário"} onClose={close}>
           <div className="flex items-center gap-3">
             <UserRound className="text-primary" />
             <h2 className="font-display text-xl font-bold">

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { ArrowRight, Check, LoaderCircle, LockKeyhole, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, LoaderCircle, LockKeyhole, RotateCcw } from "lucide-react";
 import { LogoMark, Wordmark } from "@/components/cartoquali/logo";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   const [started, setStarted] = useState(false);
   const [serviceChoice, setServiceChoice] = useState<ServiceChoice>();
   const [answers, setAnswers] = useState<SurveyAnswers>();
+  // Kept when the citizen goes back from the final step, so the questions reopen already answered.
+  const [draftAnswers, setDraftAnswers] = useState<SurveyAnswers>();
   const [contactRequested, setContactRequested] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -122,6 +124,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     setStarted(false);
     setServiceChoice(undefined);
     setAnswers(undefined);
+    setDraftAnswers(undefined);
     setContactRequested(false);
     setName("");
     setPhone("");
@@ -238,11 +241,31 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   if (!answers)
     return (
       <Screen {...header}>
-        <SurveyQuestionnaire questions={surveyQuestions} onComplete={setAnswers} />
+        <SurveyQuestionnaire
+          questions={surveyQuestions}
+          {...(draftAnswers ? { initialAnswers: draftAnswers } : {})}
+          onBack={() => (serviceStep.show ? setServiceChoice(undefined) : setStarted(false))}
+          onComplete={setAnswers}
+        />
       </Screen>
     );
   return (
     <Screen {...header}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="-mt-2 mb-3 min-h-10"
+        disabled={sending}
+        onClick={() => {
+          setDraftAnswers(answers);
+          setAnswers(undefined);
+          setError(undefined);
+          setValidationError(undefined);
+        }}
+      >
+        <ArrowLeft />
+        Revisar respostas
+      </Button>
       <h1 className="font-display text-2xl font-bold">Finalizar avaliação</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         O contato é opcional. Sem ele, a avaliação é registrada sem identificação no cadastro do
@@ -420,12 +443,17 @@ function Screen({
           Sem conta · identificação opcional somente para retorno
         </p>
         <div className="mt-1 flex flex-wrap justify-center gap-1">
-          {/* min-h-10: comfortable touch target on phones (WCAG 2.5.8). */}
+          {/* min-h-10: comfortable touch target on phones (WCAG 2.5.8). New tab: opening them in
+              place would unmount this screen and lose an evaluation in progress. */}
           <Button asChild variant="link" size="sm" className="min-h-10 text-xs">
-            <Link to="/privacidade">Privacidade</Link>
+            <Link to="/privacidade" target="_blank" rel="noopener">
+              Privacidade<span className="sr-only"> (abre em nova aba)</span>
+            </Link>
           </Button>
           <Button asChild variant="link" size="sm" className="min-h-10 text-xs">
-            <Link to="/termos">Termos de uso</Link>
+            <Link to="/termos" target="_blank" rel="noopener">
+              Termos de uso<span className="sr-only"> (abre em nova aba)</span>
+            </Link>
           </Button>
         </div>
         {registryName !== "CartoQuali" && (

@@ -25,7 +25,9 @@ import {
 } from "@/lib/evaluations.functions";
 import { describeAnswer } from "@/lib/multiple-choice";
 import { can } from "@/lib/permissions";
+import { endOfDayBrasilia, startOfDayBrasilia } from "@/lib/timestamp";
 import { useAuth } from "./auth-provider";
+import { DialogLayer } from "./dialog-layer";
 import { GlassPanel, InterfaceState, PageHeader, Stars, StatusBadge } from "./primitives";
 import { ATTENTION_COUNTS_KEY } from "./use-attention-counts";
 
@@ -98,8 +100,8 @@ export function ReviewsPage() {
       ? { classification: classification as "satisfeita" | "atencao" | "ruim" }
       : {}),
     ...(contactOnly ? { contactRequested: true } : {}),
-    ...(startDate ? { startDate: new Date(`${startDate}T00:00:00`).toISOString() } : {}),
-    ...(endDate ? { endDate: new Date(`${endDate}T23:59:59.999`).toISOString() } : {}),
+    ...(startDate ? { startDate: startOfDayBrasilia(startDate) } : {}),
+    ...(endDate ? { endDate: endOfDayBrasilia(endDate) } : {}),
   };
   const list = useQuery({
     queryKey: ["evaluations", filters],
@@ -391,12 +393,10 @@ export function ReviewsPage() {
         </>
       )}
       {selectedId && (
-        <div
+        <DialogLayer
+          {...(detail.data ? { labelledBy: "evaluation-title" } : { label: "Avaliação" })}
+          onClose={() => setSelectedId(undefined)}
           className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/20 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="evaluation-title"
-          onMouseDown={() => setSelectedId(undefined)}
         >
           <div
             className="my-4 w-full max-w-2xl rounded-xl border border-glass-border bg-background p-6 shadow-xl"
@@ -435,7 +435,7 @@ export function ReviewsPage() {
               />
             )}
           </div>
-        </div>
+        </DialogLayer>
       )}
     </div>
   );

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getDashboardIndicators } from "@/lib/dashboard-indicators.functions";
 import type { DashboardPeriod } from "@/types/cartoquali";
+import { validatePeriod } from "@/utils/cartoquali-validation";
 
 export type RealDashboardFilters = {
   period: DashboardPeriod;
@@ -75,10 +76,19 @@ export function resolveDashboardRange(filters: RealDashboardFilters, now = new D
   };
 }
 
+/** Message for an incomplete or inverted custom period; undefined when the filters can be queried. */
+export function dashboardPeriodError(filters: RealDashboardFilters) {
+  return filters.period === "Personalizado"
+    ? validatePeriod(filters.startDate, filters.endDate)
+    : undefined;
+}
+
 export function useRealDashboard(filters: RealDashboardFilters) {
   const fetchIndicators = useServerFn(getDashboardIndicators);
   const range = useMemo(() => resolveDashboardRange(filters), [filters]);
   return useQuery({
+    // A custom period only runs once both dates are valid; otherwise it would silently show today.
+    enabled: !dashboardPeriodError(filters),
     queryKey: ["dashboard-indicators", filters, range],
     queryFn: () => {
       const data: typeof range & { pointId?: string; surveyId?: string; serviceId?: string } = {

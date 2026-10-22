@@ -1,5 +1,12 @@
 import type { ReactNode } from "react";
-import { AlertTriangle, CheckCircle2, Inbox, LoaderCircle, Star } from "lucide-react";
+import {
+  AlertTriangle,
+  CalendarRange,
+  CheckCircle2,
+  Inbox,
+  LoaderCircle,
+  Star,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function GlassPanel({
@@ -110,6 +117,18 @@ export function StatusBadge({
     >
       {children}
     </span>
+  );
+}
+
+/** Shown instead of indicators while a custom period is incomplete or inverted. */
+export function PeriodNotice({ message }: { message: string }) {
+  return (
+    <GlassPanel className="py-10 text-center">
+      <CalendarRange className="mx-auto size-8 text-muted-foreground" aria-hidden="true" />
+      <p role="status" className="mt-3 text-sm font-medium">
+        {message}
+      </p>
+    </GlassPanel>
   );
 }
 

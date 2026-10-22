@@ -19,9 +19,10 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { DASHBOARD_PERIODS } from "@/constants/cartoquali";
 import type { DashboardPeriod } from "@/types/cartoquali";
-import { GlassPanel, PageHeader, Stars } from "./primitives";
+import { DialogLayer } from "./dialog-layer";
+import { GlassPanel, PageHeader, PeriodNotice, Stars } from "./primitives";
 import { useAttentionCounts } from "./use-attention-counts";
-import { useRealDashboard } from "./use-real-dashboard";
+import { dashboardPeriodError, useRealDashboard } from "./use-real-dashboard";
 
 const number = (value: number | null, digits = 1) =>
   value === null ? "—" : value.toLocaleString("pt-BR", { maximumFractionDigits: digits });
@@ -86,7 +87,8 @@ export function DashboardPage() {
     startDate: startDate || undefined,
     endDate: endDate || undefined,
   });
-  const data = query.data;
+  const periodError = dashboardPeriodError({ period, startDate, endDate });
+  const data = periodError ? undefined : query.data;
   const filters = (
     <GlassPanel className="mb-4" tour="dashboard-filters">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -171,11 +173,11 @@ export function DashboardPage() {
       <AttentionBanners />
       <div className="hidden lg:block">{filters}</div>
       {mobileFilters && (
-        <div
+        <DialogLayer
+          label="Filtros do painel"
+          onClose={() => setMobileFilters(false)}
+          closeOnBackdrop={false}
           className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Filtros do painel"
         >
           <div className="mx-auto my-8 max-w-xl rounded-lg bg-background p-5">
             <div className="mb-4 flex items-center justify-between">
@@ -191,12 +193,12 @@ export function DashboardPage() {
             </div>
             {filters}
             <Button className="w-full" onClick={() => setMobileFilters(false)}>
-              Aplicar filtros
+              Ver resultados
             </Button>
           </div>
-        </div>
+        </DialogLayer>
       )}
-      {query.isPending && <LoadingPanels />}
+      {periodError ? <PeriodNotice message={periodError} /> : query.isPending && <LoadingPanels />}
       {query.isError && (
         <GlassPanel className="border-destructive/30 text-center">
           <AlertCircle className="mx-auto size-7 text-destructive" />

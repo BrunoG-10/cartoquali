@@ -20,8 +20,9 @@ import { Input } from "@/components/ui/input";
 import { DASHBOARD_PERIODS, QUALITY_METHODOLOGY } from "@/constants/cartoquali";
 import type { DashboardPeriod, QualityFilters } from "@/types/cartoquali";
 import { cn } from "@/lib/utils";
-import { GlassPanel, PageHeader } from "./primitives";
-import { useRealDashboard } from "./use-real-dashboard";
+import { DialogLayer } from "./dialog-layer";
+import { GlassPanel, PageHeader, PeriodNotice } from "./primitives";
+import { dashboardPeriodError, useRealDashboard } from "./use-real-dashboard";
 
 const sections = [
   "Visão Geral",
@@ -62,7 +63,8 @@ export function QualityDashboard() {
   const [mobileFilters, setMobileFilters] = useState(false);
   const [metric, setMetric] = useState<Metric>("average");
   const query = useRealDashboard(filters);
-  const data = query.data;
+  const periodError = dashboardPeriodError(filters);
+  const data = periodError ? undefined : query.data;
   const reset = () => setFilters({ period: "30 dias" });
   return (
     <div className="animate-enter">
@@ -130,7 +132,8 @@ export function QualityDashboard() {
           reset={reset}
         />
       </div>
-      {query.isPending && (
+      {periodError && <PeriodNotice message={periodError} />}
+      {!periodError && query.isPending && (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {Array.from({ length: 5 }).map((_, i) => (
             <GlassPanel key={i} className="h-28 animate-pulse bg-muted/40">
@@ -648,10 +651,11 @@ function Overlay({
   onClose(): void;
 }) {
   return (
-    <div
+    <DialogLayer
+      label={title}
+      onClose={onClose}
+      closeOnBackdrop={false}
       className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4"
-      role="dialog"
-      aria-modal="true"
     >
       <div className="mx-auto my-8 max-w-xl rounded-lg border border-glass-border bg-background p-5">
         <div className="mb-5 flex items-center justify-between">
@@ -662,7 +666,7 @@ function Overlay({
         </div>
         {children}
       </div>
-    </div>
+    </DialogLayer>
   );
 }
 function Methodology() {

@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
-import { dbTimestamp } from "@/lib/timestamp";
+import { dbTimestamp, todayBrasilia } from "@/lib/timestamp";
 import { loadTeam } from "@/lib/team";
 
 const statuses = ["planejado", "em_andamento", "concluido", "cancelado"] as const;
@@ -59,11 +59,6 @@ const updateInput = z.object({
 const columns =
   "id, ocorrencia_id, ponto_id, dimensao, titulo, problema, objetivo, acao, responsavel_id, prioridade, prazo, status, progresso, resultado_esperado, resultado, observacao_resultado, indicador_nome, indicador_antes, indicador_depois, concluido_em, created_at, updated_at, criado_por_id, concluido_por_id";
 
-/** Calendar date (YYYY-MM-DD) in Brasília, the reference for overdue deadlines. */
-function todayInSaoPaulo(now = new Date()) {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Sao_Paulo" }).format(now);
-}
-
 async function permissions(context: { supabase: any; userId: string }) {
   const { data: profile } = await context.supabase
     .from("usuarios")
@@ -103,7 +98,7 @@ export const listImprovementPlans = createServerFn({ method: "POST" })
         filtered(context.supabase.from("planos_melhoria").select("status, prazo, progresso")),
       ]);
     if (error || summaryError) throw new Error("Não foi possível carregar os planos de melhoria.");
-    const today = todayInSaoPaulo();
+    const today = todayBrasilia();
     const summaryRows = (allPlans ?? []) as Array<{
       status: string;
       prazo: string;
