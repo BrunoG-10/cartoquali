@@ -399,8 +399,7 @@ export function PointsPage() {
       />
       <PointQrDialog
         point={qrPoint}
-        officialName={registry?.officialName}
-        tradeName={registry?.tradeName}
+        registry={registry ?? undefined}
         open={Boolean(qrPoint)}
         onOpenChange={(next) => {
           if (!next) setQrPoint(undefined);

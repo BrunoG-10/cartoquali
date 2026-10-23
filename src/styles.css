@@ -794,33 +794,4 @@
   .rp-footer p {
     margin: 0 0 3px;
   }
-  body:has(.point-qr-sheet) * {
-    visibility: hidden;
-  }
-  body:has(.point-qr-sheet) .point-qr-sheet,
-  body:has(.point-qr-sheet) .point-qr-sheet * {
-    visibility: visible;
-  }
-  /* The poster lives inside a centered, scrollable dialog (translate + overflow), which would
-     clip it to a thin strip on paper; flatten the dialog so the sheet fills the first page. */
-  body:has(.point-qr-sheet) [role="dialog"] {
-    position: absolute !important;
-    inset: 0 auto auto 0 !important;
-    translate: none !important;
-    transform: none !important;
-    width: 100% !important;
-    max-width: none !important;
-    max-height: none !important;
-    overflow: visible !important;
-    border: 0 !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    background: white !important;
-  }
-  body:has(.point-qr-sheet) .point-qr-sheet {
-    width: 100%;
-    max-width: none;
-    padding: 16mm;
-    background: white;
-  }
 }
