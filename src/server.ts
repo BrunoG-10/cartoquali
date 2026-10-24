@@ -87,8 +87,44 @@ function withSecurityHeaders(response: Response): Response {
   });
 }
 
+// Uptime monitors (UptimeRobot, Better Stack…) poll this path. It answers 200 when the app and
+// Supabase respond and 503 otherwise. It uses only the public key against Supabase's own health
+// endpoint, so it reads no tenant data and never touches the service-role key. The upstream result
+// is reused for a few seconds so the public path cannot be used to flood Supabase.
+const HEALTH_PATH = "/api/health";
+const HEALTH_CACHE_MS = 15_000;
+let lastHealth: { ok: boolean; at: number } | undefined;
+
+async function supabaseIsHealthy() {
+  const url = process.env["SUPABASE_URL"];
+  const key = process.env["SUPABASE_PUBLISHABLE_KEY"];
+  if (!url || !key) return false;
+  try {
+    const response = await fetch(`${url}/auth/v1/health`, {
+      headers: { apikey: key },
+      signal: AbortSignal.timeout(5_000),
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function healthResponse(): Promise<Response> {
+  const headers = { "content-type": "application/json", "cache-control": "no-store, max-age=0" };
+  if (!lastHealth || Date.now() - lastHealth.at > HEALTH_CACHE_MS)
+    lastHealth = { ok: await supabaseIsHealthy(), at: Date.now() };
+  if (!lastHealth.ok) console.error("[health] Supabase check failed");
+  return new Response(JSON.stringify({ status: lastHealth.ok ? "ok" : "degraded" }), {
+    status: lastHealth.ok ? 200 : 503,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    if (new URL(request.url).pathname === HEALTH_PATH && ["GET", "HEAD"].includes(request.method))
+      return withSecurityHeaders(await healthResponse());
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
