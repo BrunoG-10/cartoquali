@@ -33,3 +33,11 @@
 - Rate-limit public evaluation submissions by an ephemeral browser-session token, never by network address, so shared registry networks do not block unrelated visitors.
 - Provision registries through the persistent eight-step onboarding RPC boundary; keep test evaluations isolated and require a complete checklist before activation.
 - Keep the commercial landing page on `/` data-free except for its server-validated lead submission; product visuals must use static illustrative data and never query tenant operations.
+- Serve fonts, scripts and images from our own origin (fonts via `@fontsource`); add no third-party scripts, fonts, trackers or analytics, and if one is ever approved, ship it with a consent banner, a privacy-notice update and an explicit CSP change.
+- Keep the security headers in `src/server.ts` (CSP limited to `'self'` and the Supabase project, `nosniff`, referrer and permissions policies, `frame-ancestors`) intact; never widen the CSP for convenience.
+- Keep `/api/health` free of tenant data and of the service-role key: it checks Supabase with the publishable key and briefly caches the upstream result.
+- Every page is `noindex` by default from the root route; only public commercial pages opt in with `indexableMeta` from `src/lib/seo.ts`, and each one also gets a canonical link and an entry in `public/sitemap.xml`.
+- Keep `public/sitemap.xml`, `public/llms.txt` and the 1200×630 `public/og-image.png` in step with the commercial pages and with features that really exist.
+- Keep `npx eslint src` free of `jsx-a11y` findings; label every form control, give informative images alt text, and build modal windows on `DialogLayer` (Esc closes, focus stays inside and returns to the opener).
+- Before each commit run `npx tsc --noEmit`, `npx eslint src` and `npx vitest run`; commit only the task's own files, and keep dry-run or ad-hoc diagnostic SQL out of the repository.
+- A push only updates the code: the site changes after Lovable's Publish → Update, and each release is re-checked on the live site against the delivery checklist ("Padrão de Entrega CartoQuali", https://claude.ai/artifact/4kL3TkCozyyB24XY5F71Ts).
