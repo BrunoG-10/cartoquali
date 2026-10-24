@@ -9,12 +9,12 @@ export const Route = createFileRoute("/termos")({
       { title: "Termos de uso — CartoQuali" },
       {
         name: "description",
-        content: "Condições operacionais de uso do CartoQuali, sujeitas a revisão jurídica.",
+        content: "Condições de uso da plataforma CartoQuali de avaliação e gestão da qualidade.",
       },
       { property: "og:title", content: "Termos de uso — CartoQuali" },
       {
         property: "og:description",
-        content: "Condições operacionais de uso do CartoQuali, sujeitas a revisão jurídica.",
+        content: "Condições de uso da plataforma CartoQuali de avaliação e gestão da qualidade.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -42,6 +42,9 @@ function TermsPage() {
               <div>
                 <p className="text-xs font-semibold uppercase text-primary">CartoQuali</p>
                 <h1 className="font-display text-3xl font-bold">Termos de uso</h1>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Versão 1.1 · atualizado em outubro de 2026
+                </p>
               </div>
             </div>
             <div className="mt-7 space-y-6 text-sm leading-7 text-muted-foreground">
@@ -61,10 +64,52 @@ function TermsPage() {
                 </p>
               </section>
               <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Contas e acesso da equipe
+                </h2>
+                <p>
+                  O cartório cadastra as pessoas da equipe e define o perfil de cada uma. Cada
+                  acesso é pessoal: não compartilhe senha nem convite. O cartório responde pelo uso
+                  feito pelas contas que criou e deve remover o acesso de quem deixar a equipe.
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Suspensão de acesso
+                </h2>
+                <p>
+                  O CartoQuali pode bloquear uma conta ou o envio de avaliações em caso de uso
+                  indevido, tentativa de invasão, envio automatizado em massa ou risco à segurança
+                  de outros usuários. Sempre que possível, o cartório é avisado antes, com o motivo.
+                </p>
+              </section>
+              <section>
                 <h2 className="font-display text-lg font-bold text-foreground">Disponibilidade</h2>
                 <p>
                   O serviço pode passar por manutenção e não substitui canais oficiais, judiciais ou
-                  de atendimento urgente.
+                  de atendimento urgente. Manutenções planejadas são feitas, sempre que possível, em
+                  horários de menor uso.
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Limites de responsabilidade
+                </h2>
+                <p>
+                  Os indicadores refletem as respostas recebidas e servem de apoio à gestão; as
+                  decisões tomadas a partir deles cabem ao cartório. O CartoQuali não responde pelo
+                  conteúdo escrito por quem avalia nem por falhas de conexão, de aparelhos ou de
+                  serviços de terceiros fora do seu controle.
+                </p>
+              </section>
+              <section>
+                <h2 className="font-display text-lg font-bold text-foreground">
+                  Propriedade intelectual
+                </h2>
+                <p>
+                  A plataforma, a marca CartoQuali, o código e o visual pertencem ao CartoQuali. O
+                  cartório recebe uma licença de uso enquanto a contratação estiver ativa. As
+                  avaliações, respostas e dados cadastrados pertencem ao cartório.
                 </p>
               </section>
               <section>

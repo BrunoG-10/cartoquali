@@ -50,7 +50,6 @@ function Modal({
     >
       <div
         className={`my-4 w-full ${wide ? "max-w-4xl" : "max-w-xl"} rounded-xl border bg-background p-6 shadow-xl`}
-        onMouseDown={(e) => e.stopPropagation()}
       >
         {children}
       </div>

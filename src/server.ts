@@ -44,7 +44,7 @@ function isH3SwallowedErrorBody(body: string): boolean {
   }
 }
 
-// Same-origin scripts (app bundle and the host's injected ones), Google Fonts and the Supabase
+// Same-origin scripts (app bundle and the host's injected ones), self-hosted fonts and the Supabase
 // project. 'unsafe-inline' stays for scripts because SSR streams inline hydration data; the policy
 // still blocks scripts and data exfiltration to any other origin. frame-ancestors stops the panel
 // from being embedded by another site (clickjacking); only Lovable's editor, which previews the app
@@ -55,8 +55,8 @@ function contentSecurityPolicy() {
   return [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline'",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    "font-src 'self' https://fonts.gstatic.com data:",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self' data:",
     "img-src 'self' data: blob:",
     `connect-src 'self' ${supabase} ${realtime}`.trim(),
     "frame-ancestors 'self' https://lovable.dev https://*.lovable.dev https://*.lovable.app",

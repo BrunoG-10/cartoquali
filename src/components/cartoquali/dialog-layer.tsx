@@ -17,7 +17,7 @@ export function DialogLayer({
   children,
 }: {
   onClose(): void;
-  /** Clicking outside the panel closes too (the panel must stop mousedown propagation). */
+  /** Clicking the backdrop itself (not the panel) closes too. */
   closeOnBackdrop?: boolean;
   className: string;
   label?: string;
@@ -71,6 +71,8 @@ export function DialogLayer({
     };
   }, []);
   return (
+    // Backdrop click is a mouse shortcut only; keyboard users close with Esc (handled above).
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
     <div
       ref={ref}
       role="dialog"
@@ -79,7 +81,13 @@ export function DialogLayer({
       aria-labelledby={labelledBy}
       tabIndex={-1}
       className={`${className} outline-none`}
-      onMouseDown={closeOnBackdrop ? () => closeRef.current() : undefined}
+      onMouseDown={
+        closeOnBackdrop
+          ? (event) => {
+              if (event.target === event.currentTarget) closeRef.current();
+            }
+          : undefined
+      }
     >
       {children}
     </div>

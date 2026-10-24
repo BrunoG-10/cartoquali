@@ -92,12 +92,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico", sizes: "32x32" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap",
-      },
     ],
   }),
   shellComponent: RootShell,
@@ -120,11 +114,33 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+// Keyboard and screen-reader users jump past the navigation to the page's <main>, whichever
+// layout rendered it.
+function SkipToContent() {
+  return (
+    <a
+      href="#conteudo"
+      className="sr-only z-[100] rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
+      onClick={(event) => {
+        const main = document.querySelector<HTMLElement>("main");
+        if (!main) return;
+        event.preventDefault();
+        if (!main.hasAttribute("tabindex")) main.tabIndex = -1;
+        main.focus();
+        main.scrollIntoView();
+      }}
+    >
+      Pular para o conteúdo
+    </a>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
+      <SkipToContent />
       <AuthProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />

@@ -85,10 +85,7 @@ function Modal({
       onClose={onClose}
       className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-foreground/25 p-4"
     >
-      <div
-        className="my-4 w-full max-w-2xl rounded-xl border border-glass-border bg-background p-6 shadow-xl"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
+      <div className="my-4 w-full max-w-2xl rounded-xl border border-glass-border bg-background p-6 shadow-xl">
         {children}
       </div>
     </DialogLayer>

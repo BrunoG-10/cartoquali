@@ -1084,10 +1084,7 @@ function Overlay({
       onClose={onClose}
       className="fixed inset-0 z-50 overflow-y-auto bg-foreground/25 p-4"
     >
-      <div
-        className="mx-auto my-6 w-full max-w-5xl rounded-lg border border-glass-border bg-background p-5 shadow-xl"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
+      <div className="mx-auto my-6 w-full max-w-5xl rounded-lg border border-glass-border bg-background p-5 shadow-xl">
         <div className="mb-5 flex items-start justify-between gap-3">
           <h2 className="font-display text-xl font-bold">{title}</h2>
           <Button size="icon" variant="ghost" aria-label="Fechar" onClick={onClose}>
