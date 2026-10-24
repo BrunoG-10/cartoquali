@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, LockKeyhole, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/cartoquali/primitives";
+import { indexableMeta, publicPageUrl } from "@/lib/seo";
 
 export const Route = createFileRoute("/privacidade")({
   head: () => ({
@@ -18,8 +19,11 @@ export const Route = createFileRoute("/privacidade")({
         content: "Informações de privacidade da avaliação CartoQuali.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: publicPageUrl("/privacidade") },
       { name: "twitter:card", content: "summary_large_image" },
+      indexableMeta,
     ],
+    links: [{ rel: "canonical", href: publicPageUrl("/privacidade") }],
   }),
   component: PrivacyPage,
 });

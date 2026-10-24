@@ -1,0 +1,30 @@
+# CartoQuali
+
+> Plataforma brasileira de avaliação do atendimento e gestão da qualidade para cartórios (serventias extrajudiciais). O cidadão avalia o atendimento por QR Code, sem aplicativo e sem cadastro; a equipe do cartório acompanha indicadores e transforma cada problema em ação de melhoria.
+
+## Como funciona
+
+- O cartório recebe um QR Code único para todo o atendimento, usado em cartazes, no balcão e no site.
+- O cidadão responde uma pesquisa curta pelo celular. A avaliação não exige conta; o contato para retorno é opcional e depende de autorização específica.
+- O painel mostra satisfação, notas por dimensão e evolução no período.
+- Avaliações negativas viram ocorrências com prazo e histórico, e as ocorrências alimentam planos de melhoria.
+- Relatórios saem em CSV e em PDF pela impressão do navegador.
+
+## Para quem é
+
+Cartórios de notas, protesto, registro de imóveis, registro civil e títulos e documentos que querem medir e melhorar a qualidade do atendimento.
+
+## Privacidade
+
+O CartoQuali segue a LGPD (Lei nº 13.709/2018): o cartório é o controlador e o CartoQuali é o operador. Os dados de cada cartório ficam isolados, e o contato do cidadão não entra em indicadores nem em relatórios gerais.
+
+## Contratação
+
+Teste grátis por 7 dias; depois, é possível cancelar quando quiser, sem multa. Demonstrações são agendadas pelo formulário da página inicial ou pelo WhatsApp.
+
+## Links
+
+- [Página inicial](https://cartoquali.com.br/)
+- [Aviso de privacidade](https://cartoquali.com.br/privacidade)
+- [Termos de uso](https://cartoquali.com.br/termos)
+- Contato: cartoquali@gmail.com

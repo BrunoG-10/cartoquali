@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/components/cartoquali/auth-provider";
+import { shareImageMeta } from "@/lib/seo";
 
 function NotFoundComponent() {
   return (
@@ -80,8 +81,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: "CartoQuali" },
       { name: "author", content: "CartoQuali" },
+      // Search engines skip every page by default (login, surveys, admin panel); the public
+      // commercial pages opt in with indexableMeta.
+      { name: "robots", content: "noindex, nofollow" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "CartoQuali" },
+      { property: "og:locale", content: "pt_BR" },
+      ...shareImageMeta(),
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [

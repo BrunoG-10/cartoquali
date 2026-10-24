@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, FileCheck2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassPanel } from "@/components/cartoquali/primitives";
+import { indexableMeta, publicPageUrl } from "@/lib/seo";
 
 export const Route = createFileRoute("/termos")({
   head: () => ({
@@ -17,8 +18,11 @@ export const Route = createFileRoute("/termos")({
         content: "Condições de uso da plataforma CartoQuali de avaliação e gestão da qualidade.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: publicPageUrl("/termos") },
       { name: "twitter:card", content: "summary_large_image" },
+      indexableMeta,
     ],
+    links: [{ rel: "canonical", href: publicPageUrl("/termos") }],
   }),
   component: TermsPage,
 });

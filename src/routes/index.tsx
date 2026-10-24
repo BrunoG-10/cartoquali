@@ -1,18 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LandingPage } from "@/components/cartoquali/landing-page";
-import { getPublicAppBaseUrl } from "@/lib/public-url";
+import { indexableMeta, publicPageUrl } from "@/lib/seo";
+
+const description =
+  "Acompanhe a satisfação dos usuários, indicadores de qualidade e oportunidades de melhoria do seu cartório com o CartoQuali.";
+
+// Tells search engines what the product is and who offers it (schema.org, read as JSON-LD).
+function structuredData(homeUrl: string) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${homeUrl}#organizacao`,
+        name: "CartoQuali",
+        url: homeUrl,
+        logo: publicPageUrl("/icon-512.png"),
+        email: "cartoquali@gmail.com",
+      },
+      {
+        "@type": "SoftwareApplication",
+        name: "CartoQuali",
+        url: homeUrl,
+        description,
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        inLanguage: "pt-BR",
+        publisher: { "@id": `${homeUrl}#organizacao` },
+      },
+    ],
+  };
+}
 
 export const Route = createFileRoute("/")({
   head: () => {
-    const homeUrl = `${getPublicAppBaseUrl()}/`;
+    const homeUrl = publicPageUrl("/");
     return {
       meta: [
         { title: "CartoQuali | Plataforma de Qualidade para Cartórios" },
-        {
-          name: "description",
-          content:
-            "Acompanhe a satisfação dos usuários, indicadores de qualidade e oportunidades de melhoria do seu cartório com o CartoQuali.",
-        },
+        { name: "description", content: description },
+        indexableMeta,
         { property: "og:title", content: "CartoQuali | Plataforma de Qualidade para Cartórios" },
         {
           property: "og:description",
@@ -24,6 +51,7 @@ export const Route = createFileRoute("/")({
         { name: "twitter:card", content: "summary_large_image" },
       ],
       links: [{ rel: "canonical", href: homeUrl }],
+      scripts: [{ type: "application/ld+json", children: JSON.stringify(structuredData(homeUrl)) }],
     };
   },
   component: LandingPage,
