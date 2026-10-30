@@ -19,7 +19,7 @@ export const userSchema = z.object({
   email: z.string().trim().email("Informe um e-mail válido.").max(255),
   phone: z.string().trim().max(30),
   role: z.enum(["platform_admin", "registry_admin", "manager", "operator"], {
-    required_error: "Selecione um perfil.",
+    error: "Selecione um perfil.",
   }),
 });
 
@@ -45,7 +45,7 @@ export const pointSchema = z.object({
   surveyId: z.string().min(1, "Selecione uma pesquisa."),
 });
 
-export function firstValidationError(result: z.SafeParseReturnType<unknown, unknown>) {
+export function firstValidationError(result: z.ZodSafeParseResult<unknown>) {
   return result.success ? undefined : result.error.issues[0]?.message;
 }
 

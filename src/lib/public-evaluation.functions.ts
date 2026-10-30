@@ -17,10 +17,10 @@ const answerValue = z.union([
 const codeSchema = z.string().trim().min(3).max(80);
 const answersSchema = z.record(z.string().uuid(), answerValue).superRefine((answers, context) => {
   if (Object.keys(answers).length > 50)
-    context.addIssue({ code: z.ZodIssueCode.custom, message: "Muitas respostas foram enviadas." });
+    context.addIssue({ code: "custom", message: "Muitas respostas foram enviadas." });
   if (new TextEncoder().encode(JSON.stringify(answers)).byteLength > 32_768)
     context.addIssue({
-      code: z.ZodIssueCode.custom,
+      code: "custom",
       message: "As respostas excedem o limite permitido.",
     });
 });
