@@ -84,10 +84,28 @@ const productHighlights: Array<[LucideIcon, string, string]> = [
   ],
 ];
 
-const continuousImprovement = [
-  "O Código Nacional de Normas do CNJ, com a redação dada pelo Provimento nº 229/2026, adota a melhoria contínua da experiência do usuário como princípio dos serviços eletrônicos de registro.",
-  "A Lei nº 13.460/2017, aplicável de forma subsidiária aos serviços públicos prestados por particulares, prevê a avaliação continuada da satisfação dos usuários, com pesquisa ao menos anual.",
-  "O PQTA, Prêmio de Qualidade Total Anoreg promovido pela ANOREG/BR, avalia a gestão dos cartórios com base em requisitos como o controle de indicadores de desempenho e a avaliação da satisfação dos usuários.",
+// Only claims from the verified normative arguments (out/2026); never cite a norm outside them.
+const normativeReferences: Array<[string, string, string]> = [
+  [
+    "PQTA (ANOREG/BR)",
+    "Entre os critérios da edição 2026 estão o controle de indicadores de desempenho e a avaliação da satisfação dos usuários. A auditoria independente pede evidência com histórico.",
+    "O painel guarda indicadores por serviço e período, todos os dias.",
+  ],
+  [
+    "ISO 9001 e ABNT NBR 15906",
+    "São a referência da lista de verificação do PQTA. A ISO 9001 pede monitorar a percepção dos clientes e tratar não conformidades com ação corretiva.",
+    "A avaliação negativa vira ocorrência com responsável, prazo e plano de ação, que é o registro que o auditor procura.",
+  ],
+  [
+    "Lei nº 13.460/2017",
+    "Prevê a avaliação continuada da satisfação do usuário de serviços públicos, por pesquisa feita no mínimo uma vez por ano, e se aplica de forma subsidiária aos serviços prestados por particular, como a atividade notarial e registral, exercida por delegação.",
+    "A pesquisa contínua pelo QR Code vai além do mínimo anual.",
+  ],
+  [
+    "Ouvidoria e corregedoria",
+    "Reclamações chegam à ouvidoria e à corregedoria.",
+    "O registro das avaliações e do plano de melhoria demonstra gestão diligente.",
+  ],
 ];
 
 const actionFlow = ["Avaliação", "Ocorrência", "Plano de melhoria", "Resultado"];
@@ -248,6 +266,7 @@ function CommercialHeader() {
     ["#como-funciona", "Como funciona"],
     ["#indicadores", "Indicadores"],
     ["#privacidade", "Privacidade"],
+    ["#normas", "Normas"],
     ["#faq", "Perguntas"],
   ] as const;
   return (
@@ -530,6 +549,47 @@ function PrivacySection() {
   );
 }
 
+function NormsSection() {
+  return (
+    <section
+      id="normas"
+      className="scroll-mt-20 border-b border-border bg-secondary/40 py-20 sm:py-24"
+    >
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
+        <SectionTitle
+          eyebrow="Normas, certificação e PQTA"
+          title="Satisfação medida com evidência, todos os dias"
+          description="Prêmios e certificações do setor avaliam se o cartório mede a satisfação de quem atende e trata o resultado, com histórico que comprove. O CartoQuali gera essa evidência no dia a dia, e não só na véspera da auditoria."
+        />
+        <ul className="mt-12 grid gap-4 md:grid-cols-2">
+          {normativeReferences.map(([title, reference, evidence]) => (
+            <li key={title} className="flex flex-col rounded-lg border border-border bg-card p-5">
+              <h3 className="font-display text-lg font-bold">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{reference}</p>
+              <p className="mt-4 flex gap-2 border-t border-border pt-4 text-sm font-semibold leading-6">
+                <CheckCircle2 className="mt-1 size-4 shrink-0 text-success" aria-hidden="true" />
+                {evidence}
+              </p>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <p className="max-w-3xl border-l-2 border-brand-gold pl-4 text-xs leading-5 text-muted-foreground">
+            O CartoQuali é uma ferramenta independente, sem vínculo com a ANOREG/BR, o PQTA, o CNJ
+            ou corregedorias. Nenhuma norma exige o uso do CartoQuali, e ele não garante prêmio,
+            pontuação ou certificação. Ele organiza a evidência que o seu cartório apresenta.
+          </p>
+          <div className="shrink-0">
+            <AnchorCta>
+              Começar o teste grátis <ArrowRight />
+            </AnchorCta>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SectorSection() {
   return (
     <section className="border-b border-border py-20 sm:py-24">
@@ -537,23 +597,8 @@ function SectorSection() {
         <div>
           <SectionTitle eyebrow="Feito para cartórios" title="Pensado para a rotina do cartório" />
           <p className="mt-5 text-base leading-7 text-muted-foreground sm:text-lg">
-            A melhoria contínua do atendimento aparece em diferentes referências do setor:
-          </p>
-          <ul className="mt-4 space-y-3">
-            {continuousImprovement.map((item) => (
-              <li key={item} className="flex gap-2 text-sm leading-6 text-muted-foreground">
-                <CheckCircle2 className="mt-1 size-4 shrink-0 text-success" aria-hidden="true" />
-                {item}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-4 text-base leading-7 text-muted-foreground sm:text-lg">
             Medir de forma contínua a percepção de quem é atendido ajuda o cartório a acompanhar a
             qualidade no dia a dia, e não só na época de uma avaliação.
-          </p>
-          <p className="mt-8 border-l-2 border-brand-gold pl-4 text-xs leading-5 text-muted-foreground">
-            O CartoQuali é uma plataforma independente, sem vínculo com a ANOREG/BR, o PQTA ou o
-            CNJ, e não substitui avaliações, certificações ou programas oficiais do setor.
           </p>
         </div>
         <ul className="grid content-center gap-3">
@@ -897,6 +942,7 @@ export function LandingPage() {
         <IndicatorsSection />
         <ActionSection />
         <PrivacySection />
+        <NormsSection />
         <SectorSection />
         <FaqSection />
         <DemoForm />
