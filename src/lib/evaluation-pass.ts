@@ -42,6 +42,31 @@ function sameText(a: string, b: string) {
   return diff === 0;
 }
 
+// Token do clique em "Publicar no Google": o envio devolve "<id da avaliação>.<assinatura>", e só
+// quem enviou aquela avaliação consegue marcar o clique nela. O prazo de 30 minutos fica no banco.
+async function signClick(secret: string, evaluationId: string) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(`${secret}:google-click`),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  return toHex(await crypto.subtle.sign("HMAC", key, encoder.encode(evaluationId.toLowerCase())));
+}
+
+export async function issueGoogleClickToken(secret: string, evaluationId: string) {
+  return `${evaluationId.toLowerCase()}.${await signClick(secret, evaluationId)}`;
+}
+
+/** Devolve o id da avaliação quando o token é íntegro; senão, null. */
+export async function readGoogleClickToken(secret: string, token: string) {
+  const match = /^([0-9a-f-]{36})\.([0-9a-f]{64})$/.exec(token);
+  if (!match) return null;
+  const evaluationId = match[1] ?? "";
+  return sameText(match[2] ?? "", await signClick(secret, evaluationId)) ? evaluationId : null;
+}
+
 export async function checkEvaluationPass(
   secret: string,
   code: string,

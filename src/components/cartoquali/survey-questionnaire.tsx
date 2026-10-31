@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import {
   OTHER_TEXT_MAX,
@@ -99,8 +98,12 @@ export function SurveyQuestionnaire({
   const next = () => {
     if (step < visible.length - 1) setStep((current) => current + 1);
     else {
+      // Only answers to questions still visible: raising the rating to 4 or 5 drops the
+      // "O que poderia melhorar?" reasons picked before.
+      const shown = new Set(visible.map((item) => item.id));
+      const kept = Object.fromEntries(Object.entries(answers).filter(([id]) => shown.has(id)));
       setComplete(true);
-      onComplete?.(answers);
+      onComplete?.(kept);
     }
   };
   const progress = Math.round(((step + 1) / visible.length) * 100);
@@ -185,7 +188,7 @@ export function SurveyQuestionnaire({
             className="min-h-28"
             value={typeof answer === "string" ? answer : ""}
             onChange={(event) => setAnswer(event.target.value)}
-            placeholder="Digite sua resposta"
+            placeholder="Quer contar mais? (opcional)"
           />
         )}
         {question.type === "single_choice" && (
@@ -210,20 +213,25 @@ export function SurveyQuestionnaire({
             const showOther = values.some(isOtherOption);
             return (
               <div className="grid gap-2">
-                {question.options?.map((option) => (
-                  <label
-                    key={option}
-                    className="flex min-h-12 cursor-pointer items-center gap-3 rounded-lg border p-3 text-left text-sm"
-                  >
-                    <Checkbox
-                      checked={values.includes(option)}
-                      onCheckedChange={() =>
-                        setAnswer(choiceAnswer(toggleChoice(values, option), other))
-                      }
-                    />
-                    {option}
-                  </label>
-                ))}
+                {/* One-tap chips; several can be on. min-h-11 = 44px touch target. */}
+                <div className="flex flex-wrap justify-center gap-2">
+                  {question.options?.map((option) => {
+                    const selected = values.includes(option);
+                    return (
+                      <Button
+                        key={option}
+                        type="button"
+                        variant={selected ? "default" : "outline"}
+                        className="min-h-11 whitespace-normal rounded-full px-4"
+                        aria-pressed={selected}
+                        onClick={() => setAnswer(choiceAnswer(toggleChoice(values, option), other))}
+                      >
+                        {selected && <Check aria-hidden="true" />}
+                        {option}
+                      </Button>
+                    );
+                  })}
+                </div>
                 {showOther && (
                   <label className="mt-1 block text-left text-sm font-medium">
                     {/* Neutral wording: "Outro" can appear in any multiple-choice question. */}

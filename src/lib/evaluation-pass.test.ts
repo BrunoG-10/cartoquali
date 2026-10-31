@@ -4,6 +4,8 @@ import {
   PASS_MIN_AGE_MS,
   checkEvaluationPass,
   issueEvaluationPass,
+  issueGoogleClickToken,
+  readGoogleClickToken,
 } from "./evaluation-pass";
 
 const secret = "test-secret";
@@ -41,5 +43,22 @@ describe("evaluation pass", () => {
     expect(await checkEvaluationPass(secret, "CQ-BAL-001", "qualquer-coisa", later)).toBe(
       "invalid",
     );
+  });
+});
+
+describe("google click token", () => {
+  const evaluationId = "00000000-0000-4000-8000-000000000123";
+
+  it("round-trips the evaluation id", async () => {
+    const token = await issueGoogleClickToken(secret, evaluationId);
+    expect(await readGoogleClickToken(secret, token)).toBe(evaluationId);
+  });
+
+  it("rejects tokens for another evaluation, another secret or garbage", async () => {
+    const token = await issueGoogleClickToken(secret, evaluationId);
+    const other = token.replace("123.", "124.");
+    expect(await readGoogleClickToken(secret, other)).toBeNull();
+    expect(await readGoogleClickToken("other-secret", token)).toBeNull();
+    expect(await readGoogleClickToken(secret, "qualquer-coisa")).toBeNull();
   });
 });

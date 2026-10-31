@@ -68,6 +68,10 @@ export type DashboardIndicatorsData = {
     point_name: string;
     service_name?: string | null;
   }>;
+  /** Evaluations of the period whose citizen opened the Google review page (per registry/point only). */
+  googleClicks?: number;
+  /** Improvement reasons among ratings 1–3 (codes from src/lib/reasons.ts). */
+  reasons?: Array<{ code: string; count: number }>;
   filters: {
     points: Array<{ id: string; name: string }>;
     surveys: Array<{ id: string; name: string }>;

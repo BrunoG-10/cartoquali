@@ -38,6 +38,13 @@ Avaliações ─ Contato opcional restrito
 | `evaluation_contacts`    | Contato opcional separado         | nome, telefone, e-mail, versão e data da autorização                               | Uma avaliação; mesmo cartório                                                    | Somente administradores autorizados; nunca integra indicadores ou exportação geral                              |
 | `privacy_requests`       | Direitos e governança             | tipo, descrição, contato mínimo, status, responsável, observações e conclusão      | Cartório obrigatório; avaliação e responsável opcionais no mesmo tenant          | Administradores do tenant; registro não é excluído; encerramento é terminal                                     |
 
+### Convite para o Google e motivos (20261030010000)
+
+- `configuracoes_cartorio.google_place_id`, `google_place_nome`, `google_convite_ativo`: perfil do Google do cartório e o convite na tela de agradecimento. O convite só liga com `place_id`; o contexto público recebe o `place_id` só com o convite ligado.
+- `avaliacoes.motivos text[]`: códigos fixos (`demora`, `atendimento`, `informacao`, `ambiente`, `resolucao`, `outro`) derivados por gatilho em `respostas` das opções de "O que poderia melhorar?", só em notas 1–3. O texto original continua em `motivo_insatisfacao`.
+- `avaliacoes.google_clicado_em timestamptz`: primeiro clique em "Publicar no Google", gravado só pela RPC `registrar_clique_google` (service_role), até 30 minutos após o envio e nunca em avaliação de teste. Sem IP, navegador ou dado pessoal novo; a métrica é por cartório/ponto, nunca por colaborador.
+- `cartoquali_private.google_places_buscas`: limite de 20 buscas no Google a cada 10 minutos por administrador (`registrar_busca_google_places`).
+
 ## Integridade, índices e acesso
 
 - UUIDs usam `gen_random_uuid()`; datas de evento usam `timestamptz` com `now()`.

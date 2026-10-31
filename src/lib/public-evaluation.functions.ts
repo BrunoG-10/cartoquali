@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { GOOGLE_PLACE_ID } from "@/lib/google-review";
 
 const answerValue = z.union([
   z.number().int().min(1).max(5),
@@ -81,6 +82,8 @@ export type PublicEvaluationContext =
         privacyNoticeVersion: string;
         /** Registry's privacy channel / encarregado (LGPD art. 41); null until configured. */
         privacyContactChannel: string | null;
+        /** Google Business Profile place id; set only while the registry's Google invite is on. */
+        googlePlaceId: string | null;
       };
       questions: PublicQuestion[];
       /** Signed by the server when the survey opens; required to submit (src/lib/evaluation-pass.ts). */
@@ -142,7 +145,8 @@ export function parseContext(value: unknown): PublicEvaluationContext {
       text: raw["text"],
       type: raw["type"] as PublicQuestion["type"],
       order: Number(raw["order"]),
-      required: raw["required"] === true,
+      // Free-text answers (comments) are always optional, whatever the survey says.
+      required: raw["required"] === true && raw["type"] !== "text",
       dimension: String(raw["dimension"] ?? "general"),
       condition,
       options,
@@ -189,6 +193,11 @@ export function parseContext(value: unknown): PublicEvaluationContext {
         typeof rawSettings["privacyContactChannel"] === "string" &&
         rawSettings["privacyContactChannel"].trim()
           ? rawSettings["privacyContactChannel"].trim()
+          : null,
+      googlePlaceId:
+        typeof rawSettings["googlePlaceId"] === "string" &&
+        GOOGLE_PLACE_ID.test(rawSettings["googlePlaceId"])
+          ? rawSettings["googlePlaceId"]
           : null,
     },
     questions,
@@ -285,5 +294,34 @@ export const submitPublicEvaluation = createServerFn({ method: "POST" })
           : "Não foi possível registrar sua avaliação. Revise as respostas e tente novamente.",
       );
     }
-    return { ok: true, duplicate: isRecord(result) && result["duplicate"] === true };
+    const evaluationId =
+      isRecord(result) && typeof result["evaluationId"] === "string"
+        ? result["evaluationId"]
+        : null;
+    const { issueGoogleClickToken } = await import("@/lib/evaluation-pass");
+    return {
+      ok: true,
+      duplicate: isRecord(result) && result["duplicate"] === true,
+      // Lets this browser mark "Publicar no Google" on its own evaluation only (no personal data).
+      googleClickToken: evaluationId ? await issueGoogleClickToken(secret, evaluationId) : null,
+    };
+  });
+
+/** Records that the citizen opened the Google review page. Never publishes anything on Google. */
+export const registerGoogleClick = createServerFn({ method: "POST" })
+  .validator((input: unknown) => z.object({ token: z.string().max(120) }).parse(input))
+  .handler(async ({ data }) => {
+    setResponseHeader("Cache-Control", "no-store, max-age=0");
+    const secret = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
+    const { readGoogleClickToken } = await import("@/lib/evaluation-pass");
+    const evaluationId = await readGoogleClickToken(secret, data.token);
+    if (!evaluationId) return { ok: false };
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { untypedDb } = await import("@/lib/untyped-db");
+    const { data: recorded, error } = await untypedDb(supabaseAdmin).rpc(
+      "registrar_clique_google",
+      { _avaliacao_id: evaluationId },
+    );
+    if (error) console.error("[public-evaluation] google click failed", error.code);
+    return { ok: recorded === true };
   });

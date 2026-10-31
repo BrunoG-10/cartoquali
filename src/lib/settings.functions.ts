@@ -1,25 +1,40 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { GOOGLE_PLACE_ID } from "@/lib/google-review";
+import { untypedDb } from "@/lib/untyped-db";
 
 const optionalDays = z.union([z.number().int().min(1).max(36500), z.null()]);
-const settingsInput = z.object({
-  displayName: z.string().trim().min(1).max(120),
-  language: z.string().trim().min(2).max(20),
-  dateFormat: z.string().trim().min(1).max(30),
-  timezone: z.string().trim().min(1).max(80),
-  thankYouMessage: z.string().trim().min(1).max(500),
-  defaultSurveyId: z.string().uuid().nullable(),
-  anonymousEvaluations: z.boolean(),
-  allowComments: z.boolean(),
-  allowContact: z.boolean(),
-  activeMethodology: z.string().trim().min(1).max(120),
-  privacyContactChannel: z.string().trim().max(500).nullable(),
-  privacyNoticeVersion: z.string().trim().min(1).max(30),
-  evaluationRetentionDays: optionalDays,
-  contactRetentionDays: optionalDays,
-  auditRetentionDays: optionalDays,
-});
+const settingsInput = z
+  .object({
+    displayName: z.string().trim().min(1).max(120),
+    language: z.string().trim().min(2).max(20),
+    dateFormat: z.string().trim().min(1).max(30),
+    timezone: z.string().trim().min(1).max(80),
+    thankYouMessage: z.string().trim().min(1).max(500),
+    defaultSurveyId: z.string().uuid().nullable(),
+    anonymousEvaluations: z.boolean(),
+    allowComments: z.boolean(),
+    allowContact: z.boolean(),
+    activeMethodology: z.string().trim().min(1).max(120),
+    privacyContactChannel: z.string().trim().max(500).nullable(),
+    privacyNoticeVersion: z.string().trim().min(1).max(30),
+    evaluationRetentionDays: optionalDays,
+    contactRetentionDays: optionalDays,
+    auditRetentionDays: optionalDays,
+    googlePlaceId: z.string().trim().regex(GOOGLE_PLACE_ID).nullable(),
+    googlePlaceName: z.string().trim().max(300).nullable(),
+    /** Same invite for every rating (Google policy); only needs a chosen Google profile. */
+    googleInviteActive: z.boolean(),
+  })
+  .refine((value) => !value.googleInviteActive || value.googlePlaceId !== null, {
+    message: "Escolha o perfil do Google antes de ligar o convite.",
+  });
+type GoogleColumns = {
+  google_place_id: string | null;
+  google_place_nome: string | null;
+  google_convite_ativo: boolean;
+};
 async function admin(context: any) {
   const { data: user } = await context.supabase
     .from("usuarios")
@@ -65,6 +80,10 @@ export const getRegistrySettings = createServerFn({ method: "GET" })
         evaluationRetentionDays: settings.evaluation_retention_days,
         contactRetentionDays: settings.contact_retention_days,
         auditRetentionDays: settings.audit_retention_days,
+        // Columns from 20261030010000, not yet in the generated types.
+        googlePlaceId: (settings as unknown as GoogleColumns).google_place_id,
+        googlePlaceName: (settings as unknown as GoogleColumns).google_place_nome,
+        googleInviteActive: (settings as unknown as GoogleColumns).google_convite_ativo,
       },
       surveys: surveys ?? [],
     };
@@ -74,7 +93,7 @@ export const saveRegistrySettings = createServerFn({ method: "POST" })
   .validator((value: unknown) => settingsInput.parse(value))
   .handler(async ({ context, data }) => {
     const user = await admin(context);
-    const { error } = await context.supabase
+    const { error } = await untypedDb(context.supabase)
       .from("configuracoes_cartorio")
       .update({
         nome_exibicao: data.displayName,
@@ -92,6 +111,9 @@ export const saveRegistrySettings = createServerFn({ method: "POST" })
         evaluation_retention_days: data.evaluationRetentionDays,
         contact_retention_days: data.contactRetentionDays,
         audit_retention_days: data.auditRetentionDays,
+        google_place_id: data.googlePlaceId,
+        google_place_nome: data.googlePlaceId ? data.googlePlaceName : null,
+        google_convite_ativo: data.googleInviteActive,
       })
       .eq("cartorio_id", user.cartorio_id);
     if (error) throw new Error("Não foi possível salvar as configurações.");

@@ -25,6 +25,7 @@ import {
   updateOccurrence,
 } from "@/lib/occurrences.functions";
 import { getEvaluationDetail } from "@/lib/evaluations.functions";
+import { REASON_CATEGORY, REASON_LABELS, reasonCodes } from "@/lib/reasons";
 import { can } from "@/lib/permissions";
 import { endOfDayBrasilia, startOfDayBrasilia, todayBrasilia } from "@/lib/timestamp";
 import { cn } from "@/lib/utils";
@@ -545,10 +546,15 @@ function OccurrenceForm({
   }) => void;
 }) {
   const [requestId] = useState(() => crypto.randomUUID());
+  // Reasons picked by the citizen (ratings 1–3) suggest the description and category.
+  const reasons = reasonCodes(evaluation?.reasons);
+  const reasonLine = reasons.length
+    ? `O que o cidadão indicou para melhorar: ${reasons.map((code) => REASON_LABELS[code]).join(", ")}.`
+    : "";
   const [form, setForm] = useState({
     title: evaluation ? `Ponto de atenção na avaliação ${evaluation.id.slice(0, 8)}` : "",
-    description: evaluation?.comment ?? "",
-    category: "atendimento" as Category,
+    description: [evaluation?.comment ?? "", reasonLine].filter(Boolean).join("\n\n"),
+    category: (reasons[0] ? REASON_CATEGORY[reasons[0]] : "atendimento") as Category,
     priority: (evaluation?.rating <= 2 ? "alta" : "media") as Priority,
     origin: (evaluationId ? "avaliacao_usuario" : "equipe_cartorio") as Origin,
     pointId: evaluation?.pointId ?? "",

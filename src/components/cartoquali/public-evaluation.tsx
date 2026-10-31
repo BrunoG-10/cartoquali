@@ -7,9 +7,14 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { getPublicEvaluation, submitPublicEvaluation } from "@/lib/public-evaluation.functions";
+import {
+  getPublicEvaluation,
+  registerGoogleClick,
+  submitPublicEvaluation,
+} from "@/lib/public-evaluation.functions";
 import { validateContact } from "@/utils/cartoquali-validation";
 import { resolveServiceStep } from "@/lib/service-step";
+import { GoogleInvite } from "./google-invite";
 import { ServicePicker, type ServiceChoice } from "./service-picker";
 import { SurveyQuestionnaire, type SurveyAnswers } from "./survey-questionnaire";
 import type { SurveyQuestion } from "@/types/cartoquali";
@@ -17,6 +22,7 @@ import type { SurveyQuestion } from "@/types/cartoquali";
 export function PublicEvaluation({ code, testToken }: { code?: string; testToken?: string }) {
   const fetchEvaluation = useServerFn(getPublicEvaluation);
   const submitEvaluation = useServerFn(submitPublicEvaluation);
+  const recordGoogleClick = useServerFn(registerGoogleClick);
   const query = useQuery({
     queryKey: ["public-evaluation", code, testToken],
     queryFn: () =>
@@ -39,6 +45,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [done, setDone] = useState(false);
+  const [googleClickToken, setGoogleClickToken] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string>();
   const [validationError, setValidationError] = useState<string>();
@@ -123,6 +130,12 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
   const allowContact = context.settings.allowContactRequest;
   const thankYouMessage =
     context.settings.thankYouMessage ?? "Obrigado por ajudar este cartório a melhorar.";
+  // The citizen's own comment, copied as-is for the Google invite (never a suggested text).
+  const commentText =
+    surveyQuestions
+      .filter((question) => question.type === "text" && question.dimensionId === "comment")
+      .map((question) => answers?.[question.id])
+      .find((value): value is string => typeof value === "string" && value.trim() !== "") ?? "";
 
   const reset = () => {
     setStarted(false);
@@ -135,6 +148,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     setEmail("");
     setConsent(false);
     setDone(false);
+    setGoogleClickToken(null);
     setError(undefined);
     setValidationError(undefined);
   };
@@ -168,7 +182,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
     setValidationError(undefined);
     const serviceId = serviceStep.show ? serviceChoice?.serviceId : serviceStep.autoServiceId;
     try {
-      await submitEvaluation({
+      const result = await submitEvaluation({
         data: {
           code,
           idempotencyKey: getIdempotencyKey(),
@@ -190,6 +204,7 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
         },
       });
       window.sessionStorage.removeItem(`cartoquali-submission-${code}`);
+      setGoogleClickToken(result.googleClickToken);
       setDone(true);
     } catch (reason) {
       setError(
@@ -210,6 +225,16 @@ export function PublicEvaluation({ code, testToken }: { code?: string; testToken
         </div>
         <h1 className="mt-6 font-display text-3xl font-bold">Obrigado pela sua avaliação.</h1>
         <p className="mx-auto mt-3 max-w-sm text-muted-foreground">{thankYouMessage}</p>
+        {context.settings.googlePlaceId && (
+          <GoogleInvite
+            placeId={context.settings.googlePlaceId}
+            comment={commentText}
+            onOpened={() => {
+              if (googleClickToken)
+                void recordGoogleClick({ data: { token: googleClickToken } }).catch(() => {});
+            }}
+          />
+        )}
         <p className="mt-6 text-xs text-muted-foreground">
           A resposta foi registrada sem vínculo com uma conta de usuário. Caso tenha solicitado
           contato, esses dados ficam separados e restritos.

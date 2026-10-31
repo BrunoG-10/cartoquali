@@ -341,7 +341,7 @@ export function SurveysPage() {
               <h2 className="mt-2 font-medium">{question.text}</h2>
               <p className="mt-2 text-xs text-muted-foreground">
                 {QUESTION_TYPE_LABELS[question.type]} ·{" "}
-                {question.required ? "Obrigatória" : "Opcional"} ·{" "}
+                {question.required && question.type !== "text" ? "Obrigatória" : "Opcional"} ·{" "}
                 {questionDimensionLabel(question.dimensionId)}
               </p>
             </div>
@@ -605,11 +605,11 @@ function QuestionModal({
         <div className="flex gap-6">
           <label className="flex items-center gap-2 text-sm">
             <Switch
-              checked={form.required}
-              disabled={essential}
+              checked={form.type !== "text" && form.required}
+              disabled={essential || form.type === "text"}
               onCheckedChange={(required) => setForm({ ...form, required })}
             />
-            Obrigatória
+            {form.type === "text" ? "Comentário é sempre opcional" : "Obrigatória"}
           </label>
           <label className="flex items-center gap-2 text-sm">
             <Switch

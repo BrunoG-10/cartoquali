@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Json } from "@/integrations/supabase/types";
+import { reasonCodes } from "@/lib/reasons";
 import { untypedDb } from "@/lib/untyped-db";
 
 const statusLabels = { nova: "Nova", em_analise: "Em análise", respondida: "Respondida" } as const;
@@ -222,6 +223,12 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
         _metadata: { surface: "evaluation_detail" },
       });
     const serviceNames = await loadServiceNames(context.supabase, [row.id]);
+    // avaliacoes.motivos (20261030010000) is not in the generated types yet.
+    const { data: reasonRow } = await untypedDb(context.supabase)
+      .from("avaliacoes")
+      .select("motivos")
+      .eq("id", row.id)
+      .maybeSingle();
     return {
       ...summary(row, point?.nome ?? "Ponto indisponível", survey?.nome ?? "Pesquisa indisponível"),
       serviceName: serviceNames.get(row.id) ?? null,
@@ -230,6 +237,7 @@ export const getEvaluationDetail = createServerFn({ method: "POST" })
           row.atendimento_resolvido)
         : null,
       dissatisfactionReason: row.motivo_insatisfacao,
+      reasons: reasonCodes(reasonRow?.motivos),
       answers: (answers ?? [])
         .map((answer) => {
           const question = questionMap.get(answer.pergunta_id);

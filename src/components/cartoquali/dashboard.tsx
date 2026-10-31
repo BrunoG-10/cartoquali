@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { REASON_LABELS, isReasonCode } from "@/lib/reasons";
 import { cn } from "@/lib/utils";
 import { DASHBOARD_PERIODS } from "@/constants/cartoquali";
 import type { DashboardPeriod } from "@/types/cartoquali";
@@ -296,6 +297,11 @@ function DashboardContent({
     data.distribution.map((item) => [item.rating, item.count]),
   );
   const maxBucket = Math.max(...data.series.map((entry) => entry.total), 1);
+  const googleClicks = data.googleClicks ?? 0;
+  const reasons = (data.reasons ?? []).flatMap((item) =>
+    isReasonCode(item.code) ? [{ code: item.code, count: item.count }] : [],
+  );
+  const maxReason = Math.max(...reasons.map((item) => item.count), 1);
   if (!hasData)
     return (
       <GlassPanel className="py-14 text-center">
@@ -411,6 +417,47 @@ function DashboardContent({
           <p className="mt-4 text-xs text-muted-foreground">
             Notas de 1 a 3 contam como negativas.
           </p>
+        </GlassPanel>
+      </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        {/* Registry/point level only: never per staff member (Google policy, no click targets). */}
+        <KpiCard
+          label="Convites para o Google"
+          value={googleClicks.toLocaleString("pt-BR")}
+          detail={
+            <p className="mt-1 text-xs text-muted-foreground">
+              {`${((googleClicks / summary.total) * 100).toFixed(0)}% das avaliações abriram o Google`}
+            </p>
+          }
+          trend={{ tone: "none", text: "Cliques em “Publicar no Google” no período" }}
+        />
+        <GlassPanel className="lg:col-span-2">
+          <h2 className="font-display text-lg font-bold">O que podemos melhorar</h2>
+          <p className="text-sm text-muted-foreground">
+            Motivos marcados nas avaliações de 1 a 3 estrelas
+          </p>
+          {reasons.length === 0 ? (
+            <p className="mt-5 text-sm text-muted-foreground">
+              Nenhum motivo marcado neste período.
+            </p>
+          ) : (
+            <div className="mt-5 space-y-3">
+              {reasons.map((item) => (
+                <div key={item.code}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span>{REASON_LABELS[item.code]}</span>
+                    <strong>{item.count}</strong>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-chart-4"
+                      style={{ width: `${(item.count / maxReason) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </GlassPanel>
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">

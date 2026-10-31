@@ -194,7 +194,8 @@ export const saveSurveyQuestion = createServerFn({ method: "POST" })
       tipo: data.type,
       dimensao: data.dimensionId,
       ordem: data.order,
-      obrigatoria: data.required,
+      // Comments (free text) are always optional for the citizen.
+      obrigatoria: data.type === "text" ? false : data.required,
       ativa: data.active,
       condicao: data.condition ?? null,
     };

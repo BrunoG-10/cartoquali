@@ -35,6 +35,8 @@
 - Keep the commercial landing page on `/` data-free except for its server-validated lead submission; product visuals must use static illustrative data and never query tenant operations.
 - Serve fonts, scripts and images from our own origin (fonts via `@fontsource`); add no third-party scripts, fonts, trackers or analytics, and if one is ever approved, ship it with a consent banner, a privacy-notice update and an explicit CSP change.
 - Keep the security headers in `src/server.ts` (CSP limited to `'self'` and the Supabase project, `nosniff`, referrer and permissions policies, `frame-ancestors`) intact; never widen the CSP for convenience.
+- Show the Google review invite identically for every rating (no gating, no suggested text, equal-weight "Agora não"), call Places only from the server with `GOOGLE_PLACES_API_KEY`, record clicks once per evaluation through `registrar_clique_google`, and never report clicks per staff member.
+- Keep free-text (comment) questions optional end to end; improvement reasons are the fixed `avaliacoes.motivos` codes derived in the database, never a second question.
 - Keep `/api/health` free of tenant data and of the service-role key: it checks Supabase with the publishable key and briefly caches the upstream result.
 - Every page is `noindex` by default from the root route; only public commercial pages opt in with `indexableMeta` from `src/lib/seo.ts`, and each one also gets a canonical link and an entry in `public/sitemap.xml`.
 - Keep `public/sitemap.xml`, `public/llms.txt` and the 1200×630 `public/og-image.png` in step with the commercial pages and with features that really exist.
