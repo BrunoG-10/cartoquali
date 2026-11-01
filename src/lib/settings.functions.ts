@@ -93,7 +93,7 @@ export const saveRegistrySettings = createServerFn({ method: "POST" })
   .validator((value: unknown) => settingsInput.parse(value))
   .handler(async ({ context, data }) => {
     const user = await admin(context);
-    const { error } = await untypedDb(context.supabase)
+    const { data: saved, error } = await untypedDb(context.supabase)
       .from("configuracoes_cartorio")
       .update({
         nome_exibicao: data.displayName,
@@ -115,7 +115,38 @@ export const saveRegistrySettings = createServerFn({ method: "POST" })
         google_place_nome: data.googlePlaceId ? data.googlePlaceName : null,
         google_convite_ativo: data.googleInviteActive,
       })
-      .eq("cartorio_id", user.cartorio_id);
-    if (error) throw new Error("Não foi possível salvar as configurações.");
+      .eq("cartorio_id", user.cartorio_id)
+      .select("cartorio_id");
+    // RLS turns a forbidden update into "0 rows" without an error: never report that as saved.
+    if (error || !saved?.length) throw new Error("Não foi possível salvar as configurações.");
+    return { ok: true };
+  });
+
+const googleInput = z
+  .object({
+    placeId: z.string().trim().regex(GOOGLE_PLACE_ID).nullable(),
+    placeName: z.string().trim().max(300).nullable(),
+    inviteActive: z.boolean(),
+  })
+  .refine((value) => !value.inviteActive || value.placeId !== null, {
+    message: "Escolha o perfil do Google antes de ligar o convite.",
+  });
+
+/** Google profile and invite, saved on their own as soon as the administrator picks or toggles. */
+export const saveGoogleReviewSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((value: unknown) => googleInput.parse(value))
+  .handler(async ({ context, data }) => {
+    const user = await admin(context);
+    const { data: saved, error } = await untypedDb(context.supabase)
+      .from("configuracoes_cartorio")
+      .update({
+        google_place_id: data.placeId,
+        google_place_nome: data.placeId ? data.placeName : null,
+        google_convite_ativo: data.inviteActive,
+      })
+      .eq("cartorio_id", user.cartorio_id)
+      .select("cartorio_id");
+    if (error || !saved?.length) throw new Error("Não foi possível salvar o perfil do Google.");
     return { ok: true };
   });

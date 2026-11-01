@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { getRegistrySettings, saveRegistrySettings } from "@/lib/settings.functions";
+import {
+  getRegistrySettings,
+  saveGoogleReviewSettings,
+  saveRegistrySettings,
+} from "@/lib/settings.functions";
 import { searchGooglePlaces, type GooglePlaceResult } from "@/lib/google-places.functions";
 import { GOOGLE_PLACE_ID, googleReviewUrl } from "@/lib/google-review";
 import { GlassPanel, InterfaceState, PageHeader } from "./primitives";
@@ -261,14 +265,40 @@ function GoogleReviewSettings({
     mutationFn: () => search({ data: { term } }),
     onError: (error) => toast.error(userMessage(error, "Não foi possível buscar no Google.")),
   });
+  // Saved right away: choosing a profile or flipping the switch must not wait for "Salvar".
+  const saveGoogle = useServerFn(saveGoogleReviewSettings);
+  const persist = useMutation({
+    mutationFn: (next: {
+      placeId: string | null;
+      placeName: string | null;
+      inviteActive: boolean;
+    }) => saveGoogle({ data: next }).then(() => next),
+    onSuccess: (next) => {
+      onChange({
+        ...draft,
+        googlePlaceId: next.placeId,
+        googlePlaceName: next.placeName,
+        googleInviteActive: next.inviteActive,
+      });
+      toast.success(
+        !next.placeId
+          ? "Perfil do Google removido"
+          : next.inviteActive
+            ? "Convite do Google ligado"
+            : "Perfil do Google salvo",
+      );
+    },
+    onError: (error) =>
+      toast.error(userMessage(error, "Não foi possível salvar o perfil do Google.")),
+  });
   const choose = (place: GooglePlaceResult | { placeId: string; name: null }) =>
-    onChange({
-      ...draft,
-      googlePlaceId: place.placeId,
-      googlePlaceName:
+    persist.mutate({
+      placeId: place.placeId,
+      placeName:
         place.name === null
           ? null
           : [place.name, "address" in place ? place.address : ""].filter(Boolean).join(" — "),
+      inviteActive: draft.googleInviteActive,
     });
   const manualValid = GOOGLE_PLACE_ID.test(manualId.trim());
   return (
@@ -315,6 +345,7 @@ function GoogleReviewSettings({
                 key={place.placeId}
                 type="button"
                 aria-pressed={draft.googlePlaceId === place.placeId}
+                disabled={persist.isPending}
                 onClick={() => choose(place)}
                 className="min-h-11 rounded-lg border p-3 text-left text-sm hover:bg-muted aria-pressed:border-primary aria-pressed:bg-primary/5"
               >
@@ -347,13 +378,9 @@ function GoogleReviewSettings({
               <Button
                 variant="ghost"
                 size="sm"
+                disabled={persist.isPending}
                 onClick={() =>
-                  onChange({
-                    ...draft,
-                    googlePlaceId: null,
-                    googlePlaceName: null,
-                    googleInviteActive: false,
-                  })
+                  persist.mutate({ placeId: null, placeName: null, inviteActive: false })
                 }
               >
                 Remover
@@ -399,12 +426,18 @@ function GoogleReviewSettings({
         </span>
         <Switch
           checked={draft.googleInviteActive}
-          disabled={!draft.googlePlaceId}
-          onCheckedChange={(googleInviteActive) => onChange({ ...draft, googleInviteActive })}
+          disabled={!draft.googlePlaceId || persist.isPending}
+          onCheckedChange={(inviteActive) =>
+            persist.mutate({
+              placeId: draft.googlePlaceId,
+              placeName: draft.googlePlaceName,
+              inviteActive,
+            })
+          }
         />
       </label>
       <p className="mt-2 text-xs text-muted-foreground">
-        Escolha o perfil e clique em Salvar no topo da página.
+        Salvo automaticamente ao escolher o perfil ou ligar o convite.
       </p>
     </GlassPanel>
   );
