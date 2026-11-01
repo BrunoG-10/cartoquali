@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { parsePlatformOverview, type PlatformOverview } from "@/lib/platform-overview";
+import { GOOGLE_PLACE_ID } from "@/lib/google-review";
 import { untypedDb } from "@/lib/untyped-db";
 
 // Painel da plataforma: as RPCs conferem o perfil PLATFORM_ADMIN da sessão antes de qualquer leitura
@@ -97,5 +98,74 @@ export const removeRegistryPayment = createServerFn({ method: "POST" })
       _id: data.paymentId,
     });
     if (error) throw billingError(error.message, "Não foi possível desfazer o pagamento.");
+    return { ok: true };
+  });
+
+export type RegistryPublicSettings = {
+  thankYouMessage: string;
+  allowContact: boolean;
+  privacyContactChannel: string | null;
+  privacyNoticeVersion: string;
+  googlePlaceId: string | null;
+  googlePlaceName: string | null;
+  googleInviteActive: boolean;
+};
+
+const SETTINGS_ERRORS: Record<string, string> = {
+  forbidden: "Somente o administrador da plataforma pode configurar cartórios.",
+  registry_not_found: "Cartório não encontrado; atualize o painel.",
+  invalid_settings:
+    "Confira a mensagem, a versão do aviso, o canal de privacidade (3 a 255 caracteres) e o perfil do Google.",
+};
+
+function settingsError(message: string | undefined, fallback: string): Error {
+  const key = Object.keys(SETTINGS_ERRORS).find((code) => message?.includes(code));
+  return new Error(key ? SETTINGS_ERRORS[key] : fallback);
+}
+
+/** Settings of one registry, read by the platform administrator (checked in the database). */
+export const getRegistryPublicSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) => z.object({ registryId: z.string().uuid() }).parse(input))
+  .handler(async ({ context, data }): Promise<RegistryPublicSettings> => {
+    const { data: result, error } = await untypedDb(context.supabase).rpc(
+      "get_registry_public_settings",
+      { _cartorio_id: data.registryId },
+    );
+    if (error) throw settingsError(error.message, "Não foi possível carregar as configurações.");
+    return result as RegistryPublicSettings;
+  });
+
+export const saveRegistryPublicSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator((input: unknown) =>
+    z
+      .object({
+        registryId: z.string().uuid(),
+        thankYouMessage: z.string().trim().min(1).max(500),
+        allowContact: z.boolean(),
+        privacyContactChannel: z.string().trim().max(255).nullable(),
+        privacyNoticeVersion: z.string().trim().min(1).max(30),
+        googlePlaceId: z.string().trim().regex(GOOGLE_PLACE_ID).nullable(),
+        googlePlaceName: z.string().trim().max(300).nullable(),
+        googleInviteActive: z.boolean(),
+      })
+      .refine((value) => !value.googleInviteActive || value.googlePlaceId !== null, {
+        message: "Escolha o perfil do Google antes de ligar o convite.",
+      })
+      .parse(input),
+  )
+  .handler(async ({ context, data }) => {
+    const { error } = await untypedDb(context.supabase).rpc("set_registry_public_settings", {
+      _cartorio_id: data.registryId,
+      _thank_you: data.thankYouMessage,
+      _allow_contact: data.allowContact,
+      _privacy_channel: data.privacyContactChannel,
+      _privacy_version: data.privacyNoticeVersion,
+      _place_id: data.googlePlaceId,
+      _place_name: data.googlePlaceName,
+      _invite_active: data.googleInviteActive,
+    });
+    if (error) throw settingsError(error.message, "Não foi possível salvar as configurações.");
     return { ok: true };
   });

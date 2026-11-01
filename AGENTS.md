@@ -36,6 +36,7 @@
 - Serve fonts, scripts and images from our own origin (fonts via `@fontsource`); add no third-party scripts, fonts, trackers or analytics, and if one is ever approved, ship it with a consent banner, a privacy-notice update and an explicit CSP change.
 - Keep the security headers in `src/server.ts` (CSP limited to `'self'` and the Supabase project, `nosniff`, referrer and permissions policies, `frame-ancestors`) intact; never widen the CSP for convenience.
 - Show the Google review invite identically for every rating (no gating, no suggested text, equal-weight "Agora não"), call Places only from the server with `GOOGLE_PLACES_API_KEY`, record clicks once per evaluation through `registrar_clique_google`, and never report clicks per staff member.
+- Let the platform administrator configure each registry (Google profile and invite, thank-you message, return requests, privacy channel) from the platform panel through `get/set_registry_public_settings`, which check `PLATFORM_ADMIN` in the database.
 - Keep free-text (comment) questions optional end to end; improvement reasons are the fixed `avaliacoes.motivos` codes derived in the database, never a second question.
 - Keep `/api/health` free of tenant data and of the service-role key: it checks Supabase with the publishable key and briefly caches the upstream result.
 - Every page is `noindex` by default from the root route; only public commercial pages opt in with `indexableMeta` from `src/lib/seo.ts`, and each one also gets a canonical link and an entry in `public/sitemap.xml`.

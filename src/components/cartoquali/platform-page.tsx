@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, RefreshCw, Rocket, Wallet } from "lucide-react";
+import { AlertTriangle, RefreshCw, Rocket, Settings2, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitives";
 import { BillingBadge, BillingDialog, brl, shortDate } from "./billing-dialog";
+import { RegistrySettingsDialog } from "./registry-settings-dialog";
 import { getPlatformOverview } from "@/lib/platform.functions";
 import { registryAlert, STALE_DAYS, type PlatformRegistry } from "@/lib/platform-overview";
 import {
@@ -89,6 +90,7 @@ export function PlatformPage() {
   const load = useServerFn(getPlatformOverview);
   const query = useQuery({ queryKey: ["platform-overview"], queryFn: () => load() });
   const [billingId, setBillingId] = useState<string>();
+  const [settingsId, setSettingsId] = useState<string>();
 
   if (query.isLoading)
     return (
@@ -141,12 +143,20 @@ export function PlatformPage() {
     ),
   };
   const billingRegistry = registries.find((registry) => registry.id === billingId);
+  const settingsRegistry = registries.find((registry) => registry.id === settingsId);
 
   const billingButton = (registry: PlatformRegistry) => (
-    <Button size="sm" variant="outline" onClick={() => setBillingId(registry.id)}>
-      <Wallet aria-hidden />
-      Cobrança
-    </Button>
+    <span className="inline-flex flex-wrap justify-end gap-2">
+      <Button size="sm" variant="outline" onClick={() => setSettingsId(registry.id)}>
+        <Settings2 aria-hidden />
+        Configurar
+        <span className="sr-only"> {registry.name}</span>
+      </Button>
+      <Button size="sm" variant="outline" onClick={() => setBillingId(registry.id)}>
+        <Wallet aria-hidden />
+        Cobrança
+      </Button>
+    </span>
   );
 
   return (
@@ -154,7 +164,7 @@ export function PlatformPage() {
       <PageHeader
         eyebrow="Administração da plataforma"
         title="Painel da plataforma"
-        description="Acompanhe uso e pagamentos de todos os cartórios."
+        description="Acompanhe uso e pagamentos e configure cada cartório."
         action={
           <div className="flex flex-wrap gap-2">
             <Button
@@ -345,6 +355,12 @@ export function PlatformPage() {
           : ""}
       </p>
 
+      {settingsRegistry && (
+        <RegistrySettingsDialog
+          registry={settingsRegistry}
+          onClose={() => setSettingsId(undefined)}
+        />
+      )}
       <BillingDialog
         registry={billingRegistry}
         open={!!billingRegistry}
