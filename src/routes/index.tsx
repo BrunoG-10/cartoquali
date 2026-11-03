@@ -26,6 +26,13 @@ function structuredData(homeUrl: string) {
         applicationCategory: "BusinessApplication",
         operatingSystem: "Web",
         inLanguage: "pt-BR",
+        offers: {
+          "@type": "Offer",
+          name: "Preço de lançamento",
+          price: "79.90",
+          priceCurrency: "BRL",
+          url: `${homeUrl}#preco`,
+        },
         publisher: { "@id": `${homeUrl}#organizacao` },
       },
     ],

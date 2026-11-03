@@ -11,8 +11,11 @@ import {
   ClipboardCheck,
   Gauge,
   Lightbulb,
+  Copy,
   LockKeyhole,
+  MapPin,
   Menu,
+  MessageSquareText,
   QrCode,
   Settings2,
   ShieldCheck,
@@ -40,6 +43,7 @@ import {
 import {
   DashboardScene,
   EvaluationPhone,
+  GoogleInviteScene,
   OccurrenceScene,
   ProductScene,
   QrTotemScene,
@@ -134,10 +138,89 @@ const trialOffer = {
   detail: "Depois, cancele quando quiser, sem multa.",
 };
 
+// Benefits limited to what the invite really does; never promise ratings, ranking or volume.
+const googleBenefits: Array<[LucideIcon, string, string]> = [
+  [
+    MessageSquareText,
+    "O perfil mostra o atendimento de todo dia",
+    "Quem sai insatisfeito costuma procurar o Google sozinho. Quem sai satisfeito vai embora sem dizer nada. O convite chega a todos, e o perfil passa a refletir a rotina real do cartório.",
+  ],
+  [
+    MapPin,
+    "Mais fácil de encontrar e de escolher",
+    "Avaliações recentes ajudam quem pesquisa um cartório na cidade a decidir, e o Google considera as avaliações na visibilidade do perfil.",
+  ],
+  [
+    Copy,
+    "Sem digitar duas vezes",
+    "Se o cidadão escreveu um comentário, ele é copiado. No Google, é só marcar as estrelas e colar. Leva poucos segundos.",
+  ],
+  [
+    ShieldCheck,
+    "Dentro das regras do Google",
+    "O mesmo convite aparece para qualquer nota, com o botão “Agora não” do mesmo tamanho. Sem filtrar notas e sem texto sugerido, o perfil do cartório fica protegido.",
+  ],
+];
+
+const launchPrice = { reais: "79", cents: "90", perDay: "menos de R$ 2,70 por dia" };
+
+const includedGroups: Array<[string, string[]]> = [
+  [
+    "Avaliação",
+    [
+      "QR Code único com link próprio, para cartaz, balcão e site",
+      "Seis perguntas essenciais e perguntas próprias",
+      "Serviços conforme as atribuições da serventia",
+    ],
+  ],
+  [
+    "Google",
+    [
+      "Convite para avaliar no Google após cada avaliação",
+      "Perfil do Google configurado na implantação",
+      "Painel com quantos cidadãos abriram o Google",
+    ],
+  ],
+  [
+    "Gestão da qualidade",
+    [
+      "Indicadores por período e por serviço",
+      "Ocorrências com responsável e prazo",
+      "Planos de melhoria com histórico",
+      "Relatórios em CSV e PDF",
+    ],
+  ],
+  [
+    "Equipe e segurança",
+    [
+      "Usuários com perfis de acesso",
+      "Histórico de auditoria das operações",
+      "Recursos de privacidade com base na LGPD",
+      "Implantação guiada e atendimento pelo WhatsApp",
+    ],
+  ],
+];
+
 const faqs = [
   [
     "Posso testar antes de contratar?",
     "Sim. Você usa o CartoQuali gratuitamente por 7 dias, com o seu cartório, antes de decidir.",
+  ],
+  [
+    "Quanto custa?",
+    "No período de lançamento, R$ 79,90 por mês, com todos os recursos liberados. Antes, você testa grátis por 7 dias.",
+  ],
+  [
+    "Quem assina agora vai pagar mais depois?",
+    "Não. Quem assina no lançamento continua pagando R$ 79,90 por mês enquanto a assinatura estiver ativa, mesmo quando o preço subir para os próximos cartórios.",
+  ],
+  [
+    "Por que o valor é tão acessível?",
+    "Porque estamos em lançamento. Preferimos ter cartórios usando o CartoQuali no dia a dia e ajudando a evoluir o produto do que cobrar o preço cheio desde o início.",
+  ],
+  [
+    "O convite do Google aparece só para quem deu nota alta?",
+    "Não. Ele aparece igual para qualquer nota, e o cidadão pode recusar com um toque. Filtrar notas vai contra as regras do Google e pode prejudicar o perfil do cartório.",
   ],
   [
     "Existe fidelidade ou multa para cancelar?",
@@ -264,9 +347,10 @@ function CommercialHeader() {
   const [open, setOpen] = useState(false);
   const links = [
     ["#como-funciona", "Como funciona"],
+    ["#google", "Google"],
     ["#indicadores", "Indicadores"],
-    ["#privacidade", "Privacidade"],
     ["#normas", "Normas"],
+    ["#preco", "Preço"],
     ["#faq", "Perguntas"],
   ] as const;
   return (
@@ -350,13 +434,20 @@ function Hero() {
             A voz de quem é atendido, transformada em gestão da qualidade.
           </h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-            O cidadão avalia o atendimento pelo QR Code, em poucos instantes. Sua equipe acompanha
-            os indicadores e transforma cada problema em ação de melhoria.
+            O cidadão avalia o atendimento pelo QR Code, em poucos instantes, e é convidado a
+            avaliar também no Google. Sua equipe acompanha os indicadores e transforma cada problema
+            em ação de melhoria.
           </p>
-          <p className="mt-6 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-brand-gold/50 bg-brand-gold/10 px-4 py-2.5 text-sm">
-            <span className="font-display font-bold">{trialOffer.title}</span>
-            <span className="text-muted-foreground">{trialOffer.detail}</span>
-          </p>
+          <a
+            href="#preco"
+            className="mt-6 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-brand-gold/50 bg-brand-gold/10 px-4 py-2.5 text-sm transition-colors hover:bg-brand-gold/20"
+          >
+            <span className="font-display font-bold">
+              R$ {launchPrice.reais},{launchPrice.cents} por mês, garantido para quem assina no
+              lançamento.
+            </span>
+            <span className="text-muted-foreground">{trialOffer.title}</span>
+          </a>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
             <AnchorCta>
               Solicitar demonstração <ArrowRight />
@@ -371,6 +462,7 @@ function Hero() {
             {[
               "7 dias grátis",
               "Sem multa para cancelar",
+              "Convite para avaliar no Google",
               "Sem aplicativo",
               "Sem cadastro do cidadão",
               "Desenvolvido com base na LGPD",
@@ -590,6 +682,134 @@ function NormsSection() {
   );
 }
 
+function GoogleSection() {
+  return (
+    <section
+      id="google"
+      className="scroll-mt-20 border-b border-border bg-secondary/40 py-20 sm:py-24"
+    >
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
+        <div>
+          <SectionTitle
+            eyebrow="Avaliações no Google"
+            title="Quem foi bem atendido agora também ajuda o cartório a ser encontrado"
+            description="Depois de avaliar no CartoQuali, o cidadão recebe o convite para deixar a opinião também no perfil do cartório no Google. A avaliação interna vira gestão, e a pública vira reputação."
+          />
+          <ul className="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">
+            {googleBenefits.map(([Icon, title, text]) => (
+              <li key={title}>
+                <h3 className="flex items-center gap-2 font-display text-lg font-bold">
+                  <Icon className="size-4 shrink-0 text-accent-foreground" aria-hidden="true" />
+                  {title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{text}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-8 text-xs leading-5 text-muted-foreground">
+            No painel, você acompanha quantos cidadãos abriram o Google, por cartório e por ponto de
+            avaliação, nunca por funcionário. O CartoQuali não tem vínculo com o Google e não
+            controla o que é publicado lá.
+          </p>
+        </div>
+        <div className="pb-8">
+          <GoogleInviteScene />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PricingSection() {
+  return (
+    <section id="preco" className="scroll-mt-20 border-b border-border py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
+        <SectionTitle
+          center
+          eyebrow="Preço de lançamento"
+          title="Tudo liberado, por um valor que cabe em qualquer cartório"
+          description="Sem plano básico e sem recurso escondido. O cartório que entra agora usa o CartoQuali completo e mantém este valor."
+        />
+        <div className="mt-12 grid overflow-hidden rounded-2xl border border-border shadow-glass lg:grid-cols-[0.85fr_1.15fr]">
+          <div className="flex flex-col bg-foreground p-8 text-background sm:p-10">
+            <p className="w-fit rounded-full border border-brand-gold/60 px-3 py-1 text-xs font-semibold text-brand-gold">
+              Período de lançamento
+            </p>
+            <p className="mt-8 flex items-start font-display font-bold leading-none">
+              <span className="mt-3 text-2xl">R$</span>
+              <span className="ml-1 text-8xl tracking-tight">{launchPrice.reais}</span>
+              <span className="mt-3 text-4xl">,{launchPrice.cents}</span>
+            </p>
+            <p className="mt-3 text-base text-background/75">
+              por mês, por cartório. É {launchPrice.perDay}.
+            </p>
+            <ul className="mt-8 space-y-2.5 text-sm">
+              {[
+                "Valor garantido: quem assina agora não paga mais depois",
+                "7 dias grátis para testar com o seu cartório",
+                "Sem fidelidade e sem multa para cancelar",
+                "Implantação guiada, sem custo extra",
+              ].map((item) => (
+                <li key={item} className="flex gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-brand-gold" aria-hidden="true" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-auto pt-10">
+              <Button asChild size="lg" variant="secondary" className="min-h-12 w-full">
+                <a href={createWhatsappUrl()} target="_blank" rel="noreferrer">
+                  Começar os 7 dias grátis <ArrowRight />
+                </a>
+              </Button>
+              <a
+                href="#formulario-demonstracao"
+                className="mt-4 block text-center text-sm font-semibold text-background/80 underline underline-offset-4 hover:text-background"
+              >
+                Prefiro uma demonstração antes
+              </a>
+            </div>
+          </div>
+          <div className="bg-card p-8 sm:p-10">
+            <h3 className="font-display text-xl font-bold">O que está incluído</h3>
+            <div className="mt-6 grid gap-8 sm:grid-cols-2">
+              {includedGroups.map(([group, items]) => (
+                <div key={group}>
+                  <h4 className="font-display text-sm font-bold text-primary">{group}</h4>
+                  <ul className="mt-3 space-y-2">
+                    {items.map((item) => (
+                      <li key={item} className="flex gap-2 text-sm leading-6">
+                        <CheckCircle2
+                          className="mt-1 size-4 shrink-0 text-success"
+                          aria-hidden="true"
+                        />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-brand-gold/50 bg-brand-gold/10 p-6">
+          <h3 className="font-display text-lg font-bold">Por que um valor tão baixo?</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
+            Porque estamos em lançamento. Queremos cartórios usando o CartoQuali de verdade, no
+            balcão, e nos dizendo o que melhorar. Em troca, quem entra agora paga um valor de
+            entrada, bem abaixo do que o produto vai custar. O preço de lançamento é por tempo
+            limitado e será revisto para os próximos cartórios.
+          </p>
+          <p className="mt-3 text-sm font-semibold leading-6 sm:text-base sm:leading-7">
+            Quem assina no lançamento continua pagando R$ 79,90 por mês enquanto a assinatura
+            estiver ativa, mesmo quando o preço subir.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function SectorSection() {
   return (
     <section className="border-b border-border py-20 sm:py-24">
@@ -715,7 +935,8 @@ function DemoForm() {
               "Conheça a avaliação pelo QR Code",
               "Veja os indicadores em contexto",
               "Entenda o fluxo de ocorrências e planos",
-              "Teste grátis por 7 dias, sem multa se cancelar",
+              "Veja o convite para avaliar no Google",
+              "Teste grátis por 7 dias e depois R$ 79,90 por mês",
             ].map((item) => (
               <li key={item} className="flex gap-2">
                 <Check className="size-4 text-brand-gold" aria-hidden="true" />
@@ -939,11 +1160,13 @@ export function LandingPage() {
       <main>
         <Hero />
         <HowItWorks />
+        <GoogleSection />
         <IndicatorsSection />
         <ActionSection />
         <PrivacySection />
-        <NormsSection />
         <SectorSection />
+        <NormsSection />
+        <PricingSection />
         <FaqSection />
         <DemoForm />
       </main>
