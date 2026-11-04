@@ -23,6 +23,10 @@ O CartoQuali segue a LGPD (Lei nº 13.709/2018): o cartório é o controlador e 
 
 Preço de lançamento: R$ 79,90 por mês, por cartório, com todos os recursos liberados. Quem assina no lançamento mantém esse valor enquanto a assinatura estiver ativa. Teste grátis por 7 dias, sem cartão de crédito. A implantação é feita pela equipe do CartoQuali, sem taxa. Depois do teste, a mensalidade é paga por PIX, boleto ou transferência, sem fidelidade e sem multa para cancelar. O teste e as demonstrações começam pelo formulário da página inicial ou pelo WhatsApp.
 
+## Conteúdos
+
+- [LGPD na pesquisa de satisfação do cartório: 5 cuidados com os dados de quem avalia](https://cartoquali.com.br/conteudos/lgpd-pesquisa-de-satisfacao-cartorio)
+
 ## Links
 
 - [Página inicial](https://cartoquali.com.br/)

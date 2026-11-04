@@ -33,6 +33,7 @@ import { Route as AuthenticatedSolicitacoesPrivacidadeRouteImport } from './rout
 import { Route as AuthenticatedUsuariosRouteImport } from './routes/_authenticated/usuarios'
 import { Route as AuthenticatedVisaoExecutivaRouteImport } from './routes/_authenticated/visao-executiva'
 import { Route as AvaliarCodigoRouteImport } from './routes/avaliar_.$codigo'
+import { Route as ConteudosLgpdPesquisaDeSatisfacaoCartorioRouteImport } from './routes/conteudos.lgpd-pesquisa-de-satisfacao-cartorio'
 import { Route as AuthenticatedRelatoriosIndexRouteImport } from './routes/_authenticated/relatorios.index'
 import { Route as AuthenticatedRelatoriosTipoRouteImport } from './routes/_authenticated/relatorios.$tipo'
 import { Route as AvaliarCartorioPontoRouteImport } from './routes/avaliar.$cartorio.$ponto'
@@ -162,6 +163,12 @@ const AvaliarCodigoRoute = AvaliarCodigoRouteImport.update({
   path: '/avaliar/$codigo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute =
+  ConteudosLgpdPesquisaDeSatisfacaoCartorioRouteImport.update({
+    id: '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio',
+    path: '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedRelatoriosIndexRoute =
   AuthenticatedRelatoriosIndexRouteImport.update({
     id: '/',
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
   '/avaliar/$codigo': typeof AvaliarCodigoRoute
+  '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio': typeof ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute
   '/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
   '/relatorios/': typeof AuthenticatedRelatoriosIndexRoute
@@ -231,6 +239,7 @@ export interface FileRoutesByTo {
   '/usuarios': typeof AuthenticatedUsuariosRoute
   '/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
   '/avaliar/$codigo': typeof AvaliarCodigoRoute
+  '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio': typeof ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute
   '/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
   '/relatorios': typeof AuthenticatedRelatoriosIndexRoute
@@ -261,6 +270,7 @@ export interface FileRoutesById {
   '/_authenticated/usuarios': typeof AuthenticatedUsuariosRoute
   '/_authenticated/visao-executiva': typeof AuthenticatedVisaoExecutivaRoute
   '/avaliar_/$codigo': typeof AvaliarCodigoRoute
+  '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio': typeof ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute
   '/_authenticated/relatorios/$tipo': typeof AuthenticatedRelatoriosTipoRoute
   '/avaliar/$cartorio/$ponto': typeof AvaliarCartorioPontoRoute
   '/_authenticated/relatorios/': typeof AuthenticatedRelatoriosIndexRoute
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/visao-executiva'
     | '/avaliar/$codigo'
+    | '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio'
     | '/relatorios/$tipo'
     | '/avaliar/$cartorio/$ponto'
     | '/relatorios/'
@@ -318,6 +329,7 @@ export interface FileRouteTypes {
     | '/usuarios'
     | '/visao-executiva'
     | '/avaliar/$codigo'
+    | '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio'
     | '/relatorios/$tipo'
     | '/avaliar/$cartorio/$ponto'
     | '/relatorios'
@@ -347,6 +359,7 @@ export interface FileRouteTypes {
     | '/_authenticated/usuarios'
     | '/_authenticated/visao-executiva'
     | '/avaliar_/$codigo'
+    | '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio'
     | '/_authenticated/relatorios/$tipo'
     | '/avaliar/$cartorio/$ponto'
     | '/_authenticated/relatorios/'
@@ -361,6 +374,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermosRoute: typeof TermosRoute
   AvaliarCodigoRoute: typeof AvaliarCodigoRoute
+  ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute: typeof ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -533,6 +547,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AvaliarCodigoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio': {
+      id: '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio'
+      path: '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio'
+      fullPath: '/conteudos/lgpd-pesquisa-de-satisfacao-cartorio'
+      preLoaderRoute: typeof ConteudosLgpdPesquisaDeSatisfacaoCartorioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/relatorios/': {
       id: '/_authenticated/relatorios/'
       path: '/'
@@ -635,6 +656,8 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TermosRoute: TermosRoute,
   AvaliarCodigoRoute: AvaliarCodigoRoute,
+  ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute:
+    ConteudosLgpdPesquisaDeSatisfacaoCartorioRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

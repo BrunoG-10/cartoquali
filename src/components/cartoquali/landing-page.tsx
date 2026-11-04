@@ -1384,6 +1384,9 @@ function Footer() {
           <Link to="/termos" className="hover:text-primary">
             Termos
           </Link>
+          <Link to="/conteudos/lgpd-pesquisa-de-satisfacao-cartorio" className="hover:text-primary">
+            LGPD na avaliação
+          </Link>
           <a
             href={createWhatsappUrl()}
             target="_blank"
