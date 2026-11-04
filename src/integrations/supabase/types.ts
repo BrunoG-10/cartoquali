@@ -304,9 +304,11 @@ export type Database = {
           city_state: string
           client_request_id: string
           created_at: string
+          cta: string | null
           email: string
           id: string
           name: string
+          origem: string | null
           registry_name: string
           role_title: string
           source_hash: string
@@ -316,9 +318,11 @@ export type Database = {
           city_state: string
           client_request_id: string
           created_at?: string
+          cta?: string | null
           email: string
           id?: string
           name: string
+          origem?: string | null
           registry_name: string
           role_title: string
           source_hash: string
@@ -328,9 +332,11 @@ export type Database = {
           city_state?: string
           client_request_id?: string
           created_at?: string
+          cta?: string | null
           email?: string
           id?: string
           name?: string
+          origem?: string | null
           registry_name?: string
           role_title?: string
           source_hash?: string

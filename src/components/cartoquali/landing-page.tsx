@@ -1,4 +1,4 @@
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
@@ -9,14 +9,19 @@ import {
   CheckCircle2,
   CircleHelp,
   ClipboardCheck,
-  Gauge,
-  Lightbulb,
   Copy,
+  Database,
+  EyeOff,
+  Gauge,
+  KeyRound,
+  Lightbulb,
   LockKeyhole,
   MapPin,
   Menu,
   MessageSquareText,
   QrCode,
+  Quote,
+  Scale,
   Settings2,
   ShieldCheck,
   Star,
@@ -40,11 +45,11 @@ import {
   submitCommercialLead,
   type CommercialLeadInput,
 } from "@/lib/commercial-leads.functions";
+import { leadOriginFromSearch, type LeadCta } from "@/lib/lead-origin";
 import {
   DashboardScene,
   EvaluationPhone,
   GoogleInviteScene,
-  OccurrenceScene,
   ProductScene,
   QrTotemScene,
 } from "./landing-visuals";
@@ -112,15 +117,60 @@ const normativeReferences: Array<[string, string, string]> = [
   ],
 ];
 
-const actionFlow = ["Avaliação", "Ocorrência", "Plano de melhoria", "Resultado"];
+// Illustrative example of the real flow: the occurrence is created from the evaluation by staff.
+const improvementFlow: Array<{ step: string; does: string; example: string; detail: string }> = [
+  {
+    step: "Avaliação",
+    does: "A nota baixa chega ao painel destacada.",
+    example: "Nota 2 em tempo de atendimento",
+    detail: "“Esperei muito para reconhecer firma.”",
+  },
+  {
+    step: "Ocorrência",
+    does: "Com um clique, a avaliação vira ocorrência.",
+    example: "Responsável: gestor do atendimento",
+    detail: "Prazo de 5 dias, com histórico de cada mudança.",
+  },
+  {
+    step: "Plano de melhoria",
+    does: "A equipe define a ação e acompanha a execução.",
+    example: "Guichê separado para reconhecimento de firma",
+    detail: "Ações, responsáveis e prazos registrados.",
+  },
+  {
+    step: "Resultado",
+    does: "Os indicadores mostram se a ação funcionou.",
+    example: "Tempo de atendimento: de 3,1 para 4,3",
+    detail: "Comparação com o mês anterior.",
+  },
+];
 
-const privacyItems = [
-  "Avaliação sem identificação por padrão",
-  "Contato opcional e separado",
-  "Minimização de dados",
-  "Controle de acesso por perfil",
-  "Isolamento entre cartórios",
-  "Auditoria das operações",
+const securityItems: Array<[LucideIcon, string, string]> = [
+  [
+    Database,
+    "Cada cartório só vê os próprios dados",
+    "O isolamento entre cartórios é garantido no banco de dados, e não apenas escondido na tela.",
+  ],
+  [
+    KeyRound,
+    "Acesso conforme o perfil",
+    "Administrador do cartório, gestor e operador veem e fazem só o que o perfil permite. As operações ficam registradas no histórico de auditoria.",
+  ],
+  [
+    EyeOff,
+    "O cidadão não precisa se identificar",
+    "A avaliação não pede nome nem cadastro. O contato para retorno é opcional, fica separado da avaliação, só administradores autorizados o veem e ele não entra em indicadores nem em relatórios gerais.",
+  ],
+  [
+    Scale,
+    "LGPD na prática",
+    "O cartório é o controlador e o CartoQuali, o operador. Pedidos de titulares chegam por um canal de privacidade, e os prazos de guarda são definidos pelo cartório.",
+  ],
+  [
+    ShieldCheck,
+    "Sem rastreadores",
+    "As páginas do CartoQuali não carregam anúncios, rastreadores nem scripts de terceiros, e a conexão é sempre protegida.",
+  ],
 ];
 
 const audiences: Array<[LucideIcon, string, string]> = [
@@ -132,11 +182,6 @@ const audiences: Array<[LucideIcon, string, string]> = [
   [Gauge, "Gestores", "Identificam problemas e decidem onde agir com base em indicadores."],
   [Users, "Equipe", "Sabe com clareza quais pontos do atendimento precisam de atenção."],
 ];
-
-const trialOffer = {
-  title: "Teste grátis por 7 dias.",
-  detail: "Depois, cancele quando quiser, sem multa.",
-};
 
 // Benefits limited to what the invite really does; never promise ratings, ranking or volume.
 const googleBenefits: Array<[LucideIcon, string, string]> = [
@@ -162,7 +207,19 @@ const googleBenefits: Array<[LucideIcon, string, string]> = [
   ],
 ];
 
-const launchPrice = { reais: "79", cents: "90", perDay: "menos de R$ 2,70 por dia" };
+const launchPrice = {
+  label: "R$ 79,90",
+  reais: "79",
+  cents: "90",
+  perDay: "menos de R$ 2,70 por dia",
+};
+
+const priceTerms = [
+  "Valor garantido enquanto a assinatura estiver ativa",
+  "Sem cartão de crédito para testar",
+  "Pagamento mensal por PIX, boleto ou transferência",
+  "Sem taxa de implantação e sem fidelidade",
+];
 
 const includedGroups: Array<[string, string[]]> = [
   [
@@ -201,18 +258,52 @@ const includedGroups: Array<[string, string[]]> = [
   ],
 ];
 
+// The real hiring flow: lead, setup done by our team, 7-day trial, then monthly payment.
+const hiringSteps: Array<[string, string]> = [
+  ["Você preenche o formulário", "Leva cerca de um minuto, e a conversa continua no WhatsApp."],
+  [
+    "Configuramos com você",
+    "Nossa equipe cadastra o cartório, os serviços, o QR Code e o perfil do Google.",
+  ],
+  [
+    "7 dias de teste no balcão",
+    "O QR Code já recebe avaliações reais, e você acompanha tudo no painel.",
+  ],
+  [
+    "Você decide",
+    `Para continuar, ${launchPrice.label} por mês, por PIX, boleto ou transferência. Se não quiser, é só avisar, sem cobrança.`,
+  ],
+];
+
+type Testimonial = { quote: string; name: string; role: string; registry: string };
+
+// Only real testimonials with the author's written authorization; the section stays hidden while empty.
+const testimonials: Testimonial[] = [];
+
 const faqs = [
   [
-    "Posso testar antes de contratar?",
-    "Sim. Você usa o CartoQuali gratuitamente por 7 dias, com o seu cartório, antes de decidir.",
-  ],
-  [
     "Quanto custa?",
-    "No período de lançamento, R$ 79,90 por mês, com todos os recursos liberados. Antes, você testa grátis por 7 dias.",
+    `${launchPrice.label} por mês, por cartório, com todos os recursos liberados. Quem assina no lançamento mantém esse valor enquanto a assinatura estiver ativa, mesmo quando o preço subir para os próximos cartórios.`,
   ],
   [
-    "Quem assina agora vai pagar mais depois?",
-    "Não. Quem assina no lançamento continua pagando R$ 79,90 por mês enquanto a assinatura estiver ativa, mesmo quando o preço subir para os próximos cartórios.",
+    "Preciso de cartão de crédito para testar?",
+    "Não. O teste de 7 dias é gratuito e não pede nenhum dado de pagamento.",
+  ],
+  [
+    "Como funciona o pagamento?",
+    "A mensalidade é paga por PIX, boleto ou transferência. Ela só começa se você decidir continuar depois dos 7 dias de teste.",
+  ],
+  [
+    "O que acontece depois dos 7 dias?",
+    "Conversamos com você. Se quiser continuar, começa a mensalidade. Se não quiser, o acesso é encerrado sem nenhuma cobrança.",
+  ],
+  [
+    "Quem faz a implantação?",
+    "Nossa equipe, junto com você, pelo WhatsApp: cadastro do cartório, serviços, QR Code e perfil do Google. Não há taxa de implantação.",
+  ],
+  [
+    "Existe fidelidade ou multa para cancelar?",
+    "Não. Você pode cancelar a qualquer momento, sem multa.",
   ],
   [
     "Por que o valor é tão acessível?",
@@ -221,10 +312,6 @@ const faqs = [
   [
     "O convite do Google aparece só para quem deu nota alta?",
     "Não. Ele aparece igual para qualquer nota, e o cidadão pode recusar com um toque. Filtrar notas vai contra as regras do Google e pode prejudicar o perfil do cartório.",
-  ],
-  [
-    "Existe fidelidade ou multa para cancelar?",
-    "Não. Você pode cancelar a qualquer momento, sem multa.",
   ],
   ["Preciso instalar um aplicativo?", "Não. A avaliação funciona no navegador do celular."],
   [
@@ -240,12 +327,8 @@ const faqs = [
     "Sim. As seis perguntas essenciais podem ter o texto ajustado, e você pode acrescentar perguntas próprias.",
   ],
   [
-    "Consigo acompanhar avaliações negativas?",
-    "Sim. Elas ficam destacadas no painel e podem virar ocorrências.",
-  ],
-  [
-    "Consigo transformar problemas em ações?",
-    "Sim, por meio de ocorrências e planos de melhoria com responsável e prazo.",
+    "Consigo transformar avaliações negativas em ações?",
+    "Sim. Elas ficam destacadas no painel e viram ocorrências e planos de melhoria, com responsável e prazo.",
   ],
   [
     "O CartoQuali é uma ferramenta oficial da ANOREG ou do PQTA?",
@@ -256,6 +339,8 @@ const faqs = [
     "Não. Ele é uma ferramenta contínua de acompanhamento e gestão da qualidade.",
   ],
 ] as const;
+
+const roleOptions = ["Titular", "Substituto(a)", "Escrevente ou gestor(a)", "Outro cargo"];
 
 const emptyLead = {
   name: "",
@@ -269,10 +354,27 @@ const emptyLead = {
 type LeadDraft = typeof emptyLead;
 
 const commercialWhatsappNumber = "5586981846766";
-const defaultWhatsappMessage =
-  "Olá! Quero conhecer o CartoQuali e começar o teste grátis de 7 dias.";
+const defaultWhatsappMessage = "Olá! Quero começar o teste grátis de 7 dias do CartoQuali.";
 const createWhatsappUrl = (message = defaultWhatsappMessage) =>
   `https://wa.me/${commercialWhatsappNumber}?text=${encodeURIComponent(message)}`;
+
+// Session-only labels for measuring which link and which button brought each lead.
+const originKey = "cartoquali-lead-origin";
+const ctaKey = "cartoquali-lead-cta";
+function readSession(key: string) {
+  try {
+    return window.sessionStorage.getItem(key) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+function writeSession(key: string, value: string) {
+  try {
+    window.sessionStorage.setItem(key, value);
+  } catch {
+    // Private windows may block storage; the lead is still sent without the label.
+  }
+}
 
 function Brand() {
   return (
@@ -327,16 +429,29 @@ function SectionTitle({
   );
 }
 
-function AnchorCta({
+/** Leads to the trial form, remembering which button was used. */
+function TrialCta({
+  cta,
   children,
   variant = "default",
+  className,
+  onNavigate,
 }: {
+  cta: LeadCta;
   children: ReactNode;
   variant?: "default" | "outline" | "secondary";
+  className?: string;
+  onNavigate?: () => void;
 }) {
   return (
-    <Button asChild size="lg" variant={variant} className="min-h-11">
-      <a href={createWhatsappUrl()} target="_blank" rel="noreferrer">
+    <Button asChild size="lg" variant={variant} className={cn("min-h-11", className)}>
+      <a
+        href="#formulario-teste"
+        onClick={() => {
+          writeSession(ctaKey, cta);
+          onNavigate?.();
+        }}
+      >
         {children}
       </a>
     </Button>
@@ -348,8 +463,8 @@ function CommercialHeader() {
   const links = [
     ["#como-funciona", "Como funciona"],
     ["#google", "Google"],
-    ["#indicadores", "Indicadores"],
-    ["#normas", "Normas"],
+    ["#melhoria", "Melhoria"],
+    ["#seguranca", "Segurança"],
     ["#preco", "Preço"],
     ["#faq", "Perguntas"],
   ] as const;
@@ -372,7 +487,7 @@ function CommercialHeader() {
           <Button asChild variant="ghost">
             <Link to="/login">Entrar</Link>
           </Button>
-          <AnchorCta>Solicitar demonstração</AnchorCta>
+          <TrialCta cta="cabecalho">Testar grátis</TrialCta>
         </div>
         <Button
           className="sm:hidden"
@@ -403,16 +518,9 @@ function CommercialHeader() {
             <Button asChild variant="outline">
               <Link to="/login">Entrar</Link>
             </Button>
-            <Button asChild>
-              <a
-                href={createWhatsappUrl()}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => setOpen(false)}
-              >
-                Demonstração
-              </a>
-            </Button>
+            <TrialCta cta="menu-celular" className="min-h-9" onNavigate={() => setOpen(false)}>
+              Testar grátis
+            </TrialCta>
           </div>
         </div>
       )}
@@ -434,25 +542,23 @@ function Hero() {
             A voz de quem é atendido, transformada em gestão da qualidade.
           </h1>
           <p className="mt-5 max-w-xl text-base leading-7 text-muted-foreground sm:text-lg">
-            O cidadão avalia o atendimento pelo QR Code, em poucos instantes, e é convidado a
-            avaliar também no Google. Sua equipe acompanha os indicadores e transforma cada problema
-            em ação de melhoria.
+            Pesquisa de satisfação pelo QR Code, indicadores para a gestão e convite para avaliar no
+            Google, em um só sistema. Cada reclamação vira uma ação, com responsável e prazo.
           </p>
           <a
             href="#preco"
             className="mt-6 inline-flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border border-brand-gold/50 bg-brand-gold/10 px-4 py-2.5 text-sm transition-colors hover:bg-brand-gold/20"
           >
             <span className="font-display font-bold">
-              R$ {launchPrice.reais},{launchPrice.cents} por mês, garantido para quem assina no
-              lançamento.
+              {launchPrice.label} por mês, garantido para quem assina no lançamento.
             </span>
-            <span className="text-muted-foreground">{trialOffer.title}</span>
+            <span className="text-muted-foreground">Teste 7 dias grátis, sem cartão.</span>
           </a>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <AnchorCta>
-              Solicitar demonstração <ArrowRight />
-            </AnchorCta>
-            <Button asChild size="lg" variant="outline">
+            <TrialCta cta="topo">
+              Começar teste grátis <ArrowRight />
+            </TrialCta>
+            <Button asChild size="lg" variant="outline" className="min-h-11">
               <a href="#como-funciona">
                 Ver como funciona <ArrowDown />
               </a>
@@ -461,11 +567,10 @@ function Hero() {
           <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
             {[
               "7 dias grátis",
-              "Sem multa para cancelar",
-              "Convite para avaliar no Google",
-              "Sem aplicativo",
-              "Sem cadastro do cidadão",
-              "Desenvolvido com base na LGPD",
+              "Sem cartão de crédito",
+              "Sem fidelidade",
+              "Implantação feita pela nossa equipe",
+              "Sem aplicativo para o cidadão",
             ].map((item) => (
               <li key={item} className="flex items-center gap-2">
                 <Check className="size-4 text-success" aria-hidden="true" />
@@ -564,75 +669,105 @@ function IndicatorsSection() {
   );
 }
 
-function ActionSection() {
+function ImprovementSection() {
   return (
-    <section className="border-b border-border bg-foreground py-20 text-background sm:py-24">
-      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
-        <div>
+    <section
+      id="melhoria"
+      className="scroll-mt-20 border-b border-border bg-foreground py-20 text-background sm:py-24"
+    >
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
           <SectionTitle
             dark
             eyebrow="Da avaliação à ação"
             title="Uma avaliação negativa não termina no comentário"
             description="Diferente de uma pesquisa de satisfação comum, o CartoQuali leva o problema até a solução e mede o resultado."
           />
-          <ol className="mt-8 flex flex-wrap items-center gap-2 text-sm font-semibold">
-            {actionFlow.map((item, index) => (
-              <li key={item} className="flex items-center gap-2">
-                <span
-                  className={cn(
-                    "rounded-md border px-3 py-2",
-                    index === actionFlow.length - 1
-                      ? "border-brand-gold bg-brand-gold/15 text-brand-gold"
-                      : "border-background/20 bg-background/5",
-                  )}
-                >
-                  {item}
-                </span>
-                {index < actionFlow.length - 1 && (
-                  <ArrowRight className="size-4 text-background/50" aria-hidden="true" />
-                )}
-              </li>
-            ))}
-          </ol>
-          <div className="mt-10">
-            <AnchorCta variant="secondary">
-              Quero conhecer <ArrowRight />
-            </AnchorCta>
+          <div className="shrink-0">
+            <TrialCta cta="fluxo" variant="secondary">
+              Começar teste grátis <ArrowRight />
+            </TrialCta>
           </div>
         </div>
-        <div className="text-foreground">
-          <OccurrenceScene />
-        </div>
+        <p className="mt-12 text-right text-[11px] font-semibold uppercase tracking-wide text-background/75">
+          Exemplo ilustrativo
+        </p>
+        <ol className="mt-2 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {improvementFlow.map(({ step, does, example, detail }, index) => {
+            const last = index === improvementFlow.length - 1;
+            return (
+              <li
+                key={step}
+                className={cn(
+                  "relative flex flex-col rounded-xl border p-5",
+                  last
+                    ? "border-brand-gold bg-brand-gold/10"
+                    : "border-background/20 bg-background/5",
+                )}
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className={cn(
+                      "grid size-8 shrink-0 place-items-center rounded-full font-display text-sm font-bold",
+                      last ? "bg-brand-gold text-foreground" : "bg-background/15",
+                    )}
+                  >
+                    {index + 1}
+                  </span>
+                  <h3 className={cn("font-display text-lg font-bold", last && "text-brand-gold")}>
+                    {step}
+                  </h3>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-background/80">{does}</p>
+                <div className="mt-auto pt-5">
+                  <div className="rounded-lg bg-card p-3 text-foreground">
+                    <p className="text-sm font-semibold leading-5">{example}</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</p>
+                  </div>
+                </div>
+                {!last && (
+                  <ArrowRight
+                    className="absolute -right-4 top-7 z-10 hidden size-5 text-brand-gold xl:block"
+                    aria-hidden="true"
+                  />
+                )}
+              </li>
+            );
+          })}
+        </ol>
       </div>
     </section>
   );
 }
 
-function PrivacySection() {
+function SecuritySection() {
   return (
-    <section
-      id="privacidade"
-      className="scroll-mt-20 border-b border-border bg-card py-20 sm:py-24"
-    >
-      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
+    <section id="seguranca" className="scroll-mt-20 border-b border-border bg-card py-20 sm:py-24">
+      <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
         <div>
           <div className="mb-6 grid size-12 place-items-center rounded-lg bg-primary text-primary-foreground">
             <LockKeyhole aria-hidden="true" />
           </div>
           <SectionTitle
-            eyebrow="LGPD e privacidade"
-            title="Privacidade desde a primeira resposta"
-            description="Recursos técnicos pensados com base nos princípios de proteção de dados pessoais."
+            eyebrow="Segurança e privacidade"
+            title="Os dados do cartório e do cidadão protegidos de verdade"
+            description="Proteção pensada no próprio sistema, com base na LGPD, e não só em uma promessa no rodapé."
           />
+          <Link
+            to="/privacidade"
+            className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary underline underline-offset-4"
+          >
+            Ler o aviso de privacidade
+          </Link>
         </div>
-        <ul className="grid gap-3 sm:grid-cols-2">
-          {privacyItems.map((item) => (
-            <li
-              key={item}
-              className="flex items-center gap-3 rounded-md border border-border bg-background p-4 text-sm font-semibold"
-            >
-              <ShieldCheck className="size-5 shrink-0 text-success" aria-hidden="true" />
-              {item}
+        <ul className="grid gap-x-8 sm:grid-cols-2">
+          {securityItems.map(([Icon, title, text]) => (
+            <li key={title} className="border-t border-border py-5">
+              <h3 className="flex items-center gap-2 font-display text-lg font-bold">
+                <Icon className="size-4 shrink-0 text-success" aria-hidden="true" />
+                {title}
+              </h3>
+              <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{text}</p>
             </li>
           ))}
         </ul>
@@ -672,9 +807,9 @@ function NormsSection() {
             pontuação ou certificação. Ele organiza a evidência que o seu cartório apresenta.
           </p>
           <div className="shrink-0">
-            <AnchorCta>
-              Começar o teste grátis <ArrowRight />
-            </AnchorCta>
+            <TrialCta cta="normas">
+              Começar teste grátis <ArrowRight />
+            </TrialCta>
           </div>
         </div>
       </div>
@@ -720,6 +855,33 @@ function GoogleSection() {
   );
 }
 
+function TestimonialsSection() {
+  if (testimonials.length === 0) return null;
+  return (
+    <section className="border-b border-border bg-card py-20 sm:py-24">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
+        <SectionTitle eyebrow="Quem já usa" title="O que dizem os cartórios" />
+        <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {testimonials.map(({ quote, name, role, registry }) => (
+            <li key={name}>
+              <figure className="flex h-full flex-col rounded-lg border border-border bg-background p-6">
+                <Quote className="size-6 text-brand-gold" aria-hidden="true" />
+                <blockquote className="mt-3 flex-1 leading-7">{quote}</blockquote>
+                <figcaption className="mt-5 text-sm">
+                  <span className="font-semibold">{name}</span>
+                  <span className="block text-muted-foreground">
+                    {role}, {registry}
+                  </span>
+                </figcaption>
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 function PricingSection() {
   return (
     <section id="preco" className="scroll-mt-20 border-b border-border py-20 sm:py-24">
@@ -743,13 +905,11 @@ function PricingSection() {
             <p className="mt-3 text-base text-background/75">
               por mês, por cartório. É {launchPrice.perDay}.
             </p>
+            <p className="mt-2 text-sm font-semibold text-brand-gold">
+              Você só paga se continuar depois dos 7 dias de teste.
+            </p>
             <ul className="mt-8 space-y-2.5 text-sm">
-              {[
-                "Valor garantido: quem assina agora não paga mais depois",
-                "7 dias grátis para testar com o seu cartório",
-                "Sem fidelidade e sem multa para cancelar",
-                "Implantação guiada, sem custo extra",
-              ].map((item) => (
+              {priceTerms.map((item) => (
                 <li key={item} className="flex gap-2">
                   <Check className="mt-0.5 size-4 shrink-0 text-brand-gold" aria-hidden="true" />
                   {item}
@@ -757,16 +917,16 @@ function PricingSection() {
               ))}
             </ul>
             <div className="mt-auto pt-10">
-              <Button asChild size="lg" variant="secondary" className="min-h-12 w-full">
-                <a href={createWhatsappUrl()} target="_blank" rel="noreferrer">
-                  Começar os 7 dias grátis <ArrowRight />
-                </a>
-              </Button>
+              <TrialCta cta="preco" variant="secondary" className="min-h-12 w-full">
+                Começar teste grátis <ArrowRight />
+              </TrialCta>
               <a
-                href="#formulario-demonstracao"
+                href={createWhatsappUrl()}
+                target="_blank"
+                rel="noreferrer"
                 className="mt-4 block text-center text-sm font-semibold text-background/80 underline underline-offset-4 hover:text-background"
               >
-                Prefiro uma demonstração antes
+                Prefiro falar direto pelo WhatsApp
               </a>
             </div>
           </div>
@@ -792,18 +952,36 @@ function PricingSection() {
             </div>
           </div>
         </div>
-        <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-brand-gold/50 bg-brand-gold/10 p-6">
-          <h3 className="font-display text-lg font-bold">Por que um valor tão baixo?</h3>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground sm:text-base sm:leading-7">
-            Porque estamos em lançamento. Queremos cartórios usando o CartoQuali de verdade, no
-            balcão, e nos dizendo o que melhorar. Em troca, quem entra agora paga um valor de
-            entrada, bem abaixo do que o produto vai custar. O preço de lançamento é por tempo
-            limitado e será revisto para os próximos cartórios.
-          </p>
-          <p className="mt-3 text-sm font-semibold leading-6 sm:text-base sm:leading-7">
-            Quem assina no lançamento continua pagando R$ 79,90 por mês enquanto a assinatura
-            estiver ativa, mesmo quando o preço subir.
-          </p>
+        <div className="mt-12 grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+          <div>
+            <h3 className="font-display text-xl font-bold">Como funciona a contratação</h3>
+            <ol className="mt-6 grid gap-6 sm:grid-cols-2">
+              {hiringSteps.map(([title, text], index) => (
+                <li key={title} className="flex gap-4">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-full border border-border bg-card font-display text-sm font-bold text-primary">
+                    {index + 1}
+                  </span>
+                  <div>
+                    <h4 className="font-display font-bold">{title}</h4>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{text}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div className="rounded-xl border border-brand-gold/50 bg-brand-gold/10 p-6">
+            <h3 className="font-display text-lg font-bold">Por que um valor tão baixo?</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Porque estamos em lançamento. Queremos cartórios usando o CartoQuali de verdade, no
+              balcão, e nos dizendo o que melhorar. Em troca, quem entra agora paga um valor de
+              entrada, bem abaixo do que o produto vai custar. O preço de lançamento é por tempo
+              limitado e será revisto para os próximos cartórios.
+            </p>
+            <p className="mt-3 text-sm font-semibold leading-6">
+              Quem assina no lançamento continua pagando {launchPrice.label} por mês enquanto a
+              assinatura estiver ativa, mesmo quando o preço subir.
+            </p>
+          </div>
         </div>
       </div>
     </section>
@@ -846,7 +1024,7 @@ function FaqSection() {
           <SectionTitle
             eyebrow="Perguntas frequentes"
             title="Ainda tem dúvidas?"
-            description="Respostas diretas para avaliar se o CartoQuali faz sentido para o seu cartório."
+            description="Preço, pagamento, implantação e o dia a dia do sistema, em respostas diretas."
           />
         </div>
         <Accordion type="single" collapsible className="border-t border-border">
@@ -864,7 +1042,7 @@ function FaqSection() {
   );
 }
 
-function DemoForm() {
+function TrialForm() {
   const submitLead = useServerFn(submitCommercialLead);
   const [draft, setDraft] = useState<LeadDraft>(emptyLead);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
@@ -874,10 +1052,10 @@ function DemoForm() {
     setDraft((current) => ({ ...current, [key]: value }));
   const getSession = () => {
     const key = "cartoquali-commercial-session";
-    const found = window.sessionStorage.getItem(key);
+    const found = readSession(key);
     if (found) return found;
     const created = crypto.randomUUID();
-    window.sessionStorage.setItem(key, created);
+    writeSession(key, created);
     return created;
   };
   const handleSubmit = async (event: FormEvent) => {
@@ -887,6 +1065,8 @@ function DemoForm() {
       ...draft,
       clientRequestId: crypto.randomUUID(),
       submissionSession: getSession(),
+      origin: readSession(originKey),
+      cta: readSession(ctaKey),
     };
     const checked = commercialLeadSchema.safeParse(payload);
     if (!checked.success) {
@@ -921,41 +1101,37 @@ function DemoForm() {
     }
   };
   return (
-    <section id="demonstracao" className="bg-foreground py-20 text-background sm:py-24">
+    <section id="teste-gratis" className="bg-foreground py-20 text-background sm:py-24">
       <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
         <div>
           <SectionTitle
             dark
-            eyebrow="Demonstração"
-            title="Veja o CartoQuali funcionando no seu cartório"
-            description="Mostramos a jornada de avaliação, os indicadores e o fluxo de melhoria com exemplos da rotina de um cartório."
+            eyebrow="Teste grátis"
+            title="Comece seus 7 dias grátis"
+            description="Preencha os dados e continue a conversa pelo WhatsApp. Nossa equipe configura o cartório com você."
           />
           <ul className="mt-8 space-y-3 text-sm text-background/80">
             {[
-              "Conheça a avaliação pelo QR Code",
-              "Veja os indicadores em contexto",
-              "Entenda o fluxo de ocorrências e planos",
-              "Veja o convite para avaliar no Google",
-              "Teste grátis por 7 dias e depois R$ 79,90 por mês",
+              "Sem cartão de crédito e sem compromisso",
+              "Implantação feita pela nossa equipe, sem taxa",
+              "Se preferir, pedimos uma demonstração antes na conversa",
+              `Depois do teste, ${launchPrice.label} por mês, com o valor garantido`,
             ].map((item) => (
               <li key={item} className="flex gap-2">
-                <Check className="size-4 text-brand-gold" aria-hidden="true" />
+                <Check className="size-4 shrink-0 text-brand-gold" aria-hidden="true" />
                 {item}
               </li>
             ))}
           </ul>
         </div>
         <div
-          id="formulario-demonstracao"
+          id="formulario-teste"
           className="scroll-mt-24 rounded-xl bg-background p-5 text-foreground shadow-2xl sm:p-8"
         >
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-accent-foreground">
-              Solicitar demonstração
-            </p>
-            <h3 className="mt-2 font-display text-2xl font-bold">Quero conhecer o CartoQuali</h3>
+            <h3 className="font-display text-2xl font-bold">Começar teste grátis</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Preencha os dados e continue a conversa pelo WhatsApp.
+              Leva cerca de um minuto. O e-mail é usado para criar o seu acesso.
             </p>
           </div>
           {status === "success" ? (
@@ -1017,13 +1193,24 @@ function DemoForm() {
                   autoComplete="address-level2"
                   maxLength={120}
                 />
-                <Field
-                  label="Cargo"
-                  value={draft.roleTitle}
-                  onChange={(value) => change("roleTitle", value)}
-                  autoComplete="organization-title"
-                  maxLength={100}
-                />
+                <label className="grid gap-1.5 text-sm font-semibold">
+                  Cargo
+                  <select
+                    required
+                    value={draft.roleTitle}
+                    onChange={(event) => change("roleTitle", event.target.value)}
+                    className="h-11 rounded-md border border-input bg-card px-3 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <option value="" disabled>
+                      Selecione
+                    </option>
+                    {roleOptions.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
@@ -1057,11 +1244,11 @@ function DemoForm() {
                 className="mt-1 min-h-12 w-full"
                 disabled={status === "sending"}
               >
-                {status === "sending" ? "Enviando..." : "Enviar e conversar no WhatsApp"}
+                {status === "sending" ? "Enviando..." : "Enviar e continuar no WhatsApp"}
                 <ArrowRight />
               </Button>
               <p className="text-center text-sm font-semibold">
-                {trialOffer.title} {trialOffer.detail}
+                7 dias grátis, sem cartão de crédito. Cancele quando quiser, sem multa.
               </p>
               <p className="text-center text-xs leading-4 text-muted-foreground">
                 Seus dados serão usados apenas para responder à solicitação comercial pelo WhatsApp.
@@ -1071,6 +1258,14 @@ function DemoForm() {
                 </Link>
                 .
               </p>
+              <a
+                href={createWhatsappUrl()}
+                target="_blank"
+                rel="noreferrer"
+                className="text-center text-sm font-semibold text-primary underline underline-offset-4"
+              >
+                Prefiro falar direto pelo WhatsApp
+              </a>
             </form>
           )}
         </div>
@@ -1154,6 +1349,11 @@ function Footer() {
 }
 
 export function LandingPage() {
+  // Keeps the link's channel (?origem= or utm_*) for the lead, even after in-page navigation.
+  useEffect(() => {
+    const origin = leadOriginFromSearch(window.location.search);
+    if (origin) writeSession(originKey, origin);
+  }, []);
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
       <CommercialHeader />
@@ -1162,13 +1362,14 @@ export function LandingPage() {
         <HowItWorks />
         <GoogleSection />
         <IndicatorsSection />
-        <ActionSection />
-        <PrivacySection />
+        <ImprovementSection />
+        <SecuritySection />
         <SectorSection />
         <NormsSection />
+        <TestimonialsSection />
         <PricingSection />
         <FaqSection />
-        <DemoForm />
+        <TrialForm />
       </main>
       <Footer />
     </div>

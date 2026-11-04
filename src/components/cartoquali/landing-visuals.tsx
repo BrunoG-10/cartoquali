@@ -181,45 +181,6 @@ export function QrTotemScene() {
   );
 }
 
-export function OccurrenceScene() {
-  return (
-    <div>
-      {/* Shown on the dark "Da avaliação à ação" band: light text keeps the caption readable. */}
-      <p className="mb-2 text-right text-[11px] font-semibold uppercase tracking-wide text-background/75">
-        Exemplo ilustrativo
-      </p>
-      <div className="rounded-xl border border-border bg-card p-5 shadow-glass">
-        <div className="flex items-center justify-between">
-          <span className="rounded-full bg-warning-soft px-2.5 py-1 text-xs font-semibold text-warning">
-            Em tratamento
-          </span>
-          <span className="text-xs text-muted-foreground">Ocorrência CQ-018</span>
-        </div>
-        <h3 className="mt-4 font-display text-lg font-bold">
-          Tempo de atendimento acima do esperado
-        </h3>
-        <div className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-          {[
-            ["Origem", "Avaliação de usuário"],
-            ["Nota", "2/5"],
-            ["Dimensão", "Tempo de atendimento"],
-            ["Responsável", "Equipe responsável"],
-          ].map(([label, value]) => (
-            <div key={label} className="rounded-md bg-muted/60 p-3">
-              <p className="text-[10px] uppercase text-muted-foreground">{label}</p>
-              <p className="mt-1 font-semibold">{value}</p>
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 flex items-center gap-2 text-sm text-success">
-          <Check className="size-4" />
-          <span>Plano de melhoria associado</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function EvaluationPhone() {
   return (
     <div className="mx-auto w-64 rounded-[2rem] border-8 border-foreground bg-card p-5 shadow-2xl">

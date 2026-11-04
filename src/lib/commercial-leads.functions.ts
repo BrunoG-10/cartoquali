@@ -17,6 +17,17 @@ export const commercialLeadSchema = z.object({
     .regex(/^[+()\-\s\d]+$/, "Informe um WhatsApp válido."),
   email: z.string().trim().email("Informe um e-mail válido.").max(255),
   website: z.string().max(0).optional(),
+  // Measurement labels never block a lead: anything malformed is simply dropped.
+  origin: z
+    .string()
+    .regex(/^[a-z0-9._-]{1,80}$/)
+    .optional()
+    .catch(undefined),
+  cta: z
+    .string()
+    .regex(/^[a-z0-9-]{1,40}$/)
+    .optional()
+    .catch(undefined),
 });
 
 export type CommercialLeadInput = z.infer<typeof commercialLeadSchema>;
@@ -46,7 +57,7 @@ export const submitCommercialLead = createServerFn({ method: "POST" })
     if ((count ?? 0) >= 5)
       throw new Error("Muitas solicitações foram enviadas nesta sessão. Aguarde alguns minutos.");
 
-    const { error } = await supabaseAdmin.from("commercial_leads").insert({
+    const lead = {
       client_request_id: data.clientRequestId,
       name: data.name,
       registry_name: data.registryName,
@@ -55,7 +66,15 @@ export const submitCommercialLead = createServerFn({ method: "POST" })
       whatsapp: data.whatsapp,
       email: data.email.toLowerCase(),
       source_hash: sourceHash,
-    });
+    };
+    let { error } = await supabaseAdmin
+      .from("commercial_leads")
+      .insert({ ...lead, origem: data.origin ?? null, cta: data.cta ?? null });
+    // Until the origem/cta migration reaches the database, keep accepting leads without them.
+    if (error?.code === "PGRST204" || error?.code === "42703") {
+      console.warn("[commercial-lead] origem/cta columns missing; saved without them");
+      ({ error } = await supabaseAdmin.from("commercial_leads").insert(lead));
+    }
     if (error?.code === "23505") return { ok: true, duplicate: true };
     if (error) {
       console.error("[commercial-lead] insert failed", error.code);
