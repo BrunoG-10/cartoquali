@@ -353,6 +353,13 @@ const emptyLead = {
 };
 type LeadDraft = typeof emptyLead;
 
+// Visible fields in form order, so the first invalid one gets the focus.
+const leadFields = ["name", "registryName", "cityState", "roleTitle", "whatsapp", "email"] as const;
+type LeadField = (typeof leadFields)[number];
+type FieldErrors = Partial<Record<LeadField, string>>;
+const isLeadField = (key: unknown): key is LeadField =>
+  typeof key === "string" && (leadFields as readonly string[]).includes(key);
+
 const commercialWhatsappNumber = "5586981846766";
 const defaultWhatsappMessage = "Olá! Quero começar o teste grátis de 7 dias do CartoQuali.";
 const createWhatsappUrl = (message = defaultWhatsappMessage) =>
@@ -1048,8 +1055,11 @@ function TrialForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [whatsappLink, setWhatsappLink] = useState("");
   const [message, setMessage] = useState("");
-  const change = (key: keyof LeadDraft, value: string) =>
+  const [errors, setErrors] = useState<FieldErrors>({});
+  const change = (key: keyof LeadDraft, value: string) => {
     setDraft((current) => ({ ...current, [key]: value }));
+    setErrors((current) => ({ ...current, [key]: undefined }));
+  };
   const getSession = () => {
     const key = "cartoquali-commercial-session";
     const found = readSession(key);
@@ -1070,10 +1080,23 @@ function TrialForm() {
     };
     const checked = commercialLeadSchema.safeParse(payload);
     if (!checked.success) {
+      const found: FieldErrors = {};
+      for (const issue of checked.error.issues) {
+        const key = issue.path[0];
+        if (isLeadField(key) && !found[key]) found[key] = issue.message;
+      }
+      const first = leadFields.find((key) => found[key]);
+      setErrors(found);
       setStatus("error");
-      setMessage(checked.error.issues[0]?.message ?? "Revise os campos informados.");
+      setMessage(
+        first
+          ? "Preencha os campos destacados para continuar."
+          : (checked.error.issues[0]?.message ?? "Revise os campos informados."),
+      );
+      if (first) document.getElementById(`lead-${first}`)?.focus();
       return;
     }
+    setErrors({});
     setStatus("sending");
     setMessage("");
     try {
@@ -1131,7 +1154,8 @@ function TrialForm() {
           <div>
             <h3 className="font-display text-2xl font-bold">Começar teste grátis</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Leva cerca de um minuto. O e-mail é usado para criar o seu acesso.
+              Leva cerca de um minuto. Todos os campos são obrigatórios, e o e-mail é usado para
+              criar o seu acesso.
             </p>
           </div>
           {status === "success" ? (
@@ -1171,15 +1195,19 @@ function TrialForm() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
+                  name="name"
                   label="Nome"
                   value={draft.name}
+                  error={errors.name}
                   onChange={(value) => change("name", value)}
                   autoComplete="name"
                   maxLength={100}
                 />
                 <Field
+                  name="registryName"
                   label="Cartório"
                   value={draft.registryName}
+                  error={errors.registryName}
                   onChange={(value) => change("registryName", value)}
                   autoComplete="organization"
                   maxLength={160}
@@ -1187,19 +1215,27 @@ function TrialForm() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
+                  name="cityState"
                   label="Cidade/UF"
                   value={draft.cityState}
+                  error={errors.cityState}
                   onChange={(value) => change("cityState", value)}
                   autoComplete="address-level2"
                   maxLength={120}
                 />
-                <label className="grid gap-1.5 text-sm font-semibold">
-                  Cargo
+                <div className="grid content-start gap-1.5 text-sm font-semibold">
+                  <label htmlFor="lead-roleTitle">Cargo</label>
                   <select
+                    id="lead-roleTitle"
                     required
                     value={draft.roleTitle}
+                    aria-invalid={errors.roleTitle ? true : undefined}
+                    aria-describedby={errors.roleTitle ? "lead-roleTitle-error" : undefined}
                     onChange={(event) => change("roleTitle", event.target.value)}
-                    className="h-11 rounded-md border border-input bg-card px-3 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className={cn(
+                      "h-11 rounded-md border border-input bg-card px-3 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                      errors.roleTitle && "border-destructive",
+                    )}
                   >
                     <option value="" disabled>
                       Selecione
@@ -1210,21 +1246,26 @@ function TrialForm() {
                       </option>
                     ))}
                   </select>
-                </label>
+                  <FieldError id="lead-roleTitle-error" message={errors.roleTitle} />
+                </div>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
-                  label="WhatsApp"
+                  name="whatsapp"
+                  label="WhatsApp com DDD"
                   type="tel"
                   value={draft.whatsapp}
+                  error={errors.whatsapp}
                   onChange={(value) => change("whatsapp", value)}
                   autoComplete="tel"
                   maxLength={30}
                 />
                 <Field
+                  name="email"
                   label="E-mail"
                   type="email"
                   value={draft.email}
+                  error={errors.email}
                   onChange={(value) => change("email", value)}
                   autoComplete="email"
                   maxLength={255}
@@ -1274,32 +1315,50 @@ function TrialForm() {
   );
 }
 
+function FieldError({ id, message }: { id: string; message?: string | undefined }) {
+  if (!message) return null;
+  return (
+    <p id={id} className="text-xs font-semibold text-destructive">
+      {message}
+    </p>
+  );
+}
+
 function Field({
+  name,
   label,
   value,
+  error,
   onChange,
   type = "text",
   ...props
 }: {
+  name: LeadField;
   label: string;
   value: string;
+  error?: string | undefined;
   onChange: (value: string) => void;
   type?: string;
   autoComplete?: string;
   maxLength?: number;
 }) {
+  const id = `lead-${name}`;
   return (
-    <label className="grid gap-1.5 text-sm font-semibold">
-      {label}
+    <div className="grid content-start gap-1.5 text-sm font-semibold">
+      <label htmlFor={id}>{label}</label>
       <Input
+        id={id}
         required
         type={type}
         value={value}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
         onChange={(event) => onChange(event.target.value)}
-        className="h-11 bg-card"
+        className={cn("h-11 bg-card", error && "border-destructive")}
         {...props}
       />
-    </label>
+      <FieldError id={`${id}-error`} message={error} />
+    </div>
   );
 }
 

@@ -15,7 +15,12 @@ export const commercialLeadSchema = z.object({
     .min(8, "Informe um WhatsApp válido.")
     .max(30)
     .regex(/^[+()\-\s\d]+$/, "Informe um WhatsApp válido."),
-  email: z.string().trim().email("Informe um e-mail válido.").max(255),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Informe seu e-mail.")
+    .email("Informe um e-mail válido.")
+    .max(255),
   website: z.string().max(0).optional(),
   // Measurement labels never block a lead: anything malformed is simply dropped.
   origin: z
