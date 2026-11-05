@@ -1,159 +1,87 @@
-// Pure math behind the landing page's scroll story: what is drawn is a function of scroll alone.
+// Pure math behind the landing page's story chapter: everything drawn is a function of scroll.
 
 export const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 
+export const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
+
 /** 0 before `start`, 1 after `end`, eased in between. */
-export function ramp(phase: number, start: number, end: number) {
-  const x = clamp((phase - start) / (end - start));
+export function ramp(value: number, start: number, end: number) {
+  const x = clamp((value - start) / (end - start));
   return x * x * (3 - 2 * x);
 }
 
-export const mix = (from: number, to: number, amount: number) => from + (to - from) * amount;
-
-export type Pose = {
-  x: number;
-  thighF: number;
-  shinF: number;
-  thighB: number;
-  shinB: number;
-  armF: number;
-  foreF: number;
-  armB: number;
-  foreB: number;
-  lean: number;
-  head: number;
-  /** 0 standing still, 1 walking; the stride is derived from `x`. */
-  walk: number;
-};
-
-export const standing: Pose = {
-  x: 0,
-  thighF: -2,
-  shinF: 2,
-  thighB: 2,
-  shinB: 0,
-  armF: 4,
-  foreF: -8,
-  armB: -4,
-  foreB: -6,
-  lean: 0,
-  head: 0,
-  walk: 0,
-};
-
-export type Keyframe = { at: number; pose: Partial<Pose> };
-
-/** Eased interpolation over keyframes sorted by `at`; each one inherits `standing` for what it omits. */
-export function poseAt(track: Keyframe[], phase: number): Pose {
-  const first = track[0];
-  const last = track[track.length - 1];
-  if (!first || !last) return standing;
-  if (phase <= first.at) return { ...standing, ...first.pose };
-  if (phase >= last.at) return { ...standing, ...last.pose };
-  const nextIndex = track.findIndex((frame) => frame.at > phase);
-  const before = track[nextIndex - 1] ?? first;
-  const after = track[nextIndex] ?? last;
-  const from = { ...standing, ...before.pose };
-  const to = { ...standing, ...after.pose };
-  const eased = ramp(phase, before.at, after.at);
-  // Walking keeps a steady pace so feet do not skate at the start and end of a stretch.
-  const linear = clamp((phase - before.at) / (after.at - before.at));
-  const keysOf = Object.keys(standing) as Array<keyof Pose>;
-  const result = { ...standing };
-  for (const key of keysOf) {
-    const amount = key === "x" && from.walk > 0 && to.walk > 0 ? linear : eased;
-    result[key] = mix(from[key], to[key], amount);
-  }
-  return result;
+/** Interpolates angles along the short way round. */
+export function mixAngle(from: number, to: number, amount: number) {
+  const turn = Math.PI * 2;
+  const delta = ((((to - from + Math.PI) % turn) + turn) % turn) - Math.PI;
+  return from + delta * amount;
 }
 
-export const THIGH = 62;
-export const SHIN = 62;
-export const SHOE = 8;
-const STRIDE = 190;
-
-const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
-
-/** Adds the walk cycle on top of the pose. */
-export function withStride(pose: Pose): Pose {
-  if (pose.walk <= 0) return pose;
-  const angle = (pose.x * 2 * Math.PI) / STRIDE;
-  const swing = Math.sin(angle) * 24 * pose.walk;
-  const kneeF = Math.max(0, Math.cos(angle)) * 34 * pose.walk;
-  const kneeB = Math.max(0, -Math.cos(angle)) * 34 * pose.walk;
-  return {
-    ...pose,
-    thighF: pose.thighF - swing,
-    shinF: pose.shinF + kneeF,
-    thighB: pose.thighB + swing,
-    shinB: pose.shinB + kneeB,
-    armF: pose.armF + swing * 0.7,
-    armB: pose.armB - swing * 0.7,
-  };
+/** How far through the pinned chapter the visitor is: 0 when it reaches the top, 1 when it leaves. */
+export function chapterProgress(top: number, height: number, viewportHeight: number) {
+  const travel = height - viewportHeight;
+  return travel <= 0 ? 0 : clamp(-top / travel);
 }
 
-/** Height of the hip above the ground, so the lowest foot always touches it. */
-export function hipHeight(pose: Pose) {
-  const reach = (thigh: number, shin: number) =>
-    THIGH * Math.cos(toRadians(thigh)) + SHIN * Math.cos(toRadians(thigh + shin));
-  return Math.max(reach(pose.thighF, pose.shinF), reach(pose.thighB, pose.shinB)) + SHOE;
+/** Where each caption begins and ends along the story. */
+export const storyBeats = [
+  { start: 0, end: 0.25 },
+  { start: 0.25, end: 0.51 },
+  { start: 0.51, end: 0.73 },
+  { start: 0.73, end: 1 },
+] as const;
+
+/** Opacity of each caption, crossfading so that only one is ever readable. */
+export function captionOpacity(index: number, story: number) {
+  const beat = storyBeats[index];
+  if (!beat) return 0;
+  const fade = 0.018;
+  const fadeIn = index === 0 ? 1 : ramp(story, beat.start, beat.start + fade);
+  const fadeOut = index === storyBeats.length - 1 ? 1 : 1 - ramp(story, beat.end - fade, beat.end);
+  return fadeIn * fadeOut;
 }
 
-export type FigurePart =
-  | "root"
-  | "thighF"
-  | "shinF"
-  | "thighB"
-  | "shinB"
-  | "torso"
-  | "head"
-  | "armF"
-  | "foreF"
-  | "armB"
-  | "foreB";
-
-export const SHOULDER_Y = -78;
-export const UPPER_ARM = 46;
-
-/** SVG transforms of every joint for a pose standing on `ground`. */
-export function figureTransforms(rawPose: Pose, ground: number): Record<FigurePart, string> {
-  const pose = withStride(rawPose);
-  const rotate = (degrees: number) => `rotate(${degrees.toFixed(2)})`;
-  const joint = (x: number, y: number, degrees: number) =>
-    `translate(${x} ${y}) rotate(${degrees.toFixed(2)})`;
-  return {
-    root: `translate(${pose.x.toFixed(2)} ${(ground - hipHeight(pose)).toFixed(2)})`,
-    thighF: rotate(pose.thighF),
-    shinF: joint(0, THIGH, pose.shinF),
-    thighB: rotate(pose.thighB),
-    shinB: joint(0, THIGH, pose.shinB),
-    torso: rotate(pose.lean),
-    head: joint(3, -92, pose.head),
-    armF: joint(2, SHOULDER_Y, pose.armF),
-    foreF: joint(0, UPPER_ARM, pose.foreF),
-    armB: joint(-2, SHOULDER_Y, pose.armB),
-    foreB: joint(0, UPPER_ARM, pose.foreB),
-  };
+/** Value along eased keyframes `[at, value]`, sorted by `at`; holds the ends. */
+export function keyed(keys: ReadonlyArray<readonly [number, number]>, at: number) {
+  const first = keys[0];
+  const last = keys[keys.length - 1];
+  if (!first || !last) return 0;
+  if (at <= first[0]) return first[1];
+  if (at >= last[0]) return last[1];
+  const nextIndex = keys.findIndex(([keyAt]) => keyAt > at);
+  const before = keys[nextIndex - 1] ?? first;
+  const after = keys[nextIndex] ?? last;
+  return mix(before[1], after[1], ramp(at, before[0], after[0]));
 }
 
-export type BandBox = { top: number; height: number };
+export const THIGH = 0.44;
+export const SHIN = 0.43;
+export const FOOT_HEIGHT = 0.07;
+const HEEL_RISE = 0.13;
 
-/** How far a band has crossed the viewport: 0 when entering at the bottom, 1 when leaving at the top. */
-export function bandProgress(band: BandBox, viewportHeight: number) {
-  return (viewportHeight - band.top) / (viewportHeight + band.height);
+export type Leg = { hip: number; knee: number; ankle: number };
+
+/**
+ * One leg of the walk cycle, in radians. `phase` advances with the distance walked, and the foot is
+ * furthest forward at sin(phase) = 1: the knee folds during the swing, gives slightly when the foot
+ * lands, the heel lifts at push-off and the toes rise just before the heel strikes.
+ */
+export function walkLeg(phase: number): Leg {
+  const hip = 0.06 + 0.4 * Math.sin(phase);
+  const swing = Math.max(0, Math.cos(phase + 0.45)) ** 2;
+  const landing = Math.max(0, Math.cos(phase - 2.1)) ** 4;
+  const knee = 0.08 + 0.92 * swing + 0.16 * landing;
+  const pushOff = Math.max(0, Math.cos(phase + 1.4)) ** 3;
+  const toesUp = Math.max(0, Math.cos(phase - 1.3)) ** 4;
+  return { hip, knee, ankle: 0.55 * pushOff - 0.28 * toesUp };
 }
 
-/** Where she is when the street first shows: already on her way, so the page opens on movement. */
-export const HERO_PHASE = 0.55;
-
-export type JourneyTarget = { beat: number; phase: number } | null;
-
-/** Chooses the scene to draw from the transparent windows in page order; none visible, none drawn. */
-export function journeyTarget(bands: BandBox[], viewportHeight: number): JourneyTarget {
-  for (const [beat, band] of bands.entries()) {
-    const progress = bandProgress(band, viewportHeight);
-    if (progress <= 0 || progress >= 1) continue;
-    return { beat, phase: beat === 0 ? mix(HERO_PHASE, 1, progress) : progress };
-  }
-  return null;
+/** Hip height that keeps the lower of both feet on the floor, so the body rises and falls by itself. */
+export function hipHeight(left: Leg, right: Leg) {
+  const reach = ({ hip, knee, ankle }: Leg) =>
+    THIGH * Math.cos(hip) +
+    SHIN * Math.cos(hip - knee) +
+    FOOT_HEIGHT +
+    HEEL_RISE * Math.sin(Math.max(0, ankle));
+  return Math.max(reach(left), reach(right));
 }

@@ -20,10 +20,10 @@ export function MiniQr({ className = "" }: { className?: string }) {
   return (
     <div
       aria-label="Representação de QR Code"
-      className={`grid aspect-square grid-cols-7 gap-0.5 bg-card p-2 ${className}`}
+      className={`grid aspect-square grid-cols-7 gap-0.5 bg-white p-2 ${className}`}
     >
       {Array.from({ length: 49 }, (_, index) => (
-        <span key={index} className={qrCells.has(index) ? "bg-foreground" : "bg-background"} />
+        <span key={index} className={qrCells.has(index) ? "bg-brand-navy" : "bg-white"} />
       ))}
     </div>
   );
@@ -38,7 +38,7 @@ export function ProductScene() {
       <div className="overflow-hidden rounded-xl border border-glass-border bg-card shadow-glass">
         <div className="flex items-center justify-between border-b border-border px-4 py-3">
           <div className="flex items-center gap-2">
-            <LogoMark size={28} />
+            <LogoMark size={28} inverse />
             <span className="font-display text-xs font-semibold">Painel de qualidade</span>
           </div>
           <span className="rounded-full bg-success-soft px-2 py-1 text-[10px] font-semibold text-success">
@@ -167,8 +167,8 @@ export function DashboardScene() {
 
 export function QrTotemScene() {
   return (
-    <div className="mx-auto max-w-xs rotate-[-1deg] rounded-xl border-8 border-card bg-foreground p-6 text-center text-primary-foreground shadow-2xl">
-      <LogoMark size={44} inverse className="mx-auto" />
+    <div className="mx-auto max-w-xs rotate-[-1deg] rounded-xl bg-foreground p-6 text-center text-primary-foreground shadow-2xl">
+      <LogoMark size={44} className="mx-auto" />
       <p className="mt-5 font-display text-xl font-bold">Como foi seu atendimento?</p>
       <p className="mt-2 text-xs text-primary-foreground/70">Sua opinião ajuda a melhorar.</p>
       <MiniQr className="mx-auto mt-5 w-36 rounded-md" />
@@ -183,10 +183,10 @@ export function QrTotemScene() {
 
 export function EvaluationPhone() {
   return (
-    <div className="mx-auto w-64 rounded-[2rem] border-8 border-foreground bg-card p-5 shadow-2xl">
-      <div className="mx-auto h-1.5 w-16 rounded-full bg-foreground" />
+    <div className="mx-auto w-64 rounded-[2rem] border-8 border-[#2c3a54] bg-card p-5 shadow-2xl">
+      <div className="mx-auto h-1.5 w-16 rounded-full bg-white/25" />
       <div className="mt-8 text-center">
-        <LogoMark size={36} className="mx-auto" />
+        <LogoMark size={36} inverse className="mx-auto" />
         <p className="mt-5 text-xs text-muted-foreground">Como foi sua experiência hoje?</p>
         <div className="mt-4 flex justify-center gap-1 text-rating">
           {Array.from({ length: 5 }, (_, i) => (
@@ -216,8 +216,8 @@ export function GoogleInviteScene() {
       <p className="mb-2 text-right text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
         Exemplo ilustrativo
       </p>
-      <div className="mx-auto w-72 rounded-[2rem] border-8 border-foreground bg-card p-5 shadow-2xl">
-        <div className="mx-auto h-1.5 w-16 rounded-full bg-foreground" />
+      <div className="mx-auto w-72 rounded-[2rem] border-8 border-[#2c3a54] bg-card p-5 shadow-2xl">
+        <div className="mx-auto h-1.5 w-16 rounded-full bg-white/25" />
         <div className="mt-6 text-center">
           <span className="mx-auto grid size-10 place-items-center rounded-full bg-success-soft text-success">
             <Check className="size-5" />

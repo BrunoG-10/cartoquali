@@ -33,6 +33,7 @@
 - Rate-limit public evaluation submissions by an ephemeral browser-session token, never by network address, so shared registry networks do not block unrelated visitors.
 - Provision registries through the persistent eight-step onboarding RPC boundary; keep test evaluations isolated and require a complete checklist before activation.
 - Keep the commercial landing page on `/` data-free except for its server-validated lead submission; product visuals must use static illustrative data and never query tenant operations.
+- Keep the landing page's dark theme scoped to `.landing-dark`; its 3D story chapter loads on demand with `three` from our own bundle and falls back to plain captions without WebGL, on data saver and (with a still frame) under reduced motion.
 - Serve fonts, scripts and images from our own origin (fonts via `@fontsource`); add no third-party scripts, fonts, trackers or analytics, and if one is ever approved, ship it with a consent banner, a privacy-notice update and an explicit CSP change.
 - Keep the security headers in `src/server.ts` (CSP limited to `'self'` and the Supabase project, `nosniff`, referrer and permissions policies, `frame-ancestors`) intact; never widen the CSP for convenience.
 - Show the Google review invite identically for every rating (no gating, no suggested text, equal-weight "Agora não"), call Places only from the server with `GOOGLE_PLACES_API_KEY`, record clicks once per evaluation through `registrar_clique_google`, and never report clicks per staff member.

@@ -204,6 +204,46 @@
   }
 }
 
+/* The commercial landing page's dark stage: only the page's own tokens change, the product stays light. */
+.landing-dark {
+  color-scheme: dark;
+  --background: #0a1424;
+  --foreground: #f4f1ea;
+  --card: #111e33;
+  --card-foreground: #f4f1ea;
+  --popover: #111e33;
+  --popover-foreground: #f4f1ea;
+  --primary: #dfbd7f;
+  --primary-foreground: #0a1424;
+  --secondary: #1a2940;
+  --secondary-foreground: #f4f1ea;
+  --muted: #1a2940;
+  --muted-foreground: #b1bccd;
+  --accent: #1f2f49;
+  --accent-foreground: #e6cc9a;
+  --destructive: #ff9c91;
+  --border: rgb(255 255 255 / 0.11);
+  --input: rgb(255 255 255 / 0.24);
+  --ring: #dfbd7f;
+  --glass: #111e33;
+  --glass-strong: #111e33;
+  --glass-border: rgb(255 255 255 / 0.14);
+  --success: #7bd6a8;
+  --success-soft: rgb(123 214 168 / 0.14);
+  --warning: #eec06d;
+  --warning-soft: rgb(238 192 109 / 0.14);
+  --danger-soft: rgb(255 156 145 / 0.14);
+  --rating: #ecc06a;
+  --chart-1: #dfbd7f;
+}
+.landing-panel {
+  border: 1px solid rgb(255 255 255 / 0.1);
+  background: linear-gradient(160deg, rgb(255 255 255 / 0.055), rgb(255 255 255 / 0.015));
+}
+.landing-glow {
+  background: radial-gradient(60% 55% at 50% 45%, rgb(223 189 127 / 0.14), transparent 75%);
+}
+
 .landing-grid {
   background-image:
     linear-gradient(
