@@ -27,6 +27,16 @@ const journeyBeats = [
 /** The closing frame, shown still when the visitor prefers reduced motion. */
 const STILL_STORY = 0.86;
 
+function whenIdle() {
+  return new Promise<void>((resolve) => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => resolve(), { timeout: 1500 });
+    } else {
+      setTimeout(resolve, 300);
+    }
+  });
+}
+
 function supportsWebgl() {
   try {
     return Boolean(document.createElement("canvas").getContext("webgl2"));
@@ -62,59 +72,65 @@ export function LandingJourney() {
     let cancelled = false;
     let cleanup = () => {};
 
-    void import("./journey-scene").then(({ createJourneyScene }) =>
-      document.fonts
-        .load('700 40px "Source Serif 4"')
-        .catch(() => undefined)
-        .then(() => {
-          if (cancelled) return;
-          const scene = createJourneyScene(canvas);
-          setReady(true);
-          if (chosen === "still") {
-            scene.setStory(STILL_STORY);
-            scene.renderOnce();
-            cleanup = () => scene.dispose();
-            return;
-          }
+    // Waits for a quiet moment after the page opens, so the 3D never competes with the first paint.
+    void whenIdle()
+      .then(() => import("./journey-scene"))
+      .then(({ createJourneyScene }) =>
+        document.fonts
+          .load('700 40px "Source Serif 4"')
+          .catch(() => undefined)
+          .then(() => createJourneyScene(canvas))
+          .then((scene) => {
+            if (cancelled) {
+              scene.dispose();
+              return;
+            }
+            setReady(true);
+            if (chosen === "still") {
+              scene.setStory(STILL_STORY);
+              scene.renderOnce();
+              cleanup = () => scene.dispose();
+              return;
+            }
 
-          let frame = 0;
-          const sync = () => {
-            frame = 0;
-            const box = chapter.getBoundingClientRect();
-            const story = chapterProgress(box.top, box.height, window.innerHeight);
-            scene.setStory(story);
-            captionsRef.current.forEach((caption, index) => {
-              if (!caption) return;
-              const opacity = captionOpacity(index, story);
-              caption.style.opacity = opacity.toFixed(3);
-              caption.style.transform = `translateY(${((1 - opacity) * 10).toFixed(1)}px)`;
-              caption.style.visibility = opacity < 0.01 ? "hidden" : "visible";
-            });
-            barRef.current?.style.setProperty("transform", `scaleX(${story.toFixed(4)})`);
-          };
-          const request = () => {
-            if (!frame) frame = requestAnimationFrame(sync);
-          };
-          const watcher = new IntersectionObserver(
-            ([entry]) => {
-              if (entry?.isIntersecting) scene.start();
-              else scene.stop();
-            },
-            { rootMargin: "20% 0px" },
-          );
-          watcher.observe(chapter);
-          window.addEventListener("scroll", request, { passive: true });
-          window.addEventListener("resize", request);
-          sync();
-          cleanup = () => {
-            cancelAnimationFrame(frame);
-            watcher.disconnect();
-            window.removeEventListener("scroll", request);
-            window.removeEventListener("resize", request);
-            scene.dispose();
-          };
-        }),
-    );
+            let frame = 0;
+            const sync = () => {
+              frame = 0;
+              const box = chapter.getBoundingClientRect();
+              const story = chapterProgress(box.top, box.height, window.innerHeight);
+              scene.setStory(story);
+              captionsRef.current.forEach((caption, index) => {
+                if (!caption) return;
+                const opacity = captionOpacity(index, story);
+                caption.style.opacity = opacity.toFixed(3);
+                caption.style.transform = `translateY(${((1 - opacity) * 10).toFixed(1)}px)`;
+                caption.style.visibility = opacity < 0.01 ? "hidden" : "visible";
+              });
+              barRef.current?.style.setProperty("transform", `scaleX(${story.toFixed(4)})`);
+            };
+            const request = () => {
+              if (!frame) frame = requestAnimationFrame(sync);
+            };
+            const watcher = new IntersectionObserver(
+              ([entry]) => {
+                if (entry?.isIntersecting) scene.start();
+                else scene.stop();
+              },
+              { rootMargin: "20% 0px" },
+            );
+            watcher.observe(chapter);
+            window.addEventListener("scroll", request, { passive: true });
+            window.addEventListener("resize", request);
+            sync();
+            cleanup = () => {
+              cancelAnimationFrame(frame);
+              watcher.disconnect();
+              window.removeEventListener("scroll", request);
+              window.removeEventListener("resize", request);
+              scene.dispose();
+            };
+          }),
+      );
 
     return () => {
       cancelled = true;

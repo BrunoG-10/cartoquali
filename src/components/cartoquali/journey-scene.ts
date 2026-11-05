@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import {
   SHIN,
   THIGH,
@@ -407,7 +408,7 @@ const clerkElbow: ReadonlyArray<readonly [number, number]> = [
   [0.69, 1.05],
 ];
 
-function clientBody(story: number, time: number, place: ReturnType<typeof clientPlace>): Body {
+function clientBody(story: number, place: ReturnType<typeof clientPlace>): Body {
   const phase = (place.distance / STRIDE) * Math.PI * 2;
   const walking = place.weight;
   const sit = ramp(story, 0.292, 0.335) * (1 - ramp(story, 0.462, 0.505));
@@ -440,8 +441,7 @@ function clientBody(story: number, time: number, place: ReturnType<typeof client
           [0.7, 0],
         ],
         story,
-      ) +
-      Math.sin(time * 1.5) * 0.006,
+      ),
     twist: 0.1 * Math.sin(phase) * walking,
     roll: 0.018 * Math.cos(phase) * walking,
     headYaw: keyed(
@@ -512,6 +512,82 @@ const qrRows = [
   "10000010011100010",
   "11111110110101101",
 ];
+
+/**
+ * Melds everything that never moves into a few meshes per stretch of the building, one colour per
+ * vertex, so the whole office costs a handful of draw calls and off-screen stretches are skipped.
+ * Textured, transparent and moving objects stay as they are.
+ */
+function bakeStillObjects(scene: THREE.Scene, moving: Set<THREE.Object3D>) {
+  scene.updateMatrixWorld(true);
+  const found: THREE.Mesh[] = [];
+  const collect = (object: THREE.Object3D) => {
+    if (moving.has(object)) return;
+    if (object instanceof THREE.Mesh) {
+      const material = object.material as THREE.MeshStandardMaterial | THREE.MeshBasicMaterial;
+      if (!material.map && !material.transparent) found.push(object);
+    }
+    object.children.forEach(collect);
+  };
+  collect(scene);
+
+  type Bucket = { parts: THREE.BufferGeometry[]; material: THREE.Material; castsShadow: boolean };
+  const buckets = new Map<string, Bucket>();
+  const box = new THREE.Box3();
+  const centre = new THREE.Vector3();
+  for (const item of found) {
+    const source = item.material as THREE.MeshStandardMaterial;
+    const lit = item.material instanceof THREE.MeshStandardMaterial;
+    const part = item.geometry.index ? item.geometry.toNonIndexed() : item.geometry.clone();
+    part.deleteAttribute("uv");
+    part.applyMatrix4(item.matrixWorld);
+    const count = part.getAttribute("position").count;
+    const colours = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) source.color.toArray(colours, i * 3);
+    part.setAttribute("color", new THREE.BufferAttribute(colours, 3));
+
+    box.setFromObject(item).getCenter(centre);
+    const stretch = Math.floor((centre.x + 12) / 7);
+    const rough = lit ? (source.roughness < 0.45 ? 0.4 : source.roughness < 0.7 ? 0.6 : 0.8) : 0;
+    const metal = lit && source.metalness > 0 ? 0.6 : 0;
+    const flat = lit && source.flatShading;
+    const key = [stretch, lit, rough, metal, flat, source.toneMapped, item.castShadow].join();
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = {
+        parts: [],
+        castsShadow: item.castShadow,
+        material: lit
+          ? new THREE.MeshStandardMaterial({
+              vertexColors: true,
+              roughness: rough,
+              metalness: metal,
+              flatShading: flat,
+            })
+          : new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: source.toneMapped }),
+      };
+      buckets.set(key, bucket);
+    }
+    bucket.parts.push(part);
+    item.removeFromParent();
+    item.geometry.dispose();
+    source.dispose();
+  }
+
+  const baked: THREE.Mesh[] = [];
+  for (const { parts, material, castsShadow } of buckets.values()) {
+    const geometry = mergeGeometries(parts);
+    for (const part of parts) part.dispose();
+    if (!geometry) continue;
+    const merged = new THREE.Mesh(geometry, material);
+    merged.castShadow = castsShadow;
+    merged.receiveShadow = material instanceof THREE.MeshStandardMaterial;
+    merged.matrixAutoUpdate = false;
+    scene.add(merged);
+    baked.push(merged);
+  }
+  return baked;
+}
 
 function createWorld(scene: THREE.Scene) {
   const glow = glowTexture();
@@ -663,14 +739,6 @@ function createWorld(scene: THREE.Scene) {
     block([0.03, 0.05, 0.96], [-0.315, 1.5, z], color.woodDark, scene);
     halo(-0.5, 1.45, z, 2.2, 0.28);
   }
-  const doorway = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.6, 2.5),
-    new THREE.MeshBasicMaterial({ color: "#ffd993", side: THREE.DoubleSide }),
-  );
-  doorway.rotation.y = Math.PI / 2;
-  doorway.position.set(0.32, 1.25, 0);
-  doorway.visible = false;
-  scene.add(doorway);
   const leaf = (sign: 1 | -1) => {
     const hinge = new THREE.Group();
     hinge.position.set(-0.02, 0, sign * 0.8);
@@ -739,34 +807,31 @@ function createWorld(scene: THREE.Scene) {
       elR: 1.05,
       headYaw,
     });
-    return figure;
   };
-  const neighbours = [
-    seated(
-      2.2,
-      {
-        skin: color.skinOther,
-        hair: color.hairClerk,
-        top: color.coatOther,
-        bottom: "#2a3347",
-        shoe: color.woodDark,
-        hairStyle: "short",
-      },
-      0.3,
-    ),
-    seated(
-      3.25,
-      {
-        skin: color.skinElder,
-        hair: color.hairElder,
-        top: color.coatElder,
-        bottom: "#3a3a48",
-        shoe: "#2a2a30",
-        hairStyle: "bun",
-      },
-      -0.25,
-    ),
-  ];
+  seated(
+    2.2,
+    {
+      skin: color.skinOther,
+      hair: color.hairClerk,
+      top: color.coatOther,
+      bottom: "#2a3347",
+      shoe: color.woodDark,
+      hairStyle: "short",
+    },
+    0.3,
+  );
+  seated(
+    3.25,
+    {
+      skin: color.skinElder,
+      hair: color.hairElder,
+      top: color.coatElder,
+      bottom: "#3a3a48",
+      shoe: "#2a2a30",
+      hairStyle: "bun",
+    },
+    -0.25,
+  );
 
   // Ticket display.
   const paintTicket = (number: string, active: boolean) =>
@@ -905,7 +970,6 @@ function createWorld(scene: THREE.Scene) {
     ticketWaiting,
     ticketCalled,
     minuteHand,
-    neighbours,
   };
 }
 
@@ -1047,7 +1111,18 @@ export type JourneyScene = {
   dispose: () => void;
 };
 
-export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
+/** Lets the browser breathe between building steps, so the page keeps scrolling meanwhile. */
+function breather() {
+  return new Promise<void>((resolve) => {
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(() => resolve(), { timeout: 300 });
+    } else {
+      setTimeout(resolve, 30);
+    }
+  });
+}
+
+export async function createJourneyScene(canvas: HTMLCanvasElement): Promise<JourneyScene> {
   const small = window.innerWidth < 768;
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -1060,10 +1135,19 @@ export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.05;
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.type = small ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
+  // Redrawn only when something moves, instead of on every frame.
+  renderer.shadowMap.autoUpdate = false;
 
   const scene = new THREE.Scene();
+  await breather();
   const world = createWorld(scene);
+  await breather();
+  const baked = bakeStillObjects(
+    scene,
+    new Set<THREE.Object3D>([world.doorL, world.doorR, world.doc, world.minuteHand]),
+  );
+  await breather();
 
   scene.add(new THREE.HemisphereLight("#b9c9e6", "#1a2437", 1.25));
   const key = new THREE.DirectionalLight("#fff0d8", 3.1);
@@ -1148,6 +1232,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
 
   const phone = createPhone(scene);
   phone.paint(0, false, "ask");
+  await breather();
 
   const camera = new THREE.PerspectiveCamera(28, 1, 0.05, 90);
   const handPoint = new THREE.Vector3();
@@ -1183,7 +1268,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
     camera.updateProjectionMatrix();
   }
 
-  function update(story: number, time: number) {
+  function update(story: number) {
     // Her.
     const place = clientPlace(story);
     const facing = mixAngle(restingYaw(story, place.path), place.path, place.weight);
@@ -1192,7 +1277,7 @@ export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
     client.root.position.x = place.x;
     client.root.position.z = place.z - (story > 0.27 && story < 0.54 ? sit * 0.48 : 0);
     client.root.rotation.y = facing;
-    applyBody(client, clientBody(story, time, place));
+    applyBody(client, clientBody(story, place));
     // The façade door swings as she reaches it.
     const open = ramp(story, 0.135, 0.165) * (1 - ramp(story, 0.215, 0.25));
     world.doorL.rotation.y = -open * 1.75;
@@ -1207,10 +1292,6 @@ export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
       ticketMaterial.map = wanted;
       ticketMaterial.needsUpdate = true;
     }
-    world.neighbours.forEach((figure, index) => {
-      figure.spine.rotation.x = Math.sin(time * 1.3 + index * 2) * 0.008;
-      figure.head.rotation.y = (index ? -0.25 : 0.3) + Math.sin(time * 0.4 + index) * 0.1;
-    });
 
     // Counter: the clerk stamps the document and passes it across.
     const stamping = keyed(clerkShoulder, story);
@@ -1231,10 +1312,11 @@ export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
       elL: stampingElbow,
       shR: 0.1,
       elR: 0.3,
-      lean: lean + Math.sin(time * 1.2 + 1) * 0.005,
+      lean,
       headPitch: 0.1,
       headYaw: 0,
     });
+    clerk.root.visible = story > 0.45 && story < 0.92;
     stamp.visible = story < 0.63;
     world.seal.visible = story >= 0.604;
     const slid = ramp(story, 0.635, 0.655);
@@ -1285,53 +1367,95 @@ export function createJourneyScene(canvas: HTMLCanvasElement): JourneyScene {
   let shown = 0;
   let frame = 0;
   let last = 0;
-  let slowFrames = 0;
+  let active = false;
   let measured = 0;
+  let slowFrames = 0;
+  let frameCount = 0;
+  let shadowEvery = 1;
+  let quality = 0;
+
+  /** Slower devices give up detail one step at a time; none of these steps recompiles anything. */
+  function setQuality(step: number) {
+    quality = step;
+    // Only the people cast moving shadows; the building's are the least noticed on a small screen.
+    if (step >= 1) for (const item of baked) item.castShadow = false;
+    if (step >= 1) shadowEvery = 2;
+    if (step >= 2 && pixelRatio > 1) {
+      pixelRatio = 1;
+      renderer.setPixelRatio(1);
+      resize();
+    }
+    if (step >= 3) {
+      shadowEvery = 4;
+      pixelRatio = Math.min(pixelRatio, 0.8);
+      renderer.setPixelRatio(pixelRatio);
+      resize();
+    }
+    renderer.shadowMap.needsUpdate = true;
+  }
 
   const tick = (now: number) => {
-    frame = requestAnimationFrame(tick);
+    frame = 0;
     const dt = Math.min(0.1, (now - last) / 1000 || 0.016);
     last = now;
     // Softens wheel steps into one gliding camera move.
     shown += (story - shown) * (1 - Math.exp(-dt * 7));
     if (Math.abs(story - shown) < 0.00005) shown = story;
-    update(shown, now / 1000);
+    update(shown);
+    frameCount++;
+    if (frameCount % shadowEvery === 0 || shown === story) renderer.shadowMap.needsUpdate = true;
     renderer.render(scene, camera);
-    // Slower devices trade sharpness for smoothness once, instead of stuttering.
     measured++;
-    if (dt > 0.034) slowFrames++;
-    if (measured === 60) {
-      if (slowFrames > 30 && pixelRatio > 1) {
-        pixelRatio = 1;
-        renderer.setPixelRatio(1);
-        resize();
-      }
+    if (dt > 0.03) slowFrames++;
+    if (measured === 30) {
+      if (slowFrames > 15 && quality < 3) setQuality(quality + 1);
       measured = 0;
       slowFrames = 0;
     }
+    // With the visitor's scroll at rest nothing changes, so nothing is drawn.
+    if (shown !== story) frame = requestAnimationFrame(tick);
+  };
+  const wake = () => {
+    if (!active || frame) return;
+    last = performance.now();
+    frame = requestAnimationFrame(tick);
   };
 
-  const observer = new ResizeObserver(resize);
+  const observer = new ResizeObserver(() => {
+    resize();
+    renderer.shadowMap.needsUpdate = true;
+    wake();
+  });
   observer.observe(canvas.parentElement ?? canvas);
   resize();
-  update(0, 0);
+  if (small) setQuality(1);
+  update(0);
+
+  // Prepares shaders and uploads everything now, while the canvas is still hidden, so that the
+  // visitor's first scroll into the story does not pay for it.
+  await renderer.compileAsync(scene, camera);
+  await breather();
+  renderer.shadowMap.needsUpdate = true;
+  renderer.render(scene, camera);
 
   return {
     setStory(value) {
       story = clamp(value);
+      wake();
     },
     start() {
-      if (frame) return;
-      last = performance.now();
-      frame = requestAnimationFrame(tick);
+      active = true;
+      wake();
     },
     stop() {
+      active = false;
       cancelAnimationFrame(frame);
       frame = 0;
     },
     renderOnce() {
       shown = story;
-      update(story, 0);
+      update(story);
+      renderer.shadowMap.needsUpdate = true;
       renderer.render(scene, camera);
     },
     dispose() {
