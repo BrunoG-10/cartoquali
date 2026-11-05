@@ -53,6 +53,7 @@ import {
   ProductScene,
   QrTotemScene,
 } from "./landing-visuals";
+import { JourneyBackdrop, JourneyWindow } from "./landing-journey";
 
 const steps: Array<[LucideIcon, string, string]> = [
   [
@@ -362,6 +363,7 @@ const isLeadField = (key: unknown): key is LeadField =>
 
 const commercialWhatsappNumber = "5586981846766";
 const defaultWhatsappMessage = "Olá! Quero começar o teste grátis de 7 dias do CartoQuali.";
+const negotiationWhatsappMessage = "Olá! Vim pelo site e quero conversar sobre o CartoQuali.";
 const createWhatsappUrl = (message = defaultWhatsappMessage) =>
   `https://wa.me/${commercialWhatsappNumber}?text=${encodeURIComponent(message)}`;
 
@@ -637,7 +639,10 @@ function HowItWorks() {
 
 function IndicatorsSection() {
   return (
-    <section id="indicadores" className="scroll-mt-20 border-b border-border py-20 sm:py-24">
+    <section
+      id="indicadores"
+      className="scroll-mt-20 border-b border-border bg-background py-20 sm:py-24"
+    >
       <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
         <SectionTitle
           eyebrow="Indicadores"
@@ -787,7 +792,7 @@ function NormsSection() {
   return (
     <section
       id="normas"
-      className="scroll-mt-20 border-b border-border bg-secondary/40 py-20 sm:py-24"
+      className="scroll-mt-20 border-b border-border bg-[color-mix(in_oklab,var(--secondary)_40%,var(--background))] py-20 sm:py-24"
     >
       <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
         <SectionTitle
@@ -828,7 +833,7 @@ function GoogleSection() {
   return (
     <section
       id="google"
-      className="scroll-mt-20 border-b border-border bg-secondary/40 py-20 sm:py-24"
+      className="scroll-mt-20 border-b border-border bg-[color-mix(in_oklab,var(--secondary)_40%,var(--background))] py-20 sm:py-24"
     >
       <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:px-8">
         <div>
@@ -891,7 +896,10 @@ function TestimonialsSection() {
 
 function PricingSection() {
   return (
-    <section id="preco" className="scroll-mt-20 border-b border-border py-20 sm:py-24">
+    <section
+      id="preco"
+      className="scroll-mt-20 border-b border-border bg-background py-20 sm:py-24"
+    >
       <div className="mx-auto max-w-7xl 2xl:max-w-[1600px] px-4 sm:px-6 lg:px-8">
         <SectionTitle
           center
@@ -997,7 +1005,7 @@ function PricingSection() {
 
 function SectorSection() {
   return (
-    <section className="border-b border-border py-20 sm:py-24">
+    <section className="border-b border-border bg-background py-20 sm:py-24">
       <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         <div>
           <SectionTitle eyebrow="Feito para cartórios" title="Pensado para a rotina do cartório" />
@@ -1362,9 +1370,51 @@ function Field({
   );
 }
 
+/**
+ * Always-available shortcut to the sales conversation, shown as soon as the visitor starts scrolling.
+ * It steps aside only while a form field has focus, so it never covers what is being typed.
+ */
+function WhatsappShortcut() {
+  const [scrolled, setScrolled] = useState(false);
+  const [typing, setTyping] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 120);
+    const isField = (target: EventTarget | null) =>
+      target instanceof HTMLInputElement || target instanceof HTMLSelectElement;
+    const onFocusIn = (event: FocusEvent) => setTyping(isField(event.target));
+    const onFocusOut = () => setTyping(false);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("focusin", onFocusIn);
+    document.addEventListener("focusout", onFocusOut);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("focusin", onFocusIn);
+      document.removeEventListener("focusout", onFocusOut);
+    };
+  }, []);
+  const visible = scrolled && !typing;
+  return (
+    <a
+      href={createWhatsappUrl(negotiationWhatsappMessage)}
+      target="_blank"
+      rel="noreferrer"
+      className={cn(
+        "fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 z-40 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#25d366] px-4 text-sm font-bold text-[#06281f] shadow-xl transition-[opacity,transform,visibility,background-color] duration-200 hover:bg-[#3ee07a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 motion-reduce:transition-none sm:right-6 sm:bottom-6 print:hidden",
+        visible ? "visible opacity-100" : "invisible translate-y-3 opacity-0",
+      )}
+    >
+      <svg viewBox="0 0 24 24" className="size-5 shrink-0" fill="currentColor" aria-hidden="true">
+        <path d="M12.04 2a9.9 9.9 0 0 0-8.48 15l-1.5 5 5.15-1.35A9.9 9.9 0 1 0 12.04 2Zm0 18.1a8.2 8.2 0 0 1-4.17-1.14l-.3-.18-3.06.8.82-2.98-.2-.31a8.2 8.2 0 1 1 6.91 3.81Zm4.5-6.14c-.25-.12-1.46-.72-1.68-.8-.23-.08-.39-.12-.56.13-.16.24-.64.8-.78.96-.15.17-.29.19-.54.06-.24-.12-1.04-.38-1.97-1.21a7.4 7.4 0 0 1-1.37-1.7c-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.16.04-.3-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.4-.41-.56-.42h-.47a.9.9 0 0 0-.66.3c-.22.25-.86.85-.86 2.07 0 1.21.88 2.39 1 2.55.13.17 1.74 2.66 4.22 3.73.59.25 1.05.4 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.46-.6 1.66-1.17.21-.58.21-1.07.15-1.17-.06-.11-.23-.17-.47-.29Z" />
+      </svg>
+      Falar no WhatsApp
+    </a>
+  );
+}
+
 function Footer() {
   return (
-    <footer className="border-t border-border bg-background">
+    <footer className="relative border-t border-border bg-background">
       <div className="mx-auto grid max-w-7xl 2xl:max-w-[1600px] gap-8 px-4 py-10 sm:px-6 md:grid-cols-[1fr_auto] lg:px-8">
         <div>
           <Brand />
@@ -1403,7 +1453,7 @@ function Footer() {
           </Link>
         </div>
       </div>
-      <div className="border-t border-border px-4 py-5 text-center text-xs text-muted-foreground">
+      <div className="border-t border-border px-4 pb-24 pt-5 text-center text-xs text-muted-foreground sm:py-5">
         © 2026 CartoQuali. Todos os direitos reservados.
       </div>
     </footer>
@@ -1418,13 +1468,18 @@ export function LandingPage() {
   }, []);
   return (
     <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
+      <JourneyBackdrop />
       <CommercialHeader />
-      <main>
+      <main className="relative z-10">
         <Hero />
+        <JourneyWindow beat={0} />
         <HowItWorks />
+        <JourneyWindow beat={1} />
         <GoogleSection />
+        <JourneyWindow beat={2} />
         <IndicatorsSection />
         <ImprovementSection />
+        <JourneyWindow beat={3} />
         <SecuritySection />
         <SectorSection />
         <NormsSection />
@@ -1434,6 +1489,7 @@ export function LandingPage() {
         <TrialForm />
       </main>
       <Footer />
+      <WhatsappShortcut />
     </div>
   );
 }
