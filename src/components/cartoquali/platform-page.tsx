@@ -8,7 +8,13 @@ import { GlassPanel, InterfaceState, PageHeader, StatusBadge } from "./primitive
 import { BillingBadge, BillingDialog, brl, shortDate } from "./billing-dialog";
 import { RegistrySettingsDialog } from "./registry-settings-dialog";
 import { getPlatformOverview } from "@/lib/platform.functions";
-import { registryAlert, STALE_DAYS, type PlatformRegistry } from "@/lib/platform-overview";
+import {
+  registryAlert,
+  STALE_DAYS,
+  trialSituation,
+  type PlatformRegistry,
+  type TrialSituation,
+} from "@/lib/platform-overview";
 import {
   billingStatus,
   billingStatusLabel,
@@ -34,11 +40,45 @@ const when = (value: string | null) => (value ? dateTime.format(new Date(value))
 const average = (value: number | null) =>
   value == null ? "—" : value.toLocaleString("pt-BR", { maximumFractionDigits: 1 });
 
-function SituationBadge({ registry }: { registry: PlatformRegistry }) {
+const shortDay = new Intl.DateTimeFormat("pt-BR", {
+  day: "2-digit",
+  month: "2-digit",
+  timeZone: "America/Sao_Paulo",
+});
+
+function TrialBadge({ trial }: { trial: TrialSituation }) {
+  if (trial.kind === "none") return null;
+  if (trial.kind === "not_started") return <StatusBadge>Teste não iniciado</StatusBadge>;
+  if (trial.kind === "expired")
+    return (
+      <StatusBadge tone="danger">
+        Teste encerrado em {shortDay.format(new Date(trial.endsAt))}
+      </StatusBadge>
+    );
+  return (
+    <StatusBadge tone="warning">
+      Teste: {trial.daysLeft} dia{trial.daysLeft === 1 ? "" : "s"} (até{" "}
+      {shortDay.format(new Date(trial.endsAt))})
+    </StatusBadge>
+  );
+}
+
+function SituationBadge({
+  registry,
+  trial,
+}: {
+  registry: PlatformRegistry;
+  trial: TrialSituation;
+}) {
   if (registry.status === "inativo") return <StatusBadge>Inativo</StatusBadge>;
   const onboarding = registry.onboardingStatus && ONBOARDING_LABELS[registry.onboardingStatus];
   if (onboarding) return <StatusBadge tone="warning">{onboarding}</StatusBadge>;
-  return <StatusBadge tone="positive">Ativo</StatusBadge>;
+  return (
+    <span className="inline-flex flex-col items-start gap-1">
+      <StatusBadge tone="positive">Ativo</StatusBadge>
+      <TrialBadge trial={trial} />
+    </span>
+  );
 }
 
 function AlertLines({ texts }: { texts: string[] }) {
@@ -59,9 +99,21 @@ function Name({ registry }: { registry: PlatformRegistry }) {
           Demonstração
         </span>
       ) : null}
+      {registry.origin === "cadastro_proprio" ? (
+        <span className="ml-2 rounded bg-primary/10 px-1.5 py-0.5 text-[11px] font-semibold uppercase text-primary">
+          Cadastro próprio
+        </span>
+      ) : null}
       <span className="block text-xs text-muted-foreground">
         {registry.city}/{registry.state}
       </span>
+      {registry.selfSignup ? (
+        <span className="block text-xs text-muted-foreground">
+          {registry.selfSignup.name} ({registry.selfSignup.role}) · {registry.selfSignup.whatsapp} ·{" "}
+          <span className="break-all">{registry.selfSignup.email}</span> · cadastrado em{" "}
+          {when(registry.selfSignup.createdAt)}
+        </span>
+      ) : null}
     </>
   );
 }
@@ -124,11 +176,13 @@ export function PlatformPage() {
   const rows = registries.map((registry) => {
     const payment = billingStatus(registry.billing, registry.payments, today);
     const usage = registryAlert(registry, now);
+    const trial = trialSituation(registry, now);
     const alerts = [
       usage,
       payment.kind === "overdue" ? `Pagamento ${billingStatusLabel(payment).toLowerCase()}` : null,
+      trial.kind === "expired" ? "Teste encerrado sem cobrança ativa: acesso pausado" : null,
     ].filter((text): text is string => !!text);
-    return { registry, payment, alerts };
+    return { registry, payment, alerts, trial };
   });
   const overdue = rows.filter((row) => row.payment.kind === "overdue");
   const totals = {
@@ -136,6 +190,8 @@ export function PlatformPage() {
     evaluations7d: registries.reduce((sum, r) => sum + r.evaluations7d, 0),
     openOccurrences: registries.reduce((sum, r) => sum + r.openOccurrences, 0),
     alerts: rows.filter((row) => row.alerts.length).length,
+    inTrial: rows.filter((row) => row.trial.kind === "running" || row.trial.kind === "not_started")
+      .length,
     overdueCount: overdue.length,
     overdueAmount: overdue.reduce(
       (sum, row) => sum + (row.payment.kind === "overdue" ? row.payment.amountDue : 0),
@@ -185,9 +241,10 @@ export function PlatformPage() {
         }
       />
 
-      <div data-tour="platform-summary" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div data-tour="platform-summary" className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-6">
         {[
           { label: "Cartórios ativos", value: String(totals.active) },
+          { label: "Em teste grátis", value: String(totals.inTrial) },
           { label: "Avaliações em 7 dias", value: String(totals.evaluations7d) },
           { label: "Ocorrências abertas", value: String(totals.openOccurrences) },
           {
@@ -200,13 +257,9 @@ export function PlatformPage() {
             value: String(totals.overdueCount),
             detail: totals.overdueCount ? brl(totals.overdueAmount) : null,
             danger: totals.overdueCount > 0,
-            wide: true,
           },
         ].map((card) => (
-          <GlassPanel
-            key={card.label}
-            className={`p-4 ${card.wide ? "col-span-2 lg:col-span-1" : ""}`}
-          >
+          <GlassPanel key={card.label} className="p-4">
             <p className="text-xs font-semibold text-muted-foreground">{card.label}</p>
             <p
               className={`mt-1 font-display text-2xl font-bold ${card.danger ? "text-destructive" : "text-foreground"}`}
@@ -233,13 +286,13 @@ export function PlatformPage() {
           <>
             {/* Celular e tablet: um cartão por cartório */}
             <ul className="divide-y divide-border lg:hidden">
-              {rows.map(({ registry, payment, alerts }) => (
+              {rows.map(({ registry, payment, alerts, trial }) => (
                 <li key={registry.id} className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <Name registry={registry} />
                     </div>
-                    <SituationBadge registry={registry} />
+                    <SituationBadge registry={registry} trial={trial} />
                   </div>
                   <AlertLines texts={alerts} />
                   <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
@@ -306,7 +359,7 @@ export function PlatformPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {rows.map(({ registry, payment, alerts }) => (
+                  {rows.map(({ registry, payment, alerts, trial }) => (
                     <tr
                       key={registry.id}
                       className={alerts.length ? "bg-destructive/5" : undefined}
@@ -316,7 +369,7 @@ export function PlatformPage() {
                         <AlertLines texts={alerts} />
                       </td>
                       <td className="px-4 py-3">
-                        <SituationBadge registry={registry} />
+                        <SituationBadge registry={registry} trial={trial} />
                       </td>
                       <td className="px-4 py-3 text-right tabular-nums">
                         {registry.evaluations7d} / {registry.evaluations30d}
@@ -348,8 +401,9 @@ export function PlatformPage() {
 
       <p className="mt-3 text-xs text-muted-foreground">
         Alertas: cartório ativo sem avaliações há mais de {STALE_DAYS} dias (QR Code fora do lugar
-        ou parado) e mensalidade vencida sem pagamento registrado. Avaliações de teste da
-        implantação não entram nos números.
+        ou parado), mensalidade vencida sem pagamento registrado e teste de 7 dias encerrado sem
+        cobrança ativa. Os 7 dias começam no primeiro acesso; cadastrar a cobrança libera o
+        cartório. Avaliações de teste da implantação não entram nos números.
         {hiddenCount > 0
           ? ` ${hiddenCount} cartório${hiddenCount > 1 ? "s" : ""} de teste oculto${hiddenCount > 1 ? "s" : ""}.`
           : ""}

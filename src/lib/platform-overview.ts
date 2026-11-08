@@ -9,6 +9,10 @@ export type PlatformRegistry = {
   status: "ativo" | "inativo";
   environmentKind: "real" | "demo";
   onboardingStatus: string | null;
+  /** "cadastro_proprio" quando o próprio cartório se cadastrou pela página comercial. */
+  origin: "plataforma" | "cadastro_proprio";
+  selfSignup: SelfSignupContact | null;
+  trial: RegistryTrial | null;
   evaluations7d: number;
   evaluations30d: number;
   average30d: number | null;
@@ -19,6 +23,17 @@ export type PlatformRegistry = {
   billing: BillingContract | null;
   payments: BillingPayment[];
 };
+
+export type SelfSignupContact = {
+  createdAt: string;
+  name: string;
+  role: string;
+  whatsapp: string;
+  email: string;
+};
+
+/** Período de teste de 7 dias; startedAt nulo enquanto ninguém do cartório entrou. */
+export type RegistryTrial = { startedAt: string | null; endsAt: string | null; expired: boolean };
 
 export type PlatformOverview = { hiddenCount: number; registries: PlatformRegistry[] };
 
@@ -44,6 +59,9 @@ export function parsePlatformOverview(payload: unknown): PlatformOverview {
       status: row.status === "inativo" ? "inativo" : "ativo",
       environmentKind: row.environmentKind === "demo" ? "demo" : "real",
       onboardingStatus: toText(row.onboardingStatus),
+      origin: row.origin === "cadastro_proprio" ? "cadastro_proprio" : "plataforma",
+      selfSignup: parseSelfSignup(row.selfSignup),
+      trial: parseTrial(row.trial),
       evaluations7d: toNumber(row.evaluations7d) ?? 0,
       evaluations30d: toNumber(row.evaluations30d) ?? 0,
       average30d: toNumber(row.average30d),
@@ -54,6 +72,28 @@ export function parsePlatformOverview(payload: unknown): PlatformOverview {
       billing: parseBilling(row.billing),
       payments: Array.isArray(row.payments) ? row.payments.map(parsePayment) : [],
     })),
+  };
+}
+
+function parseSelfSignup(value: unknown): SelfSignupContact | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Partial<Record<keyof SelfSignupContact, unknown>>;
+  return {
+    createdAt: String(raw.createdAt ?? ""),
+    name: String(raw.name ?? ""),
+    role: String(raw.role ?? ""),
+    whatsapp: String(raw.whatsapp ?? ""),
+    email: String(raw.email ?? ""),
+  };
+}
+
+function parseTrial(value: unknown): RegistryTrial | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Partial<Record<keyof RegistryTrial, unknown>>;
+  return {
+    startedAt: toText(raw.startedAt),
+    endsAt: toText(raw.endsAt),
+    expired: raw.expired === true,
   };
 }
 
@@ -90,4 +130,23 @@ export function registryAlert(registry: PlatformRegistry, now = new Date()): str
   if (!registry.lastEvaluationAt) return "Nenhuma avaliação recebida";
   const days = Math.floor((now.getTime() - new Date(registry.lastEvaluationAt).getTime()) / DAY_MS);
   return days > STALE_DAYS ? `Sem avaliações há ${days} dias` : null;
+}
+
+export type TrialSituation =
+  | { kind: "none" }
+  | { kind: "not_started" }
+  | { kind: "running"; daysLeft: number; endsAt: string }
+  | { kind: "expired"; endsAt: string };
+
+/**
+ * Situação do teste de 7 dias para o painel. Com cobrança ativa o teste deixa de importar
+ * (o acesso segue liberado), igual a cartoquali_private.registry_trial_expired.
+ */
+export function trialSituation(registry: PlatformRegistry, now = new Date()): TrialSituation {
+  const trial = registry.trial;
+  if (!trial || registry.billing?.active) return { kind: "none" };
+  if (!trial.startedAt || !trial.endsAt) return { kind: "not_started" };
+  const left = new Date(trial.endsAt).getTime() - now.getTime();
+  if (trial.expired || left <= 0) return { kind: "expired", endsAt: trial.endsAt };
+  return { kind: "running", daysLeft: Math.ceil(left / DAY_MS), endsAt: trial.endsAt };
 }

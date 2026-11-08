@@ -147,15 +147,16 @@ function PrivacyPage() {
               </section>
               <section>
                 <h2 className="font-display text-lg font-bold text-foreground">
-                  Pedido de demonstração (site comercial)
+                  Cadastro para o teste grátis (site comercial)
                 </h2>
                 <p>
-                  No formulário da página inicial, o CartoQuali é o controlador. Recebemos nome,
-                  cartório, cidade/UF, cargo, WhatsApp e e-mail somente para responder ao pedido e
-                  conduzir a conversa comercial (art. 7º, V). Os dados ficam apenas pelo tempo
-                  necessário para isso, e você pode pedir a exclusão a qualquer momento pelo contato
-                  abaixo. Ao enviar, a conversa continua no WhatsApp, que tem a própria política de
-                  privacidade.
+                  No formulário da página inicial, o CartoQuali é o controlador. Recebemos seu nome,
+                  cargo, WhatsApp e e-mail e os dados do cartório (nome, CNPJ, cidade/UF e
+                  atribuições) para criar o acesso de teste, enviar o e-mail para você criar a senha
+                  e acompanhar o teste, inclusive com contato pelo WhatsApp (art. 7º, V). Se o
+                  cartório não continuar depois do teste, você pode pedir a exclusão a qualquer
+                  momento pelo contato abaixo. Pedidos feitos pelo antigo formulário de demonstração
+                  seguem a mesma regra.
                 </p>
               </section>
               <section>

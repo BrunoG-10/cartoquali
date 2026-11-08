@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { parsePlatformOverview, registryAlert, STALE_DAYS } from "./platform-overview";
+import {
+  parsePlatformOverview,
+  registryAlert,
+  STALE_DAYS,
+  trialSituation,
+} from "./platform-overview";
 
 const now = new Date("2026-10-08T12:00:00Z");
 const base = {
@@ -10,6 +15,9 @@ const base = {
   status: "ativo" as const,
   environmentKind: "real" as const,
   onboardingStatus: "ACTIVE",
+  origin: "plataforma" as const,
+  selfSignup: null,
+  trial: null,
   evaluations7d: 3,
   evaluations30d: 10,
   average30d: 4.5,
@@ -22,6 +30,63 @@ const base = {
 };
 
 describe("platform overview", () => {
+  it("reads the self-signup origin, contact and trial", () => {
+    const parsed = parsePlatformOverview({
+      registries: [
+        {
+          ...base,
+          origin: "cadastro_proprio",
+          selfSignup: {
+            createdAt: "2026-10-07T12:00:00Z",
+            name: "Maria",
+            role: "Titular",
+            whatsapp: "(86) 99999-0000",
+            email: "maria@example.com",
+          },
+          trial: { startedAt: null, endsAt: null, expired: false },
+        },
+        { ...base, origin: "qualquer", selfSignup: "x", trial: null },
+      ],
+    });
+    expect(parsed.registries[0]).toMatchObject({
+      origin: "cadastro_proprio",
+      selfSignup: { name: "Maria", role: "Titular" },
+      trial: { startedAt: null, expired: false },
+    });
+    expect(parsed.registries[1]).toMatchObject({
+      origin: "plataforma",
+      selfSignup: null,
+      trial: null,
+    });
+  });
+
+  it("describes the 7-day trial", () => {
+    const trial = (startedAt: string | null, expired = false) => ({
+      startedAt,
+      endsAt: startedAt ? new Date(Date.parse(startedAt) + 7 * 86_400_000).toISOString() : null,
+      expired,
+    });
+    expect(trialSituation(base, now)).toEqual({ kind: "none" });
+    expect(trialSituation({ ...base, trial: trial(null) }, now)).toEqual({ kind: "not_started" });
+    expect(trialSituation({ ...base, trial: trial("2026-10-06T12:00:00Z") }, now)).toMatchObject({
+      kind: "running",
+      daysLeft: 5,
+    });
+    expect(trialSituation({ ...base, trial: trial("2026-09-20T12:00:00Z") }, now)).toMatchObject({
+      kind: "expired",
+    });
+    expect(
+      trialSituation(
+        {
+          ...base,
+          trial: trial("2026-09-20T12:00:00Z", true),
+          billing: { monthlyFee: 79.9, dueDay: 10, startMonth: "2026-10", active: true },
+        },
+        now,
+      ),
+    ).toEqual({ kind: "none" });
+  });
+
   it("flags an active registry without evaluations for more than 7 days", () => {
     expect(STALE_DAYS).toBe(7);
     expect(registryAlert(base, now)).toBeNull();

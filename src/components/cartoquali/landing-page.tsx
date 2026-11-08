@@ -40,11 +40,15 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { ATTRIBUTIONS, type AttributionKey } from "@/lib/attributions";
 import {
-  commercialLeadSchema,
-  submitCommercialLead,
-  type CommercialLeadInput,
-} from "@/lib/commercial-leads.functions";
+  BRAZIL_STATES,
+  formatCnpj,
+  selfSignupSchema,
+  SIGNUP_ROLES,
+  type SelfSignupInput,
+} from "@/lib/self-signup";
+import { startSelfSignup } from "@/lib/self-signup.functions";
 import { leadOriginFromSearch, type LeadCta } from "@/lib/lead-origin";
 import {
   DashboardScene,
@@ -260,12 +264,12 @@ const includedGroups: Array<[string, string[]]> = [
   ],
 ];
 
-// The real hiring flow: lead, setup done by our team, 7-day trial, then monthly payment.
+// The real hiring flow: self-signup, everything ready at once, 7-day trial, then monthly payment.
 const hiringSteps: Array<[string, string]> = [
-  ["Você preenche o formulário", "Leva cerca de um minuto, e a conversa continua no WhatsApp."],
+  ["Você faz o cadastro", "Leva cerca de dois minutos, e o acesso chega no seu e-mail."],
   [
-    "Configuramos com você",
-    "Nossa equipe cadastra o cartório, os serviços, o QR Code e o perfil do Google.",
+    "Tudo pronto na hora",
+    "A pesquisa, os serviços e o QR Code do cartório já vêm configurados. Se quiser, ajudamos pelo WhatsApp.",
   ],
   [
     "7 dias de teste no balcão",
@@ -297,11 +301,11 @@ const faqs = [
   ],
   [
     "O que acontece depois dos 7 dias?",
-    "Conversamos com você. Se quiser continuar, começa a mensalidade. Se não quiser, o acesso é encerrado sem nenhuma cobrança.",
+    "O acesso fica pausado até você decidir. Se quiser continuar, começa a mensalidade e liberamos na hora. Se não quiser, não há nenhuma cobrança.",
   ],
   [
     "Quem faz a implantação?",
-    "Nossa equipe, junto com você, pelo WhatsApp: cadastro do cartório, serviços, QR Code e perfil do Google. Não há taxa de implantação.",
+    "Você mesmo, em poucos minutos: ao se cadastrar, o cartório já recebe a pesquisa padrão, os serviços das suas atribuições e o QR Code. Nossa equipe configura o perfil do Google e ajuda pelo WhatsApp no que precisar. Não há taxa de implantação.",
   ],
   [
     "Existe fidelidade ou multa para cancelar?",
@@ -342,25 +346,40 @@ const faqs = [
   ],
 ] as const;
 
-const roleOptions = ["Titular", "Substituto(a)", "Escrevente ou gestor(a)", "Outro cargo"];
-
-const emptyLead = {
+const emptySignup = {
   name: "",
-  registryName: "",
-  cityState: "",
   roleTitle: "",
+  registryName: "",
+  cnpj: "",
+  city: "",
+  state: "",
   whatsapp: "",
   email: "",
   website: "",
 };
-type LeadDraft = typeof emptyLead;
+type SignupDraft = typeof emptySignup;
+type SignupTextField = Exclude<keyof SignupDraft, "website">;
 
 // Visible fields in form order, so the first invalid one gets the focus.
-const leadFields = ["name", "registryName", "cityState", "roleTitle", "whatsapp", "email"] as const;
-type LeadField = (typeof leadFields)[number];
-type FieldErrors = Partial<Record<LeadField, string>>;
-const isLeadField = (key: unknown): key is LeadField =>
-  typeof key === "string" && (leadFields as readonly string[]).includes(key);
+const signupFields = [
+  "name",
+  "roleTitle",
+  "registryName",
+  "cnpj",
+  "city",
+  "state",
+  "attributions",
+  "whatsapp",
+  "email",
+  "acceptTerms",
+] as const;
+type SignupField = (typeof signupFields)[number];
+type FieldErrors = Partial<Record<SignupField, string>>;
+const isSignupField = (key: unknown): key is SignupField =>
+  typeof key === "string" && (signupFields as readonly string[]).includes(key);
+// The attribution group has no single input; focus goes to its first checkbox.
+const focusTarget = (field: SignupField) =>
+  field === "attributions" ? "signup-attribution-notas" : `signup-${field}`;
 
 const commercialWhatsappNumber = "5586981846766";
 const defaultWhatsappMessage = "Olá! Quero começar o teste grátis de 7 dias do CartoQuali.";
@@ -571,7 +590,7 @@ function Hero() {
             "7 dias grátis",
             "Sem cartão de crédito",
             "Sem fidelidade",
-            "Implantação feita pela nossa equipe",
+            "Pronto para usar no mesmo dia",
             "Sem aplicativo para o cidadão",
           ].map((item) => (
             <li key={item} className="flex items-center gap-2">
@@ -1032,15 +1051,29 @@ function FaqSection() {
 }
 
 function TrialForm() {
-  const submitLead = useServerFn(submitCommercialLead);
-  const [draft, setDraft] = useState<LeadDraft>(emptyLead);
+  const signup = useServerFn(startSelfSignup);
+  const [draft, setDraft] = useState<SignupDraft>(emptySignup);
+  const [attributions, setAttributions] = useState<AttributionKey[]>([]);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
-  const [whatsappLink, setWhatsappLink] = useState("");
+  const [sentTo, setSentTo] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<FieldErrors>({});
-  const change = (key: keyof LeadDraft, value: string) => {
-    setDraft((current) => ({ ...current, [key]: value }));
+  // One id per filled form: a double click or a retry after a lost answer creates one registry only.
+  const [requestId, setRequestId] = useState(() => crypto.randomUUID());
+  const clearError = (key: SignupField) =>
     setErrors((current) => ({ ...current, [key]: undefined }));
+  const change = (key: keyof SignupDraft, value: string) => {
+    setDraft((current) => ({ ...current, [key]: key === "cnpj" ? formatCnpj(value) : value }));
+    if (key !== "website") clearError(key);
+    setRequestId(crypto.randomUUID());
+  };
+  const toggleAttribution = (key: AttributionKey, checked: boolean) => {
+    setAttributions((current) =>
+      checked ? [...current, key] : current.filter((item) => item !== key),
+    );
+    clearError("attributions");
+    setRequestId(crypto.randomUUID());
   };
   const getSession = () => {
     const key = "cartoquali-commercial-session";
@@ -1053,21 +1086,23 @@ function TrialForm() {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (status === "sending") return;
-    const payload: CommercialLeadInput = {
+    const payload = {
       ...draft,
-      clientRequestId: crypto.randomUUID(),
+      attributions,
+      acceptTerms,
+      clientRequestId: requestId,
       submissionSession: getSession(),
       origin: readSession(originKey),
       cta: readSession(ctaKey),
     };
-    const checked = commercialLeadSchema.safeParse(payload);
+    const checked = selfSignupSchema.safeParse(payload);
     if (!checked.success) {
       const found: FieldErrors = {};
       for (const issue of checked.error.issues) {
         const key = issue.path[0];
-        if (isLeadField(key) && !found[key]) found[key] = issue.message;
+        if (isSignupField(key) && !found[key]) found[key] = issue.message;
       }
-      const first = leadFields.find((key) => found[key]);
+      const first = signupFields.find((key) => found[key]);
       setErrors(found);
       setStatus("error");
       setMessage(
@@ -1075,33 +1110,21 @@ function TrialForm() {
           ? "Preencha os campos destacados para continuar."
           : (checked.error.issues[0]?.message ?? "Revise os campos informados."),
       );
-      if (first) document.getElementById(`lead-${first}`)?.focus();
+      if (first) document.getElementById(focusTarget(first))?.focus();
       return;
     }
     setErrors({});
     setStatus("sending");
     setMessage("");
     try {
-      await submitLead({ data: checked.data });
+      const data: SelfSignupInput = checked.data;
+      const result = await signup({ data });
+      setSentTo(result.email);
       setStatus("success");
-      const whatsappMessage = [
-        defaultWhatsappMessage,
-        "",
-        `Nome: ${checked.data.name}`,
-        `Cartório: ${checked.data.registryName}`,
-        `Cidade/UF: ${checked.data.cityState}`,
-        `Cargo: ${checked.data.roleTitle}`,
-        `WhatsApp: ${checked.data.whatsapp}`,
-        `E-mail: ${checked.data.email}`,
-      ].join("\n");
-      const url = createWhatsappUrl(whatsappMessage);
-      // Kept for the success panel: if WhatsApp does not open, the visitor still has the link.
-      setWhatsappLink(url);
-      window.location.assign(url);
     } catch (reason) {
       setStatus("error");
       setMessage(
-        reason instanceof Error ? reason.message : "Não foi possível enviar. Tente novamente.",
+        reason instanceof Error ? reason.message : "Não foi possível concluir. Tente novamente.",
       );
     }
   };
@@ -1113,13 +1136,13 @@ function TrialForm() {
           <SectionTitle
             eyebrow="Teste grátis"
             title="Comece seus 7 dias grátis"
-            description="Preencha os dados e continue a conversa pelo WhatsApp. Nossa equipe configura o cartório com você."
+            description="Cadastre o cartório e receba o acesso no e-mail. A pesquisa, os serviços e o QR Code já ficam prontos para usar."
           />
           <ul className="mt-8 space-y-3 text-sm text-muted-foreground">
             {[
               "Sem cartão de crédito e sem compromisso",
-              "Implantação feita pela nossa equipe, sem taxa",
-              "Se preferir, pedimos uma demonstração antes na conversa",
+              "Os 7 dias começam no seu primeiro acesso",
+              "Ajuda pelo WhatsApp sempre que precisar, sem taxa",
               `Depois do teste, ${launchPrice.label} por mês, com o valor garantido`,
             ].map((item) => (
               <li key={item} className="flex gap-2">
@@ -1134,10 +1157,10 @@ function TrialForm() {
           className="landing-panel scroll-mt-24 rounded-3xl bg-card p-5 sm:p-8"
         >
           <div>
-            <h3 className="font-display text-2xl font-semibold">Começar teste grátis</h3>
+            <h3 className="font-display text-2xl font-semibold">Cadastrar meu cartório</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Leva cerca de um minuto. Todos os campos são obrigatórios, e o e-mail é usado para
-              criar o seu acesso.
+              Leva cerca de dois minutos. Todos os campos são obrigatórios. Você será o
+              administrador do cartório no CartoQuali.
             </p>
           </div>
           {status === "success" ? (
@@ -1145,21 +1168,24 @@ function TrialForm() {
               role="status"
               className="mt-8 rounded-lg bg-success-soft p-6 text-center text-success"
             >
-              <CheckCircle2 className="mx-auto size-9" />
-              <p className="mt-3 font-display text-xl font-bold">Solicitação recebida.</p>
-              <p className="mt-2 text-sm">Abrindo a conversa no WhatsApp.</p>
-              <p className="mt-4 text-sm text-foreground">
-                Não abriu?{" "}
+              <CheckCircle2 className="mx-auto size-9" aria-hidden="true" />
+              <p className="mt-3 font-display text-xl font-bold">Cadastro feito!</p>
+              <p className="mt-2 text-sm text-foreground">
+                Enviamos um e-mail para <strong className="break-all">{sentTo}</strong>. Abra a
+                mensagem e clique no link para criar a sua senha. Os 7 dias grátis começam no
+                primeiro acesso.
+              </p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Não chegou em alguns minutos? Veja a caixa de spam ou{" "}
                 <a
-                  href={whatsappLink || createWhatsappUrl()}
+                  href={createWhatsappUrl()}
                   target="_blank"
                   rel="noreferrer"
                   className="font-semibold text-primary underline underline-offset-2"
                 >
-                  Abrir conversa no WhatsApp
+                  fale com a gente no WhatsApp
                 </a>
-                <br />
-                <span className="text-muted-foreground">ou escreva para cartoquali@gmail.com</span>
+                .
               </p>
             </div>
           ) : (
@@ -1178,59 +1204,91 @@ function TrialForm() {
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   name="name"
-                  label="Nome"
+                  label="Seu nome"
                   value={draft.name}
                   error={errors.name}
                   onChange={(value) => change("name", value)}
                   autoComplete="name"
                   maxLength={100}
                 />
+                <SelectField
+                  name="roleTitle"
+                  label="Seu cargo"
+                  value={draft.roleTitle}
+                  error={errors.roleTitle}
+                  options={SIGNUP_ROLES}
+                  onChange={(value) => change("roleTitle", value)}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-[1.4fr_1fr]">
                 <Field
                   name="registryName"
-                  label="Cartório"
+                  label="Nome do cartório"
                   value={draft.registryName}
                   error={errors.registryName}
                   onChange={(value) => change("registryName", value)}
                   autoComplete="organization"
                   maxLength={160}
                 />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
                 <Field
-                  name="cityState"
-                  label="Cidade/UF"
-                  value={draft.cityState}
-                  error={errors.cityState}
-                  onChange={(value) => change("cityState", value)}
+                  name="cnpj"
+                  label="CNPJ do cartório"
+                  value={draft.cnpj}
+                  error={errors.cnpj}
+                  onChange={(value) => change("cnpj", value)}
+                  inputMode="numeric"
+                  placeholder="00.000.000/0000-00"
+                  maxLength={18}
+                />
+              </div>
+              <div className="grid grid-cols-[1fr_6.5rem] gap-4">
+                <Field
+                  name="city"
+                  label="Cidade"
+                  value={draft.city}
+                  error={errors.city}
+                  onChange={(value) => change("city", value)}
                   autoComplete="address-level2"
                   maxLength={120}
                 />
-                <div className="grid content-start gap-1.5 text-sm font-semibold">
-                  <label htmlFor="lead-roleTitle">Cargo</label>
-                  <select
-                    id="lead-roleTitle"
-                    required
-                    value={draft.roleTitle}
-                    aria-invalid={errors.roleTitle ? true : undefined}
-                    aria-describedby={errors.roleTitle ? "lead-roleTitle-error" : undefined}
-                    onChange={(event) => change("roleTitle", event.target.value)}
-                    className={cn(
-                      "h-11 rounded-md border border-input bg-card px-3 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      errors.roleTitle && "border-destructive",
-                    )}
-                  >
-                    <option value="" disabled>
-                      Selecione
-                    </option>
-                    {roleOptions.map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select>
-                  <FieldError id="lead-roleTitle-error" message={errors.roleTitle} />
-                </div>
+                <SelectField
+                  name="state"
+                  label="UF"
+                  value={draft.state}
+                  error={errors.state}
+                  options={BRAZIL_STATES}
+                  onChange={(value) => change("state", value)}
+                />
               </div>
+              <fieldset
+                className="grid gap-2 text-sm"
+                aria-describedby={errors.attributions ? "signup-attributions-error" : undefined}
+              >
+                <legend className="mb-1.5 font-semibold">Atribuições do cartório</legend>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {ATTRIBUTIONS.map((item) => (
+                    <label
+                      key={item.key}
+                      htmlFor={`signup-attribution-${item.key}`}
+                      className={cn(
+                        "flex cursor-pointer items-start gap-2 rounded-md border border-input px-3 py-2",
+                        attributions.includes(item.key) && "border-primary bg-primary/5",
+                        errors.attributions && "border-destructive",
+                      )}
+                    >
+                      <input
+                        id={`signup-attribution-${item.key}`}
+                        type="checkbox"
+                        className="mt-0.5 size-4 shrink-0 accent-primary"
+                        checked={attributions.includes(item.key)}
+                        onChange={(event) => toggleAttribution(item.key, event.target.checked)}
+                      />
+                      <span>{item.label}</span>
+                    </label>
+                  ))}
+                </div>
+                <FieldError id="signup-attributions-error" message={errors.attributions} />
+              </fieldset>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   name="whatsapp"
@@ -1244,7 +1302,7 @@ function TrialForm() {
                 />
                 <Field
                   name="email"
-                  label="E-mail"
+                  label="E-mail (será o seu login)"
                   type="email"
                   value={draft.email}
                   error={errors.email}
@@ -1252,6 +1310,34 @@ function TrialForm() {
                   autoComplete="email"
                   maxLength={255}
                 />
+              </div>
+              <div className="grid gap-1.5 text-sm">
+                <div className="flex items-start gap-2">
+                  <input
+                    id="signup-acceptTerms"
+                    type="checkbox"
+                    className="mt-0.5 size-4 shrink-0 accent-primary"
+                    checked={acceptTerms}
+                    aria-invalid={errors.acceptTerms ? true : undefined}
+                    aria-describedby={errors.acceptTerms ? "signup-acceptTerms-error" : undefined}
+                    onChange={(event) => {
+                      setAcceptTerms(event.target.checked);
+                      clearError("acceptTerms");
+                    }}
+                  />
+                  <label htmlFor="signup-acceptTerms">
+                    Li e aceito os{" "}
+                    <Link to="/termos" target="_blank" rel="noopener" className="underline">
+                      termos de uso
+                    </Link>{" "}
+                    e o{" "}
+                    <Link to="/privacidade" target="_blank" rel="noopener" className="underline">
+                      aviso de privacidade
+                    </Link>
+                    .
+                  </label>
+                </div>
+                <FieldError id="signup-acceptTerms-error" message={errors.acceptTerms} />
               </div>
               {status === "error" && (
                 <p
@@ -1267,28 +1353,32 @@ function TrialForm() {
                 className="mt-1 min-h-12 w-full"
                 disabled={status === "sending"}
               >
-                {status === "sending" ? "Enviando..." : "Enviar e continuar no WhatsApp"}
+                {status === "sending"
+                  ? "Criando o seu acesso..."
+                  : "Criar acesso e começar o teste"}
                 <ArrowRight />
               </Button>
               <p className="text-center text-sm font-semibold">
                 7 dias grátis, sem cartão de crédito. Cancele quando quiser, sem multa.
               </p>
-              <p className="text-center text-xs leading-4 text-muted-foreground">
-                Seus dados serão usados apenas para responder à solicitação comercial pelo WhatsApp.
-                Veja o{" "}
-                <Link to="/privacidade" target="_blank" rel="noopener" className="underline">
-                  aviso de privacidade
+              <p className="text-center text-sm text-muted-foreground">
+                Já tem acesso?{" "}
+                <Link
+                  to="/login"
+                  className="font-semibold text-primary underline underline-offset-4"
+                >
+                  Entrar
                 </Link>
-                .
+                {" · "}
+                <a
+                  href={createWhatsappUrl()}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-semibold text-primary underline underline-offset-4"
+                >
+                  Prefiro falar pelo WhatsApp
+                </a>
               </p>
-              <a
-                href={createWhatsappUrl()}
-                target="_blank"
-                rel="noreferrer"
-                className="text-center text-sm font-semibold text-primary underline underline-offset-4"
-              >
-                Prefiro falar direto pelo WhatsApp
-              </a>
             </form>
           )}
         </div>
@@ -1315,7 +1405,7 @@ function Field({
   type = "text",
   ...props
 }: {
-  name: LeadField;
+  name: SignupTextField;
   label: string;
   value: string;
   error?: string | undefined;
@@ -1323,8 +1413,10 @@ function Field({
   type?: string;
   autoComplete?: string;
   maxLength?: number;
+  inputMode?: "numeric" | "text";
+  placeholder?: string;
 }) {
-  const id = `lead-${name}`;
+  const id = `signup-${name}`;
   return (
     <div className="grid content-start gap-1.5 text-sm font-semibold">
       <label htmlFor={id}>{label}</label>
@@ -1339,6 +1431,51 @@ function Field({
         className={cn("h-11 bg-card", error && "border-destructive")}
         {...props}
       />
+      <FieldError id={`${id}-error`} message={error} />
+    </div>
+  );
+}
+
+function SelectField({
+  name,
+  label,
+  value,
+  error,
+  options,
+  onChange,
+}: {
+  name: SignupTextField;
+  label: string;
+  value: string;
+  error?: string | undefined;
+  options: readonly string[];
+  onChange: (value: string) => void;
+}) {
+  const id = `signup-${name}`;
+  return (
+    <div className="grid content-start gap-1.5 text-sm font-semibold">
+      <label htmlFor={id}>{label}</label>
+      <select
+        id={id}
+        required
+        value={value}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? `${id}-error` : undefined}
+        onChange={(event) => onChange(event.target.value)}
+        className={cn(
+          "h-11 rounded-md border border-input bg-card px-3 text-sm font-normal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          error && "border-destructive",
+        )}
+      >
+        <option value="" disabled>
+          Selecione
+        </option>
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {option}
+          </option>
+        ))}
+      </select>
       <FieldError id={`${id}-error`} message={error} />
     </div>
   );
