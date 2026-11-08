@@ -396,7 +396,7 @@ export function PointsPage() {
       />
       <PointQrDialog
         point={qrPoint}
-        registry={registry ?? undefined}
+        canManage={Boolean(query.data?.canManage)}
         open={Boolean(qrPoint)}
         onOpenChange={(next) => {
           if (!next) setQrPoint(undefined);

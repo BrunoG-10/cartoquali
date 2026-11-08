@@ -305,7 +305,7 @@ const faqs = [
   ],
   [
     "Quem faz a implantação?",
-    "Você mesmo, em poucos minutos: ao se cadastrar, o cartório já recebe a pesquisa padrão, os serviços das suas atribuições e o QR Code. Nossa equipe configura o perfil do Google e ajuda pelo WhatsApp no que precisar. Não há taxa de implantação.",
+    "Você mesmo, em poucos minutos: ao se cadastrar, o cartório já recebe a pesquisa padrão, os serviços das suas atribuições e o QR Code. O perfil do Google você escolhe nas configurações, e nossa equipe ajuda pelo WhatsApp no que precisar. Não há taxa de implantação.",
   ],
   [
     "Existe fidelidade ou multa para cancelar?",
